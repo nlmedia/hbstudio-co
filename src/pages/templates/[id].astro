@@ -30,7 +30,7 @@ const { Content } = await render(entry);
             <a href="/contact" class="rounded-full bg-paper px-6 py-3 font-medium text-ink transition hover:bg-accent hover:text-white">Notify me at launch</a>
           ) : (
             <>
-              <a href={d.buyUrl ?? '#'} data-buy class="rounded-full bg-paper px-6 py-3 font-medium text-ink transition hover:bg-accent hover:text-white">Buy — {d.currency}{d.price}</a>
+              <a href="#" data-checkout={entry.id} class="rounded-full bg-paper px-6 py-3 font-medium text-ink transition hover:bg-accent hover:text-white">Buy — {d.currency}{d.price}</a>
               {d.demoUrl && <a href={d.demoUrl} target="_blank" rel="noopener" class="rounded-full border border-white/25 px-6 py-3 font-medium transition hover:bg-white/10">Live demo</a>}
             </>
           )}
@@ -92,7 +92,7 @@ const { Content } = await render(entry);
         {soon ? (
           <a href="/contact" class="mt-5 block rounded-full bg-ink px-6 py-3 text-center font-medium text-paper transition hover:bg-accent">Notify me</a>
         ) : (
-          <a href={d.buyUrl ?? '#'} data-buy class="mt-5 block rounded-full bg-ink px-6 py-3 text-center font-medium text-paper transition hover:bg-accent">Buy {d.title}</a>
+          <a href="#" data-checkout={entry.id} class="mt-5 block rounded-full bg-ink px-6 py-3 text-center font-medium text-paper transition hover:bg-accent">Buy {d.title}</a>
         )}
         {d.docsUrl && <a href={d.docsUrl} target="_blank" rel="noopener" class="mt-2 block text-center text-sm font-medium text-accent-2 hover:underline">Read the documentation →</a>}
       </div>

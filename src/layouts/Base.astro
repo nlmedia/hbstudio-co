@@ -88,7 +88,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
         window.addEventListener('scroll', onScroll, { passive: true });
       }
 
-      // Buy buttons — inert until checkout is configured (href "#")
+      // Toast helper
       const toast = document.getElementById('toast');
       let toastTimer: any;
       function showToast(msg: string) {
@@ -96,15 +96,36 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
         toast.textContent = msg;
         toast.classList.add('show');
         clearTimeout(toastTimer);
-        toastTimer = setTimeout(() => toast.classList.remove('show'), 3200);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 3600);
       }
-      document.querySelectorAll('[data-buy]').forEach((b) => {
-        b.addEventListener('click', (e) => {
-          const href = (b as HTMLAnchorElement).getAttribute('href');
-          if (!href || href === '#') {
-            e.preventDefault();
-            showToast('🛒 Checkout opens soon — contact us to pre-order.');
+
+      // Stripe Checkout — POST to the Netlify function, then redirect.
+      // Until STRIPE_SECRET_KEY is set in Netlify, the function returns
+      // "not_configured" and we show a friendly "opens soon" toast.
+      document.querySelectorAll('[data-checkout]').forEach((b) => {
+        b.addEventListener('click', async (e) => {
+          e.preventDefault();
+          const el = b as HTMLElement;
+          if (el.getAttribute('aria-busy') === 'true') return;
+          const item = el.getAttribute('data-checkout');
+          const label = el.textContent;
+          el.setAttribute('aria-busy', 'true');
+          el.textContent = 'Redirecting…';
+          try {
+            const r = await fetch('/api/checkout', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ item }),
+            });
+            const data = await r.json().catch(() => ({}));
+            if (data && data.url) { window.location.href = data.url; return; }
+            if (data && data.error === 'not_configured') showToast('🛒 Checkout opens soon — contact us to pre-order.');
+            else showToast('Checkout is unavailable right now — please try again shortly.');
+          } catch {
+            showToast('Network error — please try again.');
           }
+          el.removeAttribute('aria-busy');
+          if (label) el.textContent = label;
         });
       });
     </script>

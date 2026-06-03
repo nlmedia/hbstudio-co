@@ -27,9 +27,9 @@ const testimonials = [
 ];
 
 const tiers = [
-  { name: 'Single', price: 69, blurb: 'For one store.', features: ['1 store license', 'Lifetime updates', 'Email support', 'Full documentation'], popular: false },
-  { name: 'Extended', price: 149, blurb: 'For agencies & client work.', features: ['Up to 5 stores', 'Use in client projects', 'Lifetime updates', 'Priority email support'], popular: true },
-  { name: 'All-Access', price: 299, blurb: 'Every template, one year.', features: ['All current templates', 'All new releases (1 year)', 'Lifetime updates on owned', 'Priority support'], popular: false },
+  { name: 'Single', key: 'single', price: 69, blurb: 'For one store.', features: ['1 store license', 'Lifetime updates', 'Email support', 'Full documentation'], popular: false },
+  { name: 'Extended', key: 'extended', price: 149, blurb: 'For agencies & client work.', features: ['Up to 5 stores', 'Use in client projects', 'Lifetime updates', 'Priority email support'], popular: true },
+  { name: 'All-Access', key: 'all-access', price: 299, blurb: 'Every template, one year.', features: ['All current templates', 'All new releases (1 year)', 'Lifetime updates on owned', 'Priority support'], popular: false },
 ];
 
 const faqs = [
@@ -235,7 +235,7 @@ const faqs = [
             <ul class="mt-6 flex-1 space-y-3 border-t border-line pt-6 text-sm">
               {tier.features.map((f) => (<li class="flex gap-2.5"><span class="text-accent">✓</span>{f}</li>))}
             </ul>
-            <a href="#" data-buy class:list={['mt-7 block rounded-full px-6 py-3 text-center font-medium transition', tier.popular ? 'bg-accent text-white hover:bg-accent-700' : 'bg-ink text-paper hover:bg-accent']}>Buy {tier.name}</a>
+            <a href="#" data-checkout={tier.key} class:list={['mt-7 block rounded-full px-6 py-3 text-center font-medium transition', tier.popular ? 'bg-accent text-white hover:bg-accent-700' : 'bg-ink text-paper hover:bg-accent']}>Buy {tier.name}</a>
           </div>
         ))}
       </div>
