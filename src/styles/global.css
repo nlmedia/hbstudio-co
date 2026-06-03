@@ -60,6 +60,14 @@
 /* ---------- floating blur orbs ---------- */
 .orb { position: absolute; border-radius: 9999px; filter: blur(110px); pointer-events: none; z-index: 0; }
 
+/* ---------- 3D tilted browser mockup ---------- */
+.tilt { perspective: 1800px; }
+.tilt__card { transform: rotateY(-16deg) rotateX(7deg) rotate(1deg); transition: transform 0.7s cubic-bezier(0.16,0.8,0.3,1); transform-style: preserve-3d; }
+.tilt:hover .tilt__card { transform: rotateY(-7deg) rotateX(3deg); }
+.mock-screen { height: 32rem; overflow: hidden; }
+.mock-img { width: 100%; display: block; animation: mock-scroll 28s ease-in-out infinite alternate; }
+@keyframes mock-scroll { from { transform: translateY(0); } to { transform: translateY(calc(-100% + 32rem)); } }
+
 /* ---------- toast ---------- */
 #toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px); opacity: 0; pointer-events: none; background: var(--color-ink); color: var(--color-paper); padding: 12px 20px; border-radius: 999px; font-size: 14px; box-shadow: 0 16px 40px rgba(0,0,0,.25); transition: opacity .3s ease, transform .3s ease; z-index: 100; }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
