@@ -30,7 +30,7 @@ const { Content } = await render(entry);
             <a href="/contact" class="rounded-full bg-paper px-6 py-3 font-medium text-ink transition hover:bg-accent hover:text-white">Notify me at launch</a>
           ) : (
             <>
-              <a href={d.buyUrl ?? '#'} class="rounded-full bg-paper px-6 py-3 font-medium text-ink transition hover:bg-accent hover:text-white">Buy — {d.currency}{d.price}</a>
+              <a href={d.buyUrl ?? '#'} data-buy class="rounded-full bg-paper px-6 py-3 font-medium text-ink transition hover:bg-accent hover:text-white">Buy — {d.currency}{d.price}</a>
               {d.demoUrl && <a href={d.demoUrl} target="_blank" rel="noopener" class="rounded-full border border-white/25 px-6 py-3 font-medium transition hover:bg-white/10">Live demo</a>}
             </>
           )}
@@ -52,7 +52,7 @@ const { Content } = await render(entry);
   <!-- FEATURES + BODY -->
   <section class="mx-auto grid max-w-6xl gap-12 px-5 py-16 lg:grid-cols-3">
     <div class="lg:col-span-2">
-      <div class="text-lg leading-relaxed text-paper/75">
+      <div class="text-lg leading-relaxed text-ink/75">
         <Content />
       </div>
       {d.features.length > 0 && (
@@ -60,7 +60,7 @@ const { Content } = await render(entry);
           <h2 class="mt-10 font-display text-2xl font-bold">What's inside</h2>
           <ul class="mt-5 grid gap-3 sm:grid-cols-2">
             {d.features.map((f: string) => (
-              <li class="flex gap-3 text-sm text-paper/80">
+              <li class="flex gap-3 text-sm text-ink/80">
                 <span class="mt-0.5 text-accent-2">✓</span>{f}
               </li>
             ))}
@@ -74,13 +74,13 @@ const { Content } = await render(entry);
           <span class="text-sm text-muted">Price</span>
           <span class="font-display text-2xl font-bold">{d.price != null ? `${d.currency}${d.price}` : '—'}</span>
         </div>
-        <div class="mt-4 space-y-2 border-t border-line pt-4 text-sm text-paper/70">
+        <div class="mt-4 space-y-2 border-t border-line pt-4 text-sm text-ink/70">
           {d.tags.map((t: string) => <span class="mr-1.5 inline-block rounded-full bg-surface-2 px-2.5 py-1 text-xs">{t}</span>)}
         </div>
         {soon ? (
-          <a href="/contact" class="mt-5 block rounded-full bg-paper px-6 py-3 text-center font-medium text-ink transition hover:bg-accent hover:text-white">Notify me</a>
+          <a href="/contact" class="mt-5 block rounded-full bg-ink px-6 py-3 text-center font-medium text-paper transition hover:bg-accent">Notify me</a>
         ) : (
-          <a href={d.buyUrl ?? '#'} class="mt-5 block rounded-full bg-paper px-6 py-3 text-center font-medium text-ink transition hover:bg-accent hover:text-white">Buy {d.title}</a>
+          <a href={d.buyUrl ?? '#'} data-buy class="mt-5 block rounded-full bg-ink px-6 py-3 text-center font-medium text-paper transition hover:bg-accent">Buy {d.title}</a>
         )}
         {d.docsUrl && <a href={d.docsUrl} target="_blank" rel="noopener" class="mt-2 block text-center text-sm font-medium text-accent-2 hover:underline">Read the documentation →</a>}
       </div>

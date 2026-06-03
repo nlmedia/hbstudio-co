@@ -9,46 +9,78 @@ const featured = all.filter((t) => t.data.featured || t.data.status === 'availab
 const counts = Object.fromEntries(CMS_ORDER.map((k) => [k, all.filter((t) => t.data.cms === k && t.data.status === 'available').length]));
 const availableCount = all.filter((t) => t.data.status === 'available').length;
 const marquee = ['Shopify', 'WordPress', 'WooCommerce', 'Webflow', 'Framer', 'Squarespace', 'Wix'];
+
+const steps = [
+  ['01', 'Choose', 'Browse the catalogue and pick the template that fits your brand and platform.'],
+  ['02', 'Buy & download', 'Secure one-time checkout. Your theme ZIP and docs are delivered instantly.'],
+  ['03', 'Install', 'Upload to your platform and follow the illustrated, bilingual documentation.'],
+  ['04', 'Launch', 'Add your products and content, then go live with a fast, polished store.'],
+];
+
+const testimonials = [
+  { name: 'Camille Renaud', role: 'Founder, Maison Lou', quote: 'Atelier made our store look like a brand three times our size. We launched in a weekend and conversions jumped within the first month.', rating: 5, c: '#6d4aff' },
+  { name: 'Jonas Meyer', role: 'E-commerce lead, Nord Supply', quote: 'The code quality is genuinely excellent — fast, clean, zero bloat. No app subscriptions to replace what the theme already does.', rating: 5, c: '#16a394' },
+  { name: 'Aïcha Benali', role: 'Owner, Studio Aïcha', quote: 'The documentation is the best I have ever used. The “rebuild the demo” guide had me up and running in under an hour.', rating: 5, c: '#e0851b' },
+  { name: 'Tom Schreiber', role: 'Freelance developer', quote: 'I resell client stores and HB Studio templates are my default now. Editable, well-structured and they just work.', rating: 5, c: '#d94f7a' },
+  { name: 'Lena Fischer', role: 'Marketing, Brûme Skincare', quote: 'Beautiful out of the box and still completely on-brand after our tweaks. The slide-out cart alone lifted our AOV.', rating: 5, c: '#3b7dd8' },
+  { name: 'Marco Conti', role: 'Founder, Conti Leather', quote: 'Premium feel, fair price, and real support that answers fast. Exactly what an independent shop needs.', rating: 5, c: '#7a5cff' },
+];
+
+const tiers = [
+  { name: 'Single', price: 69, blurb: 'For one store.', features: ['1 store license', 'Lifetime updates', 'Email support', 'Full documentation'], popular: false },
+  { name: 'Extended', price: 149, blurb: 'For agencies & client work.', features: ['Up to 5 stores', 'Use in client projects', 'Lifetime updates', 'Priority email support'], popular: true },
+  { name: 'All-Access', price: 299, blurb: 'Every template, one year.', features: ['All current templates', 'All new releases (1 year)', 'Lifetime updates on owned', 'Priority support'], popular: false },
+];
+
+const faqs = [
+  ['Which platforms do you support?', 'Today: Shopify (live), with WordPress and WooCommerce coming soon. More platforms (Webflow, Framer) are on the roadmap.'],
+  ['Do I need any paid apps?', 'No. Our themes build in the features most stores pay apps for — slide-out cart, free-shipping bar, filters, urgency and more.'],
+  ['How do I install a template?', 'After purchase you download a ZIP and upload it in your platform’s theme area. Each template ships with step-by-step bilingual documentation.'],
+  ['Do I get updates?', 'Yes — free lifetime updates on any template you own. New versions install alongside your live theme, so nothing is overwritten.'],
+  ['What does the license cover?', 'The Single license covers one store. Extended covers up to 5 stores and client work. All-Access unlocks every template for a year.'],
+  ['Can you build something custom?', 'Absolutely. We take on custom template and design work — tell us about your project on the contact page.'],
+  ['What’s your refund policy?', 'Because templates are instant digital downloads, sales are final — but we’ll happily help by email if anything isn’t working.'],
+];
 ---
 <Base>
   <!-- HERO -->
   <section class="relative overflow-hidden">
-    <div class="orb -right-40 -top-40 h-[40rem] w-[40rem]" style="background:rgba(124,92,255,0.30)"></div>
-    <div class="orb -left-52 top-40 h-[34rem] w-[34rem]" style="background:rgba(74,214,196,0.14)"></div>
+    <div class="orb -right-40 -top-40 h-[40rem] w-[40rem]" style="background:rgba(109,74,255,0.16)"></div>
+    <div class="orb -left-52 top-40 h-[34rem] w-[34rem]" style="background:rgba(22,163,148,0.10)"></div>
     <div class="relative mx-auto max-w-6xl px-5 pb-20 pt-20 sm:pt-28">
-      <p data-reveal class="inline-flex items-center gap-2 rounded-full border border-line bg-surface/60 px-3 py-1 text-xs tracking-wide text-paper/70 backdrop-blur">
+      <p data-reveal class="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-xs tracking-wide text-ink/70 shadow-sm">
         <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-3"></span> Creative studio · Premium templates
       </p>
       <h1 class="mt-7 max-w-5xl font-display text-[clamp(3rem,9vw,7.5rem)] font-bold leading-[0.95]">
         <span data-reveal class="block" style="transition-delay:60ms">Templates that make</span>
         <span data-reveal class="block" style="transition-delay:140ms">your store look <span class="text-grad">expensive</span>.</span>
       </h1>
-      <p data-reveal style="transition-delay:240ms" class="mt-7 max-w-xl text-lg text-paper/65">
+      <p data-reveal style="transition-delay:240ms" class="mt-7 max-w-xl text-lg text-ink/65">
         HB Studio Co designs fast, conversion-ready website templates for Shopify, WordPress,
         WooCommerce — and more platforms on the way. One studio, every stack.
       </p>
       <div data-reveal style="transition-delay:320ms" class="mt-9 flex flex-wrap items-center gap-4">
-        <a href="/templates" class="group inline-flex items-center gap-2 rounded-full bg-paper px-6 py-3 font-medium text-ink transition hover:bg-accent hover:text-white">
+        <a href="/templates" class="group inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 font-medium text-paper transition hover:bg-accent">
           Browse templates
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="transition group-hover:translate-x-1"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </a>
-        <a href="/about" class="rounded-full border border-line-strong px-6 py-3 font-medium text-paper transition hover:bg-surface">About the studio</a>
+        <a href="#pricing" class="rounded-full border border-line-strong px-6 py-3 font-medium transition hover:bg-surface-2">See pricing</a>
       </div>
       <dl data-reveal style="transition-delay:420ms" class="mt-16 grid max-w-xl grid-cols-3 gap-6 border-t border-line pt-8">
         <div><dt class="font-display text-4xl font-bold"><span data-count={availableCount} data-suffix="+">0</span></dt><dd class="mt-1 text-sm text-muted">Templates</dd></div>
         <div><dt class="font-display text-4xl font-bold"><span data-count="4">0</span></dt><dd class="mt-1 text-sm text-muted">Platforms</dd></div>
-        <div><dt class="font-display text-4xl font-bold"><span data-count="0">0</span></dt><dd class="mt-1 text-sm text-muted">Paid apps</dd></div>
+        <div><dt class="font-display text-4xl font-bold"><span data-count="100" data-suffix="%">0</span></dt><dd class="mt-1 text-sm text-muted">App-free</dd></div>
       </dl>
     </div>
   </section>
 
   <!-- MARQUEE -->
-  <section class="border-y border-line py-6">
+  <section class="border-y border-line bg-surface py-6">
     <div class="marquee" aria-hidden="true">
       {[0, 1].map(() => (
         <div class="marquee__track">
           {marquee.map((m) => (
-            <span class="flex items-center gap-3.5 font-display text-2xl font-medium text-paper/35 sm:text-3xl">
+            <span class="flex items-center gap-3.5 font-display text-2xl font-medium text-ink/25 sm:text-3xl">
               {m}<span class="text-accent">✦</span>
             </span>
           ))}
@@ -61,17 +93,17 @@ const marquee = ['Shopify', 'WordPress', 'WooCommerce', 'Webflow', 'Framer', 'Sq
   <section class="mx-auto max-w-6xl px-5 py-24">
     <div class="flex items-end justify-between gap-4">
       <div>
-        <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent-2">By platform</p>
+        <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">By platform</p>
         <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">Pick your stack</h2>
       </div>
-      <a href="/templates" class="link-underline hidden text-sm font-medium text-accent-2 sm:block">All templates →</a>
+      <a href="/templates" class="link-underline hidden text-sm font-medium text-accent sm:block">All templates →</a>
     </div>
     <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
       {CMS_ORDER.map((k, i) => {
         const c = CMS[k];
         return (
-          <a href={`/category/${k}`} data-reveal style={`transition-delay:${i * 90}ms`} class="group relative overflow-hidden rounded-2xl border border-line bg-surface p-6 transition duration-300 hover:-translate-y-1.5 hover:border-line-strong hover:bg-surface-2">
-            <div class="absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-0 blur-2xl transition duration-500 group-hover:opacity-60" style={`background:${c.accent}`}></div>
+          <a href={`/category/${k}`} data-reveal style={`transition-delay:${i * 90}ms`} class="group relative overflow-hidden rounded-2xl border border-line bg-surface p-6 transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_30px_60px_-25px_rgba(14,14,18,0.25)]">
+            <div class="absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-0 blur-2xl transition duration-500 group-hover:opacity-40" style={`background:${c.accent}`}></div>
             <span class="relative grid h-12 w-12 place-items-center rounded-xl text-white" style={`background:${c.accent}`}>
               <span class="font-display text-lg font-bold">{c.label[0]}</span>
             </span>
@@ -87,15 +119,14 @@ const marquee = ['Shopify', 'WordPress', 'WooCommerce', 'Webflow', 'Framer', 'Sq
   </section>
 
   <!-- FEATURED -->
-  <section class="relative overflow-hidden border-y border-line bg-surface/30">
-    <div class="orb right-0 top-0 h-80 w-80" style="background:rgba(124,92,255,0.12)"></div>
-    <div class="relative mx-auto max-w-6xl px-5 py-24">
+  <section class="border-y border-line bg-surface-2/50">
+    <div class="mx-auto max-w-6xl px-5 py-24">
       <div class="flex items-end justify-between gap-4">
         <div>
-          <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent-2">Featured</p>
+          <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">Featured</p>
           <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">Fresh from the studio</h2>
         </div>
-        <a href="/templates" class="link-underline hidden text-sm font-medium text-accent-2 sm:block">View all →</a>
+        <a href="/templates" class="link-underline hidden text-sm font-medium text-accent sm:block">View all →</a>
       </div>
       <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {featured.map((entry) => <TemplateCard entry={entry} />)}
@@ -103,37 +134,145 @@ const marquee = ['Shopify', 'WordPress', 'WooCommerce', 'Webflow', 'Framer', 'Sq
     </div>
   </section>
 
-  <!-- WHY -->
+  <!-- HOW IT WORKS -->
   <section class="mx-auto max-w-6xl px-5 py-24">
-    <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent-2">Why HB Studio Co</p>
-    <h2 data-reveal style="transition-delay:80ms" class="mt-3 max-w-2xl font-display text-4xl font-bold sm:text-5xl">Built like products, not just pretty themes.</h2>
-    <div class="mt-14 grid gap-px overflow-hidden rounded-3xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
-      {[
-        ['⚡', 'Fast by design', 'Inlined critical CSS, lazy responsive images and Core-Web-Vitals-minded builds.'],
-        ['🧩', 'No paid apps', 'The features you need are built in — no monthly app subscriptions.'],
-        ['🌍', 'Multilingual', 'Storefront copy translated and ready for international stores.'],
-        ['♿', 'Accessible', 'Keyboard navigation, visible focus and reduced-motion support throughout.'],
-        ['🎨', 'Truly editable', 'Sections, blocks and presets — restyle everything without code.'],
-        ['📖', 'Real documentation', 'Illustrated, bilingual guides and a demo-rebuild appendix.'],
-      ].map(([icon, title, body], i) => (
-        <div data-reveal style={`transition-delay:${(i % 3) * 80}ms`} class="group bg-ink p-7 transition hover:bg-surface">
-          <div class="grid h-12 w-12 place-items-center rounded-xl bg-surface-2 text-xl transition group-hover:scale-110">{icon}</div>
-          <h3 class="mt-5 font-display text-lg font-semibold">{title}</h3>
-          <p class="mt-1.5 text-sm text-muted">{body}</p>
+    <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">How it works</p>
+    <h2 data-reveal style="transition-delay:80ms" class="mt-3 max-w-2xl font-display text-4xl font-bold sm:text-5xl">From cart to live store in four steps.</h2>
+    <div class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {steps.map(([n, t, b], i) => (
+        <div data-reveal style={`transition-delay:${i * 80}ms`} class="relative rounded-2xl border border-line bg-surface p-6">
+          <span class="font-display text-5xl font-bold text-accent-soft">{n}</span>
+          <h3 class="mt-3 font-display text-lg font-semibold">{t}</h3>
+          <p class="mt-1.5 text-sm text-muted">{b}</p>
         </div>
       ))}
     </div>
   </section>
 
-  <!-- CTA -->
+  <!-- WHY -->
+  <section class="border-y border-line bg-surface-2/50">
+    <div class="mx-auto max-w-6xl px-5 py-24">
+      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">Why HB Studio Co</p>
+      <h2 data-reveal style="transition-delay:80ms" class="mt-3 max-w-2xl font-display text-4xl font-bold sm:text-5xl">Built like products, not just pretty themes.</h2>
+      <div class="mt-14 grid gap-px overflow-hidden rounded-3xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
+        {[
+          ['⚡', 'Fast by design', 'Inlined critical CSS, lazy responsive images and Core-Web-Vitals-minded builds.'],
+          ['🧩', 'No paid apps', 'The features you need are built in — no monthly app subscriptions.'],
+          ['🌍', 'Multilingual', 'Storefront copy translated and ready for international stores.'],
+          ['♿', 'Accessible', 'Keyboard navigation, visible focus and reduced-motion support throughout.'],
+          ['🎨', 'Truly editable', 'Sections, blocks and presets — restyle everything without code.'],
+          ['📖', 'Real documentation', 'Illustrated, bilingual guides and a demo-rebuild appendix.'],
+        ].map(([icon, title, body], i) => (
+          <div data-reveal style={`transition-delay:${(i % 3) * 80}ms`} class="group bg-surface p-7 transition hover:bg-surface-2">
+            <div class="grid h-12 w-12 place-items-center rounded-xl bg-accent-soft text-xl transition group-hover:scale-110">{icon}</div>
+            <h3 class="mt-5 font-display text-lg font-semibold">{title}</h3>
+            <p class="mt-1.5 text-sm text-muted">{body}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="mx-auto max-w-6xl px-5 py-24">
+    <div class="text-center">
+      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">Loved by founders</p>
+      <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">What our customers say</h2>
+    </div>
+    <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {testimonials.map((t, i) => (
+        <figure data-reveal style={`transition-delay:${(i % 3) * 80}ms`} class="flex flex-col rounded-2xl border border-line bg-surface p-6">
+          <div class="flex gap-0.5 text-accent" aria-label={`${t.rating} out of 5`}>
+            {Array.from({ length: t.rating }).map(() => (<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.9 21l1.2-6.8-5-4.9 6.9-1z"/></svg>))}
+          </div>
+          <blockquote class="mt-4 flex-1 text-[15px] leading-relaxed text-ink/80">“{t.quote}”</blockquote>
+          <figcaption class="mt-5 flex items-center gap-3">
+            <span class="grid h-10 w-10 place-items-center rounded-full font-display text-sm font-bold text-white" style={`background:${t.c}`}>{t.name.split(' ').map((n) => n[0]).join('')}</span>
+            <span>
+              <span class="block text-sm font-semibold">{t.name}</span>
+              <span class="block text-xs text-muted">{t.role}</span>
+            </span>
+          </figcaption>
+        </figure>
+      ))}
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing" class="scroll-mt-20 border-y border-line bg-surface-2/50">
+    <div class="mx-auto max-w-6xl px-5 py-24">
+      <div class="text-center">
+        <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">Pricing</p>
+        <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">Simple, one-time licenses</h2>
+        <p data-reveal style="transition-delay:160ms" class="mx-auto mt-3 max-w-md text-muted">No subscriptions. Pay once, own it, get lifetime updates.</p>
+      </div>
+      <div class="mt-12 grid gap-6 lg:grid-cols-3">
+        {tiers.map((tier, i) => (
+          <div data-reveal style={`transition-delay:${i * 90}ms`} class:list={['relative flex flex-col rounded-3xl border bg-surface p-8', tier.popular ? 'border-accent shadow-[0_30px_70px_-30px_rgba(109,74,255,0.5)]' : 'border-line']}>
+            {tier.popular && <span class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent px-3 py-1 text-xs font-medium text-white">Most popular</span>}
+            <h3 class="font-display text-lg font-semibold">{tier.name}</h3>
+            <p class="mt-1 text-sm text-muted">{tier.blurb}</p>
+            <p class="mt-5 font-display text-5xl font-bold">€{tier.price}<span class="text-base font-medium text-muted"> once</span></p>
+            <ul class="mt-6 flex-1 space-y-3 border-t border-line pt-6 text-sm">
+              {tier.features.map((f) => (<li class="flex gap-2.5"><span class="text-accent">✓</span>{f}</li>))}
+            </ul>
+            <a href="#" data-buy class:list={['mt-7 block rounded-full px-6 py-3 text-center font-medium transition', tier.popular ? 'bg-accent text-white hover:bg-accent-700' : 'bg-ink text-paper hover:bg-accent']}>Buy {tier.name}</a>
+          </div>
+        ))}
+      </div>
+      <p class="mt-6 text-center text-xs text-muted">Secure checkout · instant download · prices in EUR.</p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="mx-auto max-w-3xl px-5 py-24">
+    <div class="text-center">
+      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">FAQ</p>
+      <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">Good questions</h2>
+    </div>
+    <div class="mt-10 space-y-3">
+      {faqs.map(([q, a], i) => (
+        <details data-reveal style={`transition-delay:${Math.min(i, 4) * 50}ms`} class="group rounded-2xl border border-line bg-surface px-6 [&[open]]:shadow-[0_18px_40px_-25px_rgba(14,14,18,0.3)]">
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-5 font-medium">
+            {q}
+            <span class="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-surface-2 text-accent transition group-open:rotate-45">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            </span>
+          </summary>
+          <p class="pb-5 text-sm leading-relaxed text-muted">{a}</p>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <!-- NEWSLETTER -->
+  <section class="mx-auto max-w-6xl px-5 pb-24">
+    <div data-reveal-scale class="overflow-hidden rounded-3xl border border-line bg-surface p-10 sm:p-14">
+      <div class="grid items-center gap-8 lg:grid-cols-2">
+        <div>
+          <h2 class="font-display text-3xl font-bold sm:text-4xl">New templates, first.</h2>
+          <p class="mt-3 max-w-md text-muted">Join the list for launch announcements, new platforms and the occasional discount. No spam.</p>
+        </div>
+        <form name="newsletter" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="/thanks" class="flex flex-col gap-3 sm:flex-row">
+          <input type="hidden" name="form-name" value="newsletter" />
+          <p class="hidden"><label>Don't fill: <input name="bot-field" /></label></p>
+          <input type="email" name="email" required placeholder="you@brand.com" class="w-full rounded-full border border-line bg-paper px-5 py-3.5 outline-none transition focus:border-accent" />
+          <button type="submit" class="shrink-0 rounded-full bg-ink px-6 py-3.5 font-medium text-paper transition hover:bg-accent">Notify me</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- CUSTOM / FINAL CTA -->
   <section class="mx-auto max-w-6xl px-5 pb-28">
-    <div data-reveal-scale class="relative overflow-hidden rounded-[2rem] border border-line bg-surface px-8 py-20 text-center sm:px-16">
-      <div class="orb left-1/2 top-0 h-72 w-72 -translate-x-1/2" style="background:rgba(124,92,255,0.35)"></div>
-      <h2 class="relative font-display text-4xl font-bold sm:text-5xl">Ready to launch <span class="text-grad">something beautiful</span>?</h2>
-      <p class="relative mx-auto mt-4 max-w-md text-paper/65">Browse the catalogue or tell us what you need — we build custom too.</p>
+    <div data-reveal-scale class="relative overflow-hidden rounded-[2rem] bg-ink px-8 py-20 text-center text-paper sm:px-16">
+      <div class="orb left-1/2 top-0 h-72 w-72 -translate-x-1/2" style="background:rgba(109,74,255,0.45)"></div>
+      <p class="relative text-sm font-medium uppercase tracking-[0.2em] text-accent-2">Custom work</p>
+      <h2 class="relative mt-3 font-display text-4xl font-bold sm:text-5xl">Need something <span class="text-grad">made to measure</span>?</h2>
+      <p class="relative mx-auto mt-4 max-w-md text-paper/65">We design and build custom templates and full storefronts. Tell us about your project.</p>
       <div class="relative mt-9 flex flex-wrap justify-center gap-4">
-        <a href="/templates" class="rounded-full bg-paper px-7 py-3.5 font-medium text-ink transition hover:bg-accent hover:text-white">Browse templates</a>
-        <a href="/contact" class="rounded-full border border-line-strong px-7 py-3.5 font-medium transition hover:bg-surface-2">Start a project</a>
+        <a href="/contact" class="rounded-full bg-paper px-7 py-3.5 font-medium text-ink transition hover:bg-accent hover:text-white">Start a project</a>
+        <a href="/templates" class="rounded-full border border-white/25 px-7 py-3.5 font-medium transition hover:bg-white/10">Browse templates</a>
       </div>
     </div>
   </section>

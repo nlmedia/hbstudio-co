@@ -21,14 +21,14 @@ import Base from '../layouts/Base.astro';
 
       <div class="grid gap-5 sm:grid-cols-2">
         <label class="grid gap-2 text-sm font-medium">Name
-          <input type="text" name="name" required class="rounded-xl border border-line bg-surface px-4 py-3 font-normal text-paper outline-none transition focus:border-accent" />
+          <input type="text" name="name" required class="rounded-xl border border-line bg-surface px-4 py-3 font-normal text-ink outline-none transition focus:border-accent" />
         </label>
         <label class="grid gap-2 text-sm font-medium">Email
-          <input type="email" name="email" required class="rounded-xl border border-line bg-surface px-4 py-3 font-normal text-paper outline-none transition focus:border-accent" />
+          <input type="email" name="email" required class="rounded-xl border border-line bg-surface px-4 py-3 font-normal text-ink outline-none transition focus:border-accent" />
         </label>
       </div>
       <label class="grid gap-2 text-sm font-medium">Subject
-        <select name="subject" class="rounded-xl border border-line bg-surface px-4 py-3 font-normal text-paper outline-none transition focus:border-accent">
+        <select name="subject" class="rounded-xl border border-line bg-surface px-4 py-3 font-normal text-ink outline-none transition focus:border-accent">
           <option>Template question</option>
           <option>Custom project</option>
           <option>Support</option>
@@ -36,9 +36,9 @@ import Base from '../layouts/Base.astro';
         </select>
       </label>
       <label class="grid gap-2 text-sm font-medium">Message
-        <textarea name="message" rows="6" required class="rounded-xl border border-line bg-surface px-4 py-3 font-normal text-paper outline-none transition focus:border-accent"></textarea>
+        <textarea name="message" rows="6" required class="rounded-xl border border-line bg-surface px-4 py-3 font-normal text-ink outline-none transition focus:border-accent"></textarea>
       </label>
-      <button type="submit" class="justify-self-start rounded-full bg-paper px-7 py-3 font-medium text-ink transition hover:bg-accent hover:text-white">Send message</button>
+      <button type="submit" class="justify-self-start rounded-full bg-ink px-7 py-3 font-medium text-paper transition hover:bg-accent">Send message</button>
     </form>
   </section>
 </Base>

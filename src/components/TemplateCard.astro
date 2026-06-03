@@ -13,7 +13,7 @@ const soon = d.status === 'coming-soon';
       <img src={d.cover} alt={d.title} loading="lazy" class="h-full w-full object-cover object-top transition duration-[650ms] ease-out group-hover:scale-[1.06]" />
     ) : (
       <div class="flex h-full w-full items-center justify-center">
-        <span class="font-display text-3xl font-bold text-paper/10">{d.title}</span>
+        <span class="font-display text-3xl font-bold text-ink/10">{d.title}</span>
       </div>
     )}
     <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/40 to-transparent opacity-0 transition group-hover:opacity-100"></div>

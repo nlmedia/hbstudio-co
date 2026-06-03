@@ -15,9 +15,9 @@ const all = (await getCollection('templates')).sort((a, b) => a.data.order - b.d
       <p data-reveal style="transition-delay:160ms" class="mt-4 max-w-xl text-muted">Conversion-ready templates, designed and built in-house. Filter by platform.</p>
 
       <nav data-reveal style="transition-delay:240ms" class="mt-9 flex flex-wrap gap-2">
-        <a href="/templates" class="rounded-full bg-paper px-4 py-2 text-sm font-medium text-ink">All</a>
+        <a href="/templates" class="rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper">All</a>
         {CMS_ORDER.map((k) => (
-          <a href={`/category/${k}`} class="rounded-full border border-line px-4 py-2 text-sm font-medium text-paper/65 transition hover:border-line-strong hover:text-paper">{CMS[k].label}</a>
+          <a href={`/category/${k}`} class="rounded-full border border-line px-4 py-2 text-sm font-medium text-ink/65 transition hover:border-line-strong hover:text-ink">{CMS[k].label}</a>
         ))}
       </nav>
     </div>
