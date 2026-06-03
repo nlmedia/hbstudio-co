@@ -1,0 +1,39 @@
+---
+import { CMS } from '../data/cms';
+interface Props { entry: any; }
+const { entry } = Astro.props;
+const d = entry.data;
+const cms = CMS[d.cms as keyof typeof CMS];
+const href = `/templates/${entry.id}`;
+const soon = d.status === 'coming-soon';
+---
+<a href={href} class="group block overflow-hidden rounded-2xl border border-line bg-white transition hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(14,14,18,0.12)]">
+  <div class="relative aspect-[16/11] overflow-hidden bg-paper-dim">
+    {d.cover ? (
+      <img src={d.cover} alt={d.title} loading="lazy" class="h-full w-full object-cover object-top transition duration-500 group-hover:scale-[1.04]" />
+    ) : (
+      <div class="flex h-full w-full items-center justify-center">
+        <span class="font-display text-3xl font-bold text-ink/15">{d.title}</span>
+      </div>
+    )}
+    <span class="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-xs font-medium shadow-sm" style={`color:${cms.accent}`}>
+      <span class="h-2 w-2 rounded-full" style={`background:${cms.accent}`}></span>{cms.label}
+    </span>
+    {soon && <span class="absolute right-3 top-3 rounded-full bg-ink px-2.5 py-1 text-xs font-medium text-paper">Coming soon</span>}
+  </div>
+  <div class="p-5">
+    <div class="flex items-baseline justify-between gap-3">
+      <h3 class="font-display text-lg font-semibold">{d.title}</h3>
+      {d.price != null ? (
+        <span class="shrink-0 font-display text-lg font-bold">{d.currency}{d.price}</span>
+      ) : (
+        <span class="shrink-0 text-sm text-muted">—</span>
+      )}
+    </div>
+    <p class="mt-1 text-sm text-muted">{d.tagline}</p>
+    <span class="mt-3 inline-flex items-center gap-1 text-sm font-medium text-accent">
+      {soon ? 'Notify me' : 'View template'}
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="transition group-hover:translate-x-0.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </span>
+  </div>
+</a>

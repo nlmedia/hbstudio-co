@@ -1,0 +1,18 @@
+# build output
+dist/
+# dependencies
+node_modules/
+# astro
+.astro/
+# env / secrets
+.env
+.env.*
+# logs
+*.log
+npm-debug.log*
+# os / editor
+.DS_Store
+.vscode/
+.idea/
+# netlify
+.netlify/

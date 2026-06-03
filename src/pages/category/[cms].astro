@@ -1,0 +1,51 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import TemplateCard from '../../components/TemplateCard.astro';
+import { CMS, CMS_ORDER } from '../../data/cms';
+
+export async function getStaticPaths() {
+  return CMS_ORDER.map((cms) => ({ params: { cms } }));
+}
+
+const { cms } = Astro.params;
+const c = CMS[cms as keyof typeof CMS];
+const all = (await getCollection('templates'))
+  .filter((t) => t.data.cms === cms)
+  .sort((a, b) => a.data.order - b.data.order);
+---
+<Base title={`${c.label} templates — HB Studio Co`} description={c.blurb}>
+  <section class="border-b border-line" style={`background:linear-gradient(180deg, ${c.accent}14, transparent)`}>
+    <div class="mx-auto max-w-6xl px-5 py-16">
+      <nav class="flex flex-wrap gap-2">
+        <a href="/templates" class="rounded-full border border-line px-4 py-2 text-sm font-medium text-ink/70 transition hover:border-ink hover:text-ink">All</a>
+        {CMS_ORDER.map((k) => (
+          <a href={`/category/${k}`} class:list={['rounded-full px-4 py-2 text-sm font-medium transition', k === cms ? 'bg-ink text-paper' : 'border border-line text-ink/70 hover:border-ink hover:text-ink']}>{CMS[k].label}</a>
+        ))}
+      </nav>
+      <div class="mt-8 flex items-center gap-4">
+        <span class="grid h-14 w-14 place-items-center rounded-2xl text-white" style={`background:${c.accent}`}>
+          <span class="font-display text-2xl font-bold">{c.label[0]}</span>
+        </span>
+        <div>
+          <h1 class="font-display text-4xl font-bold sm:text-5xl">{c.label}</h1>
+          <p class="mt-1 text-muted">{c.blurb}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mx-auto max-w-6xl px-5 py-14">
+    {all.length > 0 ? (
+      <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {all.map((entry) => <TemplateCard entry={entry} />)}
+      </div>
+    ) : (
+      <div class="rounded-2xl border border-dashed border-line bg-white p-12 text-center">
+        <h2 class="font-display text-2xl font-semibold">{c.label} templates are coming</h2>
+        <p class="mx-auto mt-2 max-w-md text-muted">We're crafting {c.label} templates with the same care as our Shopify work. Want to be first to know?</p>
+        <a href="/contact" class="mt-6 inline-block rounded-full bg-ink px-6 py-3 font-medium text-paper transition hover:bg-accent">Notify me</a>
+      </div>
+    )}
+  </section>
+</Base>

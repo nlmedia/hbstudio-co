@@ -1,0 +1,117 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import TemplateCard from '../components/TemplateCard.astro';
+import { CMS, CMS_ORDER } from '../data/cms';
+
+const all = (await getCollection('templates')).sort((a, b) => a.data.order - b.data.order);
+const featured = all.filter((t) => t.data.featured || t.data.status === 'available').slice(0, 3);
+const counts = Object.fromEntries(CMS_ORDER.map((k) => [k, all.filter((t) => t.data.cms === k && t.data.status === 'available').length]));
+---
+<Base>
+  <!-- HERO -->
+  <section class="relative overflow-hidden bg-ink text-paper">
+    <div class="pointer-events-none absolute -right-40 -top-40 h-[36rem] w-[36rem] rounded-full bg-accent/30 blur-[120px]"></div>
+    <div class="pointer-events-none absolute -bottom-40 -left-40 h-[30rem] w-[30rem] rounded-full bg-accent/20 blur-[120px]"></div>
+    <div class="relative mx-auto max-w-6xl px-5 py-24 sm:py-32">
+      <p class="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1 text-xs tracking-wide text-paper/70">
+        <span class="h-1.5 w-1.5 rounded-full bg-accent"></span> Creative studio · Premium templates
+      </p>
+      <h1 class="mt-6 max-w-4xl font-display text-5xl font-bold leading-[1.02] sm:text-7xl">
+        Templates that make your store look <span class="text-grad">expensive</span>.
+      </h1>
+      <p class="mt-6 max-w-xl text-lg text-paper/70">
+        HB Studio Co designs fast, conversion-ready website templates for Shopify, WordPress,
+        WooCommerce — and more platforms on the way. One studio, every stack.
+      </p>
+      <div class="mt-8 flex flex-wrap items-center gap-4">
+        <a href="/templates" class="rounded-full bg-paper px-6 py-3 font-medium text-ink transition hover:bg-accent hover:text-white">Browse templates</a>
+        <a href="/about" class="rounded-full border border-white/25 px-6 py-3 font-medium transition hover:bg-white/10">About the studio</a>
+      </div>
+      <dl class="mt-14 grid max-w-lg grid-cols-3 gap-6 border-t border-white/10 pt-8">
+        <div><dt class="font-display text-3xl font-bold">{all.filter(t=>t.data.status==='available').length}+</dt><dd class="text-sm text-paper/60">Templates</dd></div>
+        <div><dt class="font-display text-3xl font-bold">4</dt><dd class="text-sm text-paper/60">Platforms</dd></div>
+        <div><dt class="font-display text-3xl font-bold">0</dt><dd class="text-sm text-paper/60">Paid apps</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <!-- CATEGORIES -->
+  <section class="mx-auto max-w-6xl px-5 py-20">
+    <div class="flex items-end justify-between gap-4">
+      <div>
+        <p class="text-sm font-medium uppercase tracking-[0.2em] text-accent">By platform</p>
+        <h2 class="mt-2 font-display text-3xl font-bold sm:text-4xl">Pick your stack</h2>
+      </div>
+      <a href="/templates" class="hidden text-sm font-medium text-accent hover:underline sm:block">All templates →</a>
+    </div>
+    <div class="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      {CMS_ORDER.map((k) => {
+        const c = CMS[k];
+        return (
+          <a href={`/category/${k}`} class="group relative overflow-hidden rounded-2xl border border-line bg-white p-6 transition hover:-translate-y-1 hover:shadow-[0_24px_60px_rgba(14,14,18,0.10)]">
+            <span class="grid h-11 w-11 place-items-center rounded-xl text-white" style={`background:${c.accent}`}>
+              <span class="font-display text-lg font-bold">{c.label[0]}</span>
+            </span>
+            <h3 class="mt-4 font-display text-xl font-semibold">{c.label}</h3>
+            <p class="mt-1 text-sm text-muted">{c.blurb}</p>
+            <p class="mt-4 text-sm font-medium" style={`color:${c.accent}`}>
+              {c.available ? `${counts[k]} available →` : 'Coming soon'}
+            </p>
+          </a>
+        );
+      })}
+    </div>
+  </section>
+
+  <!-- FEATURED -->
+  <section class="bg-paper-dim/60">
+    <div class="mx-auto max-w-6xl px-5 py-20">
+      <div class="flex items-end justify-between gap-4">
+        <div>
+          <p class="text-sm font-medium uppercase tracking-[0.2em] text-accent">Featured</p>
+          <h2 class="mt-2 font-display text-3xl font-bold sm:text-4xl">Fresh from the studio</h2>
+        </div>
+        <a href="/templates" class="hidden text-sm font-medium text-accent hover:underline sm:block">View all →</a>
+      </div>
+      <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {featured.map((entry) => <TemplateCard entry={entry} />)}
+      </div>
+    </div>
+  </section>
+
+  <!-- WHY -->
+  <section class="mx-auto max-w-6xl px-5 py-24">
+    <p class="text-sm font-medium uppercase tracking-[0.2em] text-accent">Why HB Studio Co</p>
+    <h2 class="mt-2 max-w-2xl font-display text-3xl font-bold sm:text-4xl">Built like products, not just pretty themes.</h2>
+    <div class="mt-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      {[
+        ['⚡', 'Fast by design', 'Inlined critical CSS, lazy responsive images and Core-Web-Vitals-minded builds.'],
+        ['🧩', 'No paid apps', 'The features you need are built in — no monthly app subscriptions.'],
+        ['🌍', 'Multilingual', 'Storefront copy translated and ready for international stores.'],
+        ['♿', 'Accessible', 'Keyboard navigation, visible focus and reduced-motion support throughout.'],
+        ['🎨', 'Truly editable', 'Sections, blocks and presets — restyle everything without code.'],
+        ['📖', 'Real documentation', 'Illustrated, bilingual guides and a demo-rebuild appendix.'],
+      ].map(([icon, title, body]) => (
+        <div class="rounded-2xl border border-line bg-white p-6">
+          <div class="grid h-11 w-11 place-items-center rounded-xl bg-accent-soft text-xl">{icon}</div>
+          <h3 class="mt-4 font-display text-lg font-semibold">{title}</h3>
+          <p class="mt-1 text-sm text-muted">{body}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="mx-auto max-w-6xl px-5 pb-24">
+    <div class="relative overflow-hidden rounded-3xl bg-ink px-8 py-16 text-center text-paper sm:px-16">
+      <div class="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-accent/30 blur-[100px]"></div>
+      <h2 class="relative font-display text-3xl font-bold sm:text-4xl">Ready to launch something beautiful?</h2>
+      <p class="relative mx-auto mt-3 max-w-md text-paper/70">Browse the catalogue or tell us what you need — we build custom too.</p>
+      <div class="relative mt-8 flex flex-wrap justify-center gap-4">
+        <a href="/templates" class="rounded-full bg-paper px-6 py-3 font-medium text-ink transition hover:bg-accent hover:text-white">Browse templates</a>
+        <a href="/contact" class="rounded-full border border-white/25 px-6 py-3 font-medium transition hover:bg-white/10">Start a project</a>
+      </div>
+    </div>
+  </section>
+</Base>

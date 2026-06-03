@@ -1,0 +1,44 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Contact — HB Studio Co" description="Get in touch with HB Studio Co about templates, custom work or support.">
+  <section class="mx-auto max-w-3xl px-5 py-20">
+    <p class="text-sm font-medium uppercase tracking-[0.2em] text-accent">Contact</p>
+    <h1 class="mt-2 font-display text-4xl font-bold sm:text-5xl">Let's talk</h1>
+    <p class="mt-3 max-w-xl text-muted">A question about a template, a custom project, or support? Send a message — we usually reply within 1–2 business days.</p>
+
+    <!-- Netlify Forms: handled automatically on deploy. No backend needed. -->
+    <form
+      name="contact"
+      method="POST"
+      data-netlify="true"
+      netlify-honeypot="bot-field"
+      action="/thanks"
+      class="mt-10 grid gap-5"
+    >
+      <input type="hidden" name="form-name" value="contact" />
+      <p class="hidden"><label>Don't fill this out: <input name="bot-field" /></label></p>
+
+      <div class="grid gap-5 sm:grid-cols-2">
+        <label class="grid gap-2 text-sm font-medium">Name
+          <input type="text" name="name" required class="rounded-xl border border-line bg-white px-4 py-3 font-normal outline-none focus:border-accent" />
+        </label>
+        <label class="grid gap-2 text-sm font-medium">Email
+          <input type="email" name="email" required class="rounded-xl border border-line bg-white px-4 py-3 font-normal outline-none focus:border-accent" />
+        </label>
+      </div>
+      <label class="grid gap-2 text-sm font-medium">Subject
+        <select name="subject" class="rounded-xl border border-line bg-white px-4 py-3 font-normal outline-none focus:border-accent">
+          <option>Template question</option>
+          <option>Custom project</option>
+          <option>Support</option>
+          <option>Other</option>
+        </select>
+      </label>
+      <label class="grid gap-2 text-sm font-medium">Message
+        <textarea name="message" rows="6" required class="rounded-xl border border-line bg-white px-4 py-3 font-normal outline-none focus:border-accent"></textarea>
+      </label>
+      <button type="submit" class="justify-self-start rounded-full bg-ink px-7 py-3 font-medium text-paper transition hover:bg-accent">Send message</button>
+    </form>
+  </section>
+</Base>

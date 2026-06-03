@@ -1,0 +1,26 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import TemplateCard from '../../components/TemplateCard.astro';
+import { CMS, CMS_ORDER } from '../../data/cms';
+
+const all = (await getCollection('templates')).sort((a, b) => a.data.order - b.data.order);
+---
+<Base title="All templates — HB Studio Co" description="Browse premium templates for Shopify, WordPress, WooCommerce and more.">
+  <section class="mx-auto max-w-6xl px-5 py-16">
+    <p class="text-sm font-medium uppercase tracking-[0.2em] text-accent">Catalogue</p>
+    <h1 class="mt-2 font-display text-4xl font-bold sm:text-5xl">All templates</h1>
+    <p class="mt-3 max-w-xl text-muted">Conversion-ready templates, designed and built in-house. Filter by platform.</p>
+
+    <nav class="mt-8 flex flex-wrap gap-2">
+      <a href="/templates" class="rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper">All</a>
+      {CMS_ORDER.map((k) => (
+        <a href={`/category/${k}`} class="rounded-full border border-line px-4 py-2 text-sm font-medium text-ink/70 transition hover:border-ink hover:text-ink">{CMS[k].label}</a>
+      ))}
+    </nav>
+
+    <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {all.map((entry) => <TemplateCard entry={entry} />)}
+    </div>
+  </section>
+</Base>
