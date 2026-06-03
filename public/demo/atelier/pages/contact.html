@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="en">
+  <head>
+  <base href="/demo/atelier/">
+    
+    
+<style data-shopify>
+  
+  @font-face {
+  font-family: "Playfair Display";
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url("https://atelier-demo-xiek93bo.myshopify.com/cdn/fonts/playfair_display/playfairdisplay_n4.9980f3e16959dc89137cc1369bfc3ae98af1deb9.woff2") format("woff2"),
+       url("https://atelier-demo-xiek93bo.myshopify.com/cdn/fonts/playfair_display/playfairdisplay_n4.c562b7c8e5637886a811d2a017f9e023166064ee.woff") format("woff");
+}
+
+  @font-face {
+  font-family: "Playfair Display";
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url("https://atelier-demo-xiek93bo.myshopify.com/cdn/fonts/playfair_display/playfairdisplay_n7.592b3435e0fff3f50b26d410c73ae7ec893f6910.woff2") format("woff2"),
+       url("https://atelier-demo-xiek93bo.myshopify.com/cdn/fonts/playfair_display/playfairdisplay_n7.998b1417dec711058cce2abb61a0b8c59066498f.woff") format("woff");
+}
+
+  @font-face {
+  font-family: Jost;
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url("https://atelier-demo-xiek93bo.myshopify.com/cdn/fonts/jost/jost_n4.d47a1b6347ce4a4c9f437608011273009d91f2b7.woff2") format("woff2"),
+       url("https://atelier-demo-xiek93bo.myshopify.com/cdn/fonts/jost/jost_n4.791c46290e672b3f85c3d1c651ef2efa3819eadd.woff") format("woff");
+}
+
+  @font-face {
+  font-family: Jost;
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url("https://atelier-demo-xiek93bo.myshopify.com/cdn/fonts/jost/jost_n7.921dc18c13fa0b0c94c5e2517ffe06139c3615a3.woff2") format("woff2"),
+       url("https://atelier-demo-xiek93bo.myshopify.com/cdn/fonts/jost/jost_n7.cbfc16c98c1e195f46c536e775e4e959c5f2f22b.woff") format("woff");
+}
+
+  @font-face {
+  font-family: Jost;
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+  src: url("https://atelier-demo-xiek93bo.myshopify.com/cdn/fonts/jost/jost_i4.b690098389649750ada222b9763d55796c5283a5.woff2") format("woff2"),
+       url("https://atelier-demo-xiek93bo.myshopify.com/cdn/fonts/jost/jost_i4.fd766415a47e50b9e391ae7ec04e2ae25e7e28b0.woff") format("woff");
+}
+
+
+  :root {
+    /* Typography */
+    --font-heading--family: "Playfair Display", serif;
+    --font-heading--weight: 400;
+    --font-body--family: Jost, sans-serif;
+    --font-body--weight: 400;
+    --heading-scale: 1.1;
+    --body-scale: 1.0;
+    --heading-transform: none;
+
+    /* Layout */
+    --page-width: 120rem;
+    --page-margin: 32px;
+    --section-spacing: 0px;
+
+    /* Radii */
+    --style-border-radius-inputs: 6px;
+    --button-radius: 6px;
+    --media-radius: 8px;
+
+    /* Color sources */
+    --color-bg-base: #FAFAF8;
+    --color-fg-base: #1A1A1A;
+    --color-accent: #B08D57;
+    --color-contrast-bg: #1A1A1A;
+    --color-contrast-fg: #FAFAF8;
+    --color-muted-bg: #E8E0D5;
+
+    /* Active scheme (default = light/base) */
+    --color-background: var(--color-bg-base);
+    --color-foreground: var(--color-fg-base);
+
+    /* RGB triplets for opacity (base) */
+    --rgb-foreground: 26 26 26;
+    --rgb-background: 250 250 248;
+  }
+
+  /* Color schemes — sections opt in via class */
+  .scheme-contrast {
+    --color-background: var(--color-contrast-bg);
+    --color-foreground: var(--color-contrast-fg);
+    --rgb-foreground: 250 250 248;
+    --rgb-background: 26 26 26;
+  }
+  .scheme-muted {
+    --color-background: var(--color-muted-bg);
+    --color-foreground: var(--color-fg-base);
+    --rgb-background: 232 224 213;
+  }
+  .scheme-accent {
+    --color-background: var(--color-accent);
+    --color-foreground: var(--color-contrast-fg);
+  }
+</style>
+
+
+    
+    
+      <link rel="preconnect" href="https://fonts.shopifycdn.com" crossorigin>
+
+      
+      <link href="https://atelier-demo-xiek93bo.myshopify.com/cdn/fonts/jost/jost_n4.d47a1b6347ce4a4c9f437608011273009d91f2b7.woff2" as="font" crossorigin="anonymous" rel="preload">
+    
+
+    
+    <link href="https://atelier-demo-xiek93bo.myshopify.com/cdn/shop/t/4/assets/critical.css?v=41314887086222527001780477272" rel="stylesheet" type="text/css" media="all" />
+
+    
+    <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<meta
+  property="og:site_name"
+  content="l&#39;Atelier"
+>
+<meta
+  property="og:url"
+  content="https://atelier-demo-xiek93bo.myshopify.com/pages/contact"
+>
+<meta
+  property="og:title"
+  content="Contact"
+>
+<meta
+  property="og:type"
+  content="website"
+>
+<meta
+  property="og:description"
+  content="l&#39;Atelier"
+><meta
+  name="twitter:card"
+  content="summary_large_image"
+>
+<meta
+  name="twitter:title"
+  content="Contact"
+>
+<meta
+  name="twitter:description"
+  content="l&#39;Atelier"
+>
+
+<title>
+  Contact
+ &ndash; l&#39;Atelier</title>
+
+<link
+  rel="canonical"
+  href="https://atelier-demo-xiek93bo.myshopify.com/pages/contact"
+>
+
+
+
+
+    <script>window.performance && window.performance.mark && window.performance.mark('shopify.content_for_header.start');</script><meta id="shopify-digital-wallet" name="shopify-digital-wallet" content="/98721988911/digital_wallets/dialog">
+<link rel="alternate" hreflang="x-default" href="https://atelier-demo-xiek93bo.myshopify.com/pages/contact">
+<link rel="alternate" hreflang="en" href="https://atelier-demo-xiek93bo.myshopify.com/pages/contact">
+<link rel="alternate" hreflang="es" href="https://atelier-demo-xiek93bo.myshopify.com/es/pages/contact">
+<link rel="alternate" hreflang="fr" href="https://atelier-demo-xiek93bo.myshopify.com/fr/pages/contact">
+<script async="async" src="/checkouts/internal/preloads.js?locale=en-US"></script>
+<script id="shopify-features" type="application/json">{"accessToken":"af7e85b2064ea27924e2249336f6ba7f","betas":["rich-media-storefront-analytics"],"domain":"atelier-demo-xiek93bo.myshopify.com","predictiveSearch":true,"shopId":98721988911,"locale":"en"}</script>
+<script>var Shopify = Shopify || {};
+Shopify.shop = "atelier-demo-xiek93bo.myshopify.com";
+Shopify.locale = "en";
+Shopify.currency = {"active":"USD","rate":"1.0"};
+Shopify.country = "US";
+Shopify.theme = {"name":"Development (405ed7-MacBook-Pro-de-Belhia-2)","id":185938936111,"schema_name":"Atelier","schema_version":"1.0.0","theme_store_id":null,"role":"development"};
+Shopify.theme.handle = "null";
+Shopify.theme.style = {"id":null,"handle":null};
+Shopify.cdnHost = "atelier-demo-xiek93bo.myshopify.com/cdn";
+Shopify.routes = Shopify.routes || {};
+Shopify.routes.root = "/";
+Shopify.previewMode = true;
+Shopify.shopJsCdnBaseUrl = "https://cdn.shopify.com/shopifycloud/shop-js";
+Shopify.SignInWithShop = Shopify.SignInWithShop || {};
+Shopify.SignInWithShop.User = Shopify.SignInWithShop.User || {};
+Shopify.SignInWithShop.User.recognized = false;</script>
+<script type="module">!function(o){(o.Shopify=o.Shopify||{}).modules=!0}(window);</script>
+<script>!function(o){function n(){var o=[];function n(){o.push(Array.prototype.slice.apply(arguments))}return n.q=o,n}var t=o.Shopify=o.Shopify||{};t.loadFeatures=n(),t.autoloadFeatures=n()}(window);</script>
+<script>
+  window.Shopify = window.Shopify || {};
+  window.Shopify.SignInWithShop = window.Shopify.SignInWithShop || {};
+  window.Shopify.SignInWithShop.assetMetrics = { sampleRate: 0.01 };
+  window.Shopify.SignInWithShop.eligible = true;
+</script>
+<script id="shop-js-analytics" type="application/json">{"pageType":"page"}</script>
+<script defer="defer" async type="module" src="https://atelier-demo-xiek93bo.myshopify.com/cdn/shopifycloud/shop-js/modules/v2/loader.init-shop-cart-sync.en.esm.js"></script>
+<script type="module">
+  await import("https://atelier-demo-xiek93bo.myshopify.com/cdn/shopifycloud/shop-js/modules/v2/loader.init-shop-cart-sync.en.esm.js");
+
+  window.Shopify.SignInWithShop?.initShopCartSync?.({"fedCMEnabled":true,"windoidEnabled":true});
+
+</script>
+<script>
+  window.Shopify = window.Shopify || {};
+  if (!window.Shopify.featureAssets) window.Shopify.featureAssets = {};
+  window.Shopify.featureAssets['shop-js'] = {"shop-cash-offers":["modules/v2/loader.shop-cash-offers.en.esm.js"],"shop-button":["modules/v2/loader.shop-button.en.esm.js"],"listener":["modules/v2/loader.listener.en.esm.js"],"init-shop-cart-sync":["modules/v2/loader.init-shop-cart-sync.en.esm.js"],"init-shop-user-recognition":["modules/v2/loader.init-shop-user-recognition.en.esm.js"],"init-windoid":["modules/v2/loader.init-windoid.en.esm.js"],"init-fed-cm":["modules/v2/loader.init-fed-cm.en.esm.js"],"checkout-modal":["modules/v2/loader.checkout-modal.en.esm.js"],"init-shop-email-lookup-coordinator":["modules/v2/loader.init-shop-email-lookup-coordinator.en.esm.js"],"avatar":["modules/v2/loader.avatar.en.esm.js"],"shop-toast-manager":["modules/v2/loader.shop-toast-manager.en.esm.js"],"init-customer-accounts-sign-up":["modules/v2/loader.init-customer-accounts-sign-up.en.esm.js"],"shop-login":["modules/v2/loader.shop-login.en.esm.js"],"init-shop-for-new-customer-accounts":["modules/v2/loader.init-shop-for-new-customer-accounts.en.esm.js"],"init-customer-accounts":["modules/v2/loader.init-customer-accounts.en.esm.js"],"shop-login-button":["modules/v2/loader.shop-login-button.en.esm.js"],"shop-user-recognition":["modules/v2/loader.shop-user-recognition.en.esm.js"],"shop-cart-sync":["modules/v2/loader.shop-cart-sync.en.esm.js"],"pay-button":["modules/v2/loader.pay-button.en.esm.js"],"shop-follow-button":["modules/v2/loader.shop-follow-button.en.esm.js"],"lead-capture":["modules/v2/loader.lead-capture.en.esm.js"],"payment-terms":["modules/v2/loader.payment-terms.en.esm.js"]};
+</script>
+<script id="hot-reload-client" src="https://atelier-demo-xiek93bo.myshopify.com/cdn/shopifycloud/theme-hot-reload/theme-hot-reload.js" defer crossorigin></script>
+<script id="__st">var __st={"a":98721988911,"offset":-14400,"reqid":"702eade8-5de0-4cdb-8688-4094367fb095-1780485748","pageurl":"atelier-demo-xiek93bo.myshopify.com\/pages\/contact?_fd=0\u0026pb=0","s":"pages-158573363503","u":"54aa95d2efb2","p":"page","rtyp":"page","rid":158573363503};</script>
+<script>window.ShopifyPaypalV4VisibilityTracking = true;</script>
+<script id="captcha-bootstrap">!function(){'use strict';const t='contact',e='account',n='new_comment',o=[[t,t],['blogs',n],['comments',n],[t,'customer']],c=[[e,'customer_login'],[e,'guest_login'],[e,'recover_customer_password'],[e,'create_customer']],r=t=>t.map((([t,e])=>`form[action*='/${t}']:not([data-nocaptcha='true']) input[name='form_type'][value='${e}']`)).join(','),a=t=>()=>t?[...document.querySelectorAll(t)].map((t=>t.form)):[];function s(){const t=[...o],e=r(t);return a(e)}const i='password',u='form_key',d=['recaptcha-v3-token','g-recaptcha-response','h-captcha-response',i],f=()=>{try{return window.sessionStorage}catch{return}},m='__shopify_v',_=t=>t.elements[u];function p(t,e,n=!1){try{const o=window.sessionStorage,c=JSON.parse(o.getItem(e)),{data:r}=function(t){const{data:e,action:n}=t;return t[m]||n?{data:e,action:n}:{data:t,action:n}}(c);for(const[e,n]of Object.entries(r))t.elements[e]&&(t.elements[e].value=n);n&&o.removeItem(e)}catch(o){console.error('form repopulation failed',{error:o})}}const l='form_type',E='cptcha';function T(t){t.dataset[E]=!0}const w=window,h=w.document,L='Shopify',v='ce_forms',y='captcha';let A=!1;((t,e)=>{const n=(g='f06e6c50-85a8-45c8-87d0-21a2b65856fe',I='https://cdn.shopify.com/shopifycloud/storefront-forms-hcaptcha/ce_storefront_forms_captcha_hcaptcha.v1.5.2.iife.js',D={infoText:'Protected by hCaptcha',privacyText:'Privacy',termsText:'Terms'},(t,e,n)=>{const o=w[L][v],c=o.bindForm;if(c)return c(t,g,e,D).then(n);var r;o.q.push([[t,g,e,D],n]),r=I,A||(h.body.append(Object.assign(h.createElement('script'),{id:'captcha-provider',async:!0,src:r})),A=!0)});var g,I,D;w[L]=w[L]||{},w[L][v]=w[L][v]||{},w[L][v].q=[],w[L][y]=w[L][y]||{},w[L][y].protect=function(t,e){n(t,void 0,e),T(t)},Object.freeze(w[L][y]),function(t,e,n,w,h,L){const[v,y,A,g]=function(t,e,n){const i=e?o:[],u=t?c:[],d=[...i,...u],f=r(d),m=r(i),_=r(d.filter((([t,e])=>n.includes(e))));return[a(f),a(m),a(_),s()]}(w,h,L),I=t=>{const e=t.target;return e instanceof HTMLFormElement?e:e&&e.form},D=t=>v().includes(t);t.addEventListener('submit',(t=>{const e=I(t);if(!e)return;const n=D(e)&&!e.dataset.hcaptchaBound&&!e.dataset.recaptchaBound,o=_(e),c=g().includes(e)&&(!o||!o.value);(n||c)&&t.preventDefault(),c&&!n&&(function(t){try{if(!f())return;!function(t){const e=f();if(!e)return;const n=_(t);if(!n)return;const o=n.value;o&&e.removeItem(o)}(t);const e=Array.from(Array(32),(()=>Math.random().toString(36)[2])).join('');!function(t,e){_(t)||t.append(Object.assign(document.createElement('input'),{type:'hidden',name:u})),t.elements[u].value=e}(t,e),function(t,e){const n=f();if(!n)return;const o=[...t.querySelectorAll(`input[type='${i}']`)].map((({name:t})=>t)),c=[...d,...o],r={};for(const[a,s]of new FormData(t).entries())c.includes(a)||(r[a]=s);n.setItem(e,JSON.stringify({[m]:1,action:t.action,data:r}))}(t,e)}catch(e){console.error('failed to persist form',e)}}(e),e.submit())}));const S=(t,e)=>{t&&!t.dataset[E]&&(n(t,e.some((e=>e===t))),T(t))};for(const o of['focusin','change'])t.addEventListener(o,(t=>{const e=I(t);D(e)&&S(e,y())}));const B=e.get('form_key'),M=e.get(l),P=B&&M;t.addEventListener('DOMContentLoaded',(()=>{const t=y();if(P)for(const e of t)e.elements[l].value===M&&p(e,B);[...new Set([...A(),...v().filter((t=>'true'===t.dataset.shopifyCaptcha))])].forEach((e=>S(e,t)))}))}(h,new URLSearchParams(w.location.search),n,t,e,['guest_login'])})(!0,!0)}();</script>
+<script integrity="sha256-JjoPp5ZfB1sSAs5SQaol1x1GgvveM+BgmRzyDexInEQ=" data-source-attribution="shopify.loadfeatures" defer="defer" src="https://atelier-demo-xiek93bo.myshopify.com/cdn/shopifycloud/storefront/assets/storefront/load_feature-1bd60354.js" crossorigin="anonymous"></script>
+<script data-source-attribution="shopify.dynamic_checkout.dynamic.init">var Shopify=Shopify||{};Shopify.PaymentButton=Shopify.PaymentButton||{isStorefrontPortableWallets:!0,init:function(){window.Shopify.PaymentButton.init=function(){};var t=document.createElement("script");t.src="https://atelier-demo-xiek93bo.myshopify.com/cdn/shopifycloud/portable-wallets/latest/portable-wallets.en.js",t.type="module",document.head.appendChild(t)}};
+</script>
+<script data-source-attribution="shopify.dynamic_checkout.buyer_consent">
+  function portableWalletsHideBuyerConsent(e){var t=document.getElementById("shopify-buyer-consent"),n=document.getElementById("shopify-subscription-policy-button");t&&n&&(t.classList.add("hidden"),t.setAttribute("aria-hidden","true"),n.removeEventListener("click",e))}function portableWalletsShowBuyerConsent(e){var t=document.getElementById("shopify-buyer-consent"),n=document.getElementById("shopify-subscription-policy-button");t&&n&&(t.classList.remove("hidden"),t.removeAttribute("aria-hidden"),n.addEventListener("click",e))}window.Shopify?.PaymentButton&&(window.Shopify.PaymentButton.hideBuyerConsent=portableWalletsHideBuyerConsent,window.Shopify.PaymentButton.showBuyerConsent=portableWalletsShowBuyerConsent);
+</script>
+<script data-source-attribution="shopify.dynamic_checkout.cart.bootstrap">document.addEventListener("DOMContentLoaded",(function(){function t(){return document.querySelector("shopify-accelerated-checkout-cart, shopify-accelerated-checkout")}if(t())Shopify.PaymentButton.init();else{new MutationObserver((function(e,n){t()&&(Shopify.PaymentButton.init(),n.disconnect())})).observe(document.body,{childList:!0,subtree:!0})}}));
+</script>
+<script async="async" integrity="sha256-hlq21VGceRKy8z+Fjhropk1BwDPACP0RdQ5rBrATyUo=" src="//cdn.shopify.com/shopifycloud/storefront/assets/storefront/origin_trials-67b41cb9.js" crossorigin="anonymous"></script>
+<script id='scb4127' type='text/javascript' async='' src='https://atelier-demo-xiek93bo.myshopify.com/cdn/shopifycloud/privacy-banner/storefront-banner.js'></script><link rel="stylesheet" media="screen" href="https://atelier-demo-xiek93bo.myshopify.com/cdn/shop/t/4/compiled_assets/styles.css?v=179995907371281680211780477276">
+<script id="sections-script" data-sections="header,cart-drawer,newsletter-popup" defer="defer" src="https://atelier-demo-xiek93bo.myshopify.com/cdn/shop/t/4/compiled_assets/scripts.js?v=180524142042458548381780477277"></script>
+<script id="shopify-cfh-end">window.performance && window.performance.mark && window.performance.mark('shopify.content_for_header.end');</script>
+  <link href="https://monorail-edge.shopifysvc.com" rel="dns-prefetch">
+<script>(function(){if ("sendBeacon" in navigator && "performance" in window) {try {var session_token_from_headers = performance.getEntriesByType('navigation')[0].serverTiming.find(x => x.name == '_s').description;} catch {var session_token_from_headers = undefined;}var session_cookie_matches = document.cookie.match(/_shopify_s=([^;]*)/);var session_token_from_cookie = session_cookie_matches && session_cookie_matches.length === 2 ? session_cookie_matches[1] : "";var session_token = session_token_from_headers || session_token_from_cookie || "";function handle_abandonment_event(e) {var entries = performance.getEntries().filter(function(entry) {return /monorail-edge.shopifysvc.com/.test(entry.name);});if (!window.abandonment_tracked && entries.length === 0) {window.abandonment_tracked = true;var currentMs = Date.now();var navigation_start = performance.timing.navigationStart;var payload = {shop_id: 98721988911,url: window.location.href,navigation_start,duration: currentMs - navigation_start,session_token,page_type: "page"};window.navigator.sendBeacon("https://monorail-edge.shopifysvc.com/v1/produce", JSON.stringify({schema_id: "online_store_buyer_site_abandonment/1.1",payload: payload,metadata: {event_created_at_ms: currentMs,event_sent_at_ms: currentMs}}));}}window.addEventListener('pagehide', handle_abandonment_event);}}());</script>
+<script>
+  window.__TREKKIE_SHIM_QUEUE = window.__TREKKIE_SHIM_QUEUE || [];
+</script>
+<script id="web-pixels-manager-setup">(function(){var wpmLoader=function(){"use strict";return function(e,d,r,n){var o=arguments.length>4&&void 0!==arguments[4]?arguments[4]:{};if(!Boolean(null==(i=null==(a=window.Shopify)?void 0:a.analytics)?void 0:i.replayQueue)){var a,i;window.Shopify=window.Shopify||{};var t=window.Shopify;t.analytics=t.analytics||{};var s=t.analytics;s.replayQueue=[],s.publish=function(e,d,r){return s.replayQueue.push([e,d,r]),!0};try{self.performance.mark("wpm:start")}catch(e){}var l,u,c,m,p,f,h,g,y,w,v,b,S,P=(u=(l={modern:/Edge?\/(1{2}[4-9]|1[2-9]\d|[2-9]\d{2}|\d{4,})\.\d+(\.\d+|)|Firefox\/(1{2}[4-9]|1[2-9]\d|[2-9]\d{2}|\d{4,})\.\d+(\.\d+|)|Chrom(ium|e)\/(9{2}|\d{3,})\.\d+(\.\d+|)|(Maci|X1{2}).+ Version\/(15\.\d+|(1[6-9]|[2-9]\d|\d{3,})\.\d+)([,.]\d+|)( \(\w+\)|)( Mobile\/\w+|) Safari\/|Chrome.+OPR\/(9{2}|\d{3,})\.\d+\.\d+|(CPU[ +]OS|iPhone[ +]OS|CPU[ +]iPhone|CPU IPhone OS|CPU iPad OS)[ +]+(15[._]\d+|(1[6-9]|[2-9]\d|\d{3,})[._]\d+)([._]\d+|)|Android:?[ /-](13[3-9]|1[4-9]\d|[2-9]\d{2}|\d{4,})(\.\d+|)(\.\d+|)|Android.+Firefox\/(13[5-9]|1[4-9]\d|[2-9]\d{2}|\d{4,})\.\d+(\.\d+|)|Android.+Chrom(ium|e)\/(13[3-9]|1[4-9]\d|[2-9]\d{2}|\d{4,})\.\d+(\.\d+|)|SamsungBrowser\/([2-9]\d|\d{3,})\.\d+/,legacy:/Edge?\/(1[6-9]|[2-9]\d|\d{3,})\.\d+(\.\d+|)|Firefox\/(5[4-9]|[6-9]\d|\d{3,})\.\d+(\.\d+|)|Chrom(ium|e)\/(5[1-9]|[6-9]\d|\d{3,})\.\d+(\.\d+|)([\d.]+$|.*Safari\/(?![\d.]+ Edge\/[\d.]+$))|(Maci|X1{2}).+ Version\/(10\.\d+|(1[1-9]|[2-9]\d|\d{3,})\.\d+)([,.]\d+|)( \(\w+\)|)( Mobile\/\w+|) Safari\/|Chrome.+OPR\/(3[89]|[4-9]\d|\d{3,})\.\d+\.\d+|(CPU[ +]OS|iPhone[ +]OS|CPU[ +]iPhone|CPU IPhone OS|CPU iPad OS)[ +]+(10[._]\d+|(1[1-9]|[2-9]\d|\d{3,})[._]\d+)([._]\d+|)|Android:?[ /-](13[3-9]|1[4-9]\d|[2-9]\d{2}|\d{4,})(\.\d+|)(\.\d+|)|Mobile Safari.+OPR\/([89]\d|\d{3,})\.\d+\.\d+|Android.+Firefox\/(13[5-9]|1[4-9]\d|[2-9]\d{2}|\d{4,})\.\d+(\.\d+|)|Android.+Chrom(ium|e)\/(13[3-9]|1[4-9]\d|[2-9]\d{2}|\d{4,})\.\d+(\.\d+|)|Android.+(UC? ?Browser|UCWEB|U3)[ /]?(15\.([5-9]|\d{2,})|(1[6-9]|[2-9]\d|\d{3,})\.\d+)\.\d+|SamsungBrowser\/(5\.\d+|([6-9]|\d{2,})\.\d+)|Android.+MQ{2}Browser\/(14(\.(9|\d{2,})|)|(1[5-9]|[2-9]\d|\d{3,})(\.\d+|))(\.\d+|)|K[Aa][Ii]OS\/(3\.\d+|([4-9]|\d{2,})\.\d+)(\.\d+|)/}).modern,c=l.legacy,(m=navigator.userAgent).match(u)?"modern":m.match(c)?"legacy":"unknown"),C="modern"===P?"modern":"legacy",_=(null!=n?n:{modern:"",legacy:""})[C],O=[(p={baseUrl:d,hashVersion:r,buildTarget:C}).baseUrl,"/wpm","/b",p.hashVersion,"modern"===p.buildTarget?"m":"l",".js"].join(""),U=(f={version:r,bundleTarget:P,surface:e.surface,pageUrl:self.location.href,monorailEndpoint:e.monorailEndpoint},h=f.version,g=f.bundleTarget,y=f.surface,w=f.pageUrl,v=f.monorailEndpoint,{emit:function(e){var d=e.status,r=e.errorMsg,n=(new Date).getTime(),o=JSON.stringify({metadata:{event_sent_at_ms:n},events:[{schema_id:"web_pixels_manager_load/3.1",payload:{version:h,bundle_target:g,page_url:w,status:d,surface:y,error_msg:r},metadata:{event_created_at_ms:n}}]});if(!v)return console&&console.warn&&console.warn("[Web Pixels Manager] No Monorail endpoint provided, skipping logging."),!1;try{return self.navigator.sendBeacon.bind(self.navigator)(v,o)}catch(e){}var a=new XMLHttpRequest;try{return a.open("POST",v,!0),a.setRequestHeader("Content-Type","text/plain"),a.send(o),!0}catch(e){return console&&console.warn&&console.warn("[Web Pixels Manager] Got an unhandled error while logging to Monorail."),!1}}});try{o.browserTarget=P,function(e){var d=e.src,r=e.async,n=void 0===r||r,o=e.onload,a=e.onerror,i=e.sri,t=e.scriptDataAttributes,s=void 0===t?{}:t,l=document.createElement("script"),u=document.querySelector("head"),c=document.querySelector("body");if(l.async=n,l.src=d,i&&(l.integrity=i,l.crossOrigin="anonymous"),s)for(var m in s)if(Object.prototype.hasOwnProperty.call(s,m))try{l.dataset[m]=s[m]}catch(e){}if(o&&l.addEventListener("load",o),a&&l.addEventListener("error",a),u)u.appendChild(l);else{if(!c)throw new Error("Did not find a head or body element to append the script");c.appendChild(l)}}({src:O,async:!0,onload:function(){if(!function(){var e,d;return Boolean(null==(d=null==(e=window.Shopify)?void 0:e.analytics)?void 0:d.initialized)}()){var d=window.webPixelsManager.init(e)||void 0;if(d){var r=window.Shopify.analytics;r.replayQueue.forEach(function(e){var r=e[0],n=e[1],o=e[2];d.publishCustomEvent(r,n,o)}),r.replayQueue=[],r.publish=d.publishCustomEvent,r.visitor=d.visitor,r.initialized=!0}}},onerror:function(){return U.emit({status:"failed",errorMsg:"".concat(O," has failed to load")})},sri:(b=_,S=/^sha384-[A-Za-z0-9+/=]+$/,"string"==typeof b&&S.test(b)?_:""),scriptDataAttributes:o}),U.emit({status:"loading"})}catch(e){U.emit({status:"failed",errorMsg:(null==e?void 0:e.message)||"Unknown error"})}}}}();wpmLoader({shopId: 98721988911,storefrontBaseUrl: "https://atelier-demo-xiek93bo.myshopify.com",extensionsBaseUrl: "https://extensions.shopifycdn.com/cdn/shopifycloud/web-pixels-manager",monorailEndpoint: "https://monorail-edge.shopifysvc.com/unstable/produce_batch",surface: "storefront-renderer",enabledBetaFlags: ["2dca8a86","d5bdd5d0","5acaffe6","86d76263","3b3c7daf","6faea013"],webPixelsConfigList: [{"id":"shopify-app-pixel","configuration":"{}","eventPayloadVersion":"v1","runtimeContext":"STRICT","scriptVersion":"0460","apiClientId":"shopify-pixel","type":"APP","privacyPurposes":["ANALYTICS","MARKETING"]},{"id":"shopify-custom-pixel","eventPayloadVersion":"v1","runtimeContext":"LAX","scriptVersion":"0460","apiClientId":"shopify-pixel","type":"CUSTOM","privacyPurposes":["ANALYTICS","MARKETING"]}],isMerchantRequest: true,initData: {"shop":{"name":"l'Atelier","paymentSettings":{"currencyCode":"USD"},"myshopifyDomain":"atelier-demo-xiek93bo.myshopify.com","countryCode":"US","storefrontUrl":"https:\/\/atelier-demo-xiek93bo.myshopify.com"},"customer":null,"cart":null,"checkout":null,"productVariants":[],"products":null,"purchasingCompany":null,"page":null},},"https://atelier-demo-xiek93bo.myshopify.com/cdn","c5a2dbecw2e5701dcp16d0b08em93d9521b",{"modern":"","legacy":""},{"trekkieShim":true,"apiClientId":"580111","pageType":"page","resourceId":"158573363503","shopId":"98721988911","storefrontBaseUrl":"https:\/\/atelier-demo-xiek93bo.myshopify.com","extensionBaseUrl":"https:\/\/extensions.shopifycdn.com\/cdn\/shopifycloud\/web-pixels-manager","surface":"storefront-renderer","enabledBetaFlags":"[\"2dca8a86\", \"d5bdd5d0\", \"5acaffe6\", \"86d76263\", \"3b3c7daf\", \"6faea013\"]","isMerchantRequest":"true","hashVersion":"c5a2dbecw2e5701dcp16d0b08em93d9521b","publish":"custom","events":"[[\"page_viewed\",{}]]"});})();</script><script>
+  window.ShopifyAnalytics = window.ShopifyAnalytics || {};
+  window.ShopifyAnalytics.meta = window.ShopifyAnalytics.meta || {};
+  window.ShopifyAnalytics.meta.currency = 'USD';
+  var meta = {"page":{"pageType":"page","resourceType":"page","resourceId":158573363503,"requestId":"702eade8-5de0-4cdb-8688-4094367fb095-1780485748"}};
+  for (var attr in meta) {
+    window.ShopifyAnalytics.meta[attr] = meta[attr];
+  }
+</script>
+<script class="analytics">
+  (function () {
+    var customDocumentWrite = function(content) {
+      var jquery = null;
+
+      if (window.jQuery) {
+        jquery = window.jQuery;
+      } else if (window.Checkout && window.Checkout.$) {
+        jquery = window.Checkout.$;
+      }
+
+      if (jquery) {
+        jquery('body').append(content);
+      }
+    };
+
+    var hasLoggedConversion = function(token) {
+      if (token) {
+        return document.cookie.indexOf('loggedConversion=' + token) !== -1;
+      }
+      return false;
+    }
+
+    var setCookieIfConversion = function(token) {
+      if (token) {
+        var twoMonthsFromNow = new Date(Date.now());
+        twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2);
+
+        document.cookie = 'loggedConversion=' + token + '; expires=' + twoMonthsFromNow;
+      }
+    }
+
+    var trekkie = window.ShopifyAnalytics.lib = window.trekkie = window.trekkie || [];
+    window.ShopifyAnalytics.lib.trekkie = window.trekkie;
+    if (trekkie.integrations) {
+      return;
+    }
+    trekkie.methods = [
+      'identify',
+      'page',
+      'ready',
+      'track',
+      'trackForm',
+      'trackLink'
+    ];
+    trekkie.factory = function(method) {
+      return function() {
+        var args = Array.prototype.slice.call(arguments);
+        args.unshift(method);
+        trekkie.push(args);
+        if (window.__TREKKIE_SHIM_QUEUE && (method == 'track' || method == 'page')) {
+          try {
+            window.__TREKKIE_SHIM_QUEUE.push({
+              from: 'trekkie-stub',
+              method: method,
+              args: args.slice(1)
+            });
+          } catch (e) {
+            // no-op
+          }
+        }
+        return trekkie;
+      };
+    };
+    for (var i = 0; i < trekkie.methods.length; i++) {
+      var key = trekkie.methods[i];
+      trekkie[key] = trekkie.factory(key);
+    }
+    trekkie.load = function(config) {
+      trekkie.config = config || {};
+      trekkie.config.initialDocumentCookie = document.cookie;
+      var first = document.getElementsByTagName('script')[0];
+var script = document.createElement('script');
+script.type = 'text/javascript';
+script.onerror = function(e) {
+  var scriptFallback = document.createElement('script');
+  scriptFallback.type = 'text/javascript';
+  scriptFallback.onerror = function(error) {
+          var Monorail = {
+      produce: function produce(monorailDomain, schemaId, payload) {
+        var currentMs = new Date().getTime();
+        var event = {
+          schema_id: schemaId,
+          payload: payload,
+          metadata: {
+            event_created_at_ms: currentMs,
+            event_sent_at_ms: currentMs
+          }
+        };
+        return Monorail.sendRequest("https://" + monorailDomain + "/v1/produce", JSON.stringify(event));
+      },
+      sendRequest: function sendRequest(endpointUrl, payload) {
+        // Try the sendBeacon API
+        if (window && window.navigator && typeof window.navigator.sendBeacon === 'function' && typeof window.Blob === 'function' && !Monorail.isIos12()) {
+          var blobData = new window.Blob([payload], {
+            type: 'text/plain'
+          });
+
+          if (window.navigator.sendBeacon(endpointUrl, blobData)) {
+            return true;
+          } // sendBeacon was not successful
+
+        } // XHR beacon
+
+        var xhr = new XMLHttpRequest();
+
+        try {
+          xhr.open('POST', endpointUrl);
+          xhr.setRequestHeader('Content-Type', 'text/plain');
+          xhr.send(payload);
+        } catch (e) {
+          console.log(e);
+        }
+
+        return false;
+      },
+      isIos12: function isIos12() {
+        return window.navigator.userAgent.lastIndexOf('iPhone; CPU iPhone OS 12_') !== -1 || window.navigator.userAgent.lastIndexOf('iPad; CPU OS 12_') !== -1;
+      }
+    };
+    Monorail.produce('monorail-edge.shopifysvc.com',
+      'trekkie_storefront_load_errors/1.1',
+      {shop_id: 98721988911,
+      theme_id: 185938936111,
+      app_name: "storefront",
+      context_url: window.location.href,
+      source_url: "https://atelier-demo-xiek93bo.myshopify.com/cdn/s/trekkie.storefront.f7140b8b25ae1195cf346a36a85e3e4bcf46adb3.min.js"});
+
+  };
+  scriptFallback.async = true;
+  scriptFallback.src = 'https://atelier-demo-xiek93bo.myshopify.com/cdn/s/trekkie.storefront.f7140b8b25ae1195cf346a36a85e3e4bcf46adb3.min.js';
+  first.parentNode.insertBefore(scriptFallback, first);
+};
+script.async = true;
+script.src = 'https://atelier-demo-xiek93bo.myshopify.com/cdn/s/trekkie.storefront.f7140b8b25ae1195cf346a36a85e3e4bcf46adb3.min.js';
+first.parentNode.insertBefore(script, first);
+
+    };
+    trekkie.load(
+      {"Trekkie":{"appName":"storefront","development":false,"defaultAttributes":{"shopId":98721988911,"isMerchantRequest":null,"themeId":185938936111,"themeCityHash":"2210995915806965348","contentLanguage":"en","currency":"USD","eventMetadataId":"cbd4fd96-e55e-4dc8-9f60-c1ccd2d7fc29"},"isServerSideCookieWritingEnabled":true,"monorailRegion":"shop_domain","enabledBetaFlags":["b5387b81","d5bdd5d0"]},"Session Attribution":{},"S2S":{"facebookCapiEnabled":false,"source":"trekkie-storefront-renderer","apiClientId":580111}}
+    );
+
+    var loaded = false;
+    trekkie.ready(function() {
+      if (loaded) return;
+      loaded = true;
+
+      window.ShopifyAnalytics.lib = window.trekkie;
+
+      var originalDocumentWrite = document.write;
+      document.write = customDocumentWrite;
+      try { window.ShopifyAnalytics.merchantGoogleAnalytics.call(this); } catch(error) {};
+      document.write = originalDocumentWrite;
+
+      window.ShopifyAnalytics.lib.page(null,{"pageType":"page","resourceType":"page","resourceId":158573363503,"requestId":"702eade8-5de0-4cdb-8688-4094367fb095-1780485748","shopifyEmitted":true});
+
+      var match = window.location.pathname.match(/checkouts\/(.+)\/(thank_you|post_purchase)/)
+      var token = match? match[1]: undefined;
+      if (!hasLoggedConversion(token)) {
+        setCookieIfConversion(token);
+        
+      }
+    });
+
+    var eventsListenerScript = document.createElement('script');
+    eventsListenerScript.async = true;
+    eventsListenerScript.src = "https://atelier-demo-xiek93bo.myshopify.com/cdn/shopifycloud/storefront/assets/shop_events_listener-4e26a9ce.js";
+    document.getElementsByTagName('head')[0].appendChild(eventsListenerScript);
+})();</script>
+<script
+  defer
+  src="https://atelier-demo-xiek93bo.myshopify.com/cdn/shopifycloud/perf-kit/shopify-perf-kit-3.5.0.min.js"
+  data-application="storefront-renderer"
+  data-shop-id="98721988911"
+  data-render-region="gcp-us-central1"
+  data-page-type="page"
+  data-theme-instance-id="185938936111"
+  data-theme-name="Atelier"
+  data-theme-version="1.0.0"
+  data-monorail-region="shop_domain"
+  data-resource-timing-sampling-rate="10"
+  data-shs="true"
+  data-shs-beacon="true"
+  data-shs-export-with-fetch="true"
+  data-shs-logs-sample-rate="1"
+  data-shs-beacon-endpoint="/api/collect"
+></script>
+</head>
+
+  <body>
+    <a class="skip-to-content" href="#MainContent">Skip to content</a>
+
+    <!-- BEGIN sections: header-group -->
+<div id="shopify-section-sections--26687945736495__header" class="shopify-section shopify-section-group-header-group"><store-header
+  class="header-wrap full-width header-wrap--sticky"
+  data-sticky="true"
+><div class="utility-bar scheme-contrast full-width">
+      <div class="utility-bar__inner">
+        <div class="utility-bar__social"><a href="https://instagram.com" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1"/></svg></a><a href="https://facebook.com" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M14 9h3V6h-3c-1.7 0-3 1.3-3 3v2H9v3h2v6h3v-6h2.5l.5-3H14V9z"/></svg></a><a href="https://tiktok.com" target="_blank" rel="noopener" aria-label="TikTok"><svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true"><path d="M16 3c.3 2 1.6 3.6 3.5 4v2.4c-1.3 0-2.5-.4-3.5-1v6.1A5.5 5.5 0 1 1 10.5 9v2.6a2.9 2.9 0 1 0 2.9 2.9V3H16z"/></svg></a></div><p class="utility-bar__text">Complimentary shipping on orders over $100</p><div class="utility-bar__end"><form method="post" action="#" id="localization_form" accept-charset="UTF-8" class="utility-bar__loc utility-bar__loc--lang" enctype="multipart/form-data"><input type="hidden" name="form_type" value="localization" /><input type="hidden" name="utf8" value="✓" /><input type="hidden" name="_method" value="put" /><input type="hidden" name="return_to" value="/pages/contact?_fd=0&pb=0" /><select name="locale_code" aria-label="Language" onchange="this.form.submit()"><option value="en" selected lang="en">
+                    English
+                  </option><option value="es" lang="es">
+                    Español
+                  </option><option value="fr" lang="fr">
+                    Français
+                  </option></select></form><form method="post" action="#" id="localization_form" accept-charset="UTF-8" class="utility-bar__loc" enctype="multipart/form-data"><input type="hidden" name="form_type" value="localization" /><input type="hidden" name="utf8" value="✓" /><input type="hidden" name="_method" value="put" /><input type="hidden" name="return_to" value="/pages/contact?_fd=0&pb=0" /><select name="country_code" aria-label="Country/region" onchange="this.form.submit()"><option value="CA">
+                    Canada (CAD $)
+                  </option><option value="FR">
+                    France (EUR €)
+                  </option><option value="US" selected>
+                    United States (USD $)
+                  </option></select></form></div>
+      </div>
+    </div><div class="header full-width">
+    <div class="header__inner">
+      <div class="header__group header__group--start">
+        <button class="header__icon header__burger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="header-drawer" data-drawer-open>
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+        <a class="header__icon header__search-link" href="search.html" aria-label="Search">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+        </a>
+      </div>
+
+      <a href="index.html" class="header__logo-link" aria-label="l&#39;Atelier"><svg class="atelier-logo" viewBox="0 0 300 70" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="l&#39;Atelier" focusable="false">
+  <text x="150" y="42" text-anchor="middle" font-family="Georgia, 'Times New Roman', Times, serif" font-size="40" letter-spacing="0.5" fill="currentColor">l’Atelier</text>
+  <text x="150" y="60" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="8.5" letter-spacing="4" fill="currentColor" opacity="0.65">PARIS · SINCE 2026</text>
+</svg>
+
+</a>
+
+      <div class="header__group header__group--end"><a class="header__icon" href="#" aria-label="Account">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none" slot="signed-out-avatar">
+  <circle cx="10" cy="6.5" r="2.75" stroke="currentColor" stroke-width="var(--icon-stroke-width)" />
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+    stroke-width="var(--icon-stroke-width)"
+    d="m5.172 14.591-.437.786a.588.588 0 0 0 .514.873h9.502a.588.588 0 0 0 .514-.873l-.437-.786a5.523 5.523 0 0 0-9.656 0" />
+</svg>
+
+          </a><a class="header__icon header__cart" href="#" aria-label="Cart" data-cart-open>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="none">
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+    stroke-width="var(--icon-stroke-width)"
+    d="M3.392 6.875h13.216v8.016c0 .567-.224 1.112-.624 1.513-.4.402-.941.627-1.506.627H5.522a2.13 2.13 0 0 1-1.506-.627 2.15 2.15 0 0 1-.624-1.513zM8.818 2.969h2.333c.618 0 1.211.247 1.649.686a2.35 2.35 0 0 1 .683 1.658v1.562H6.486V5.313c0-.622.246-1.218.683-1.658a2.33 2.33 0 0 1 1.65-.686" />
+</svg>
+          <span class="header__cart-count is-empty" data-cart-count>0</span>
+        </a>
+      </div>
+    </div><nav class="header__nav" aria-label="Primary">
+        <ul class="header__nav-list" role="list"><li class="header__nav-item">
+              <a href="collections/new-arrivals.html" class="header__nav-link">New</a></li><li class="header__nav-item has-dropdown">
+              <a href="collections/new-arrivals.html" class="header__nav-link">Clothing</a><div class="header__dropdown header__dropdown--mega header__dropdown--pro scheme-muted">
+                  <div class="megapro full-width"><div class="megapro__cats"><p class="megapro__cats-title">Categories</p><ul role="list" class="megapro__cats-list"><li><a href="collections/knitwear.html">Knitwear</a></li><li><a href="collections/shirts.html">Shirts</a></li><li><a href="collections/trousers.html">Trousers</a></li><li><a href="collections/outerwear.html">Outerwear</a></li></ul>
+                        <a href="collections/new-arrivals.html" class="megapro__viewall">View all →</a>
+                      </div><div class="megapro__products">
+                        <div class="megapro__products-head"><span class="megapro__eyebrow">Most popular</span><a href="collections/new-arrivals.html" class="megapro__products-link">New Arrivals (7) →</a>
+                        </div>
+                        <ul class="megapro__grid" role="list"><li class="megapro__card">
+                              <a href="products/the-gold-hoops.html" class="megapro__card-media"><img src="https://atelier-demo-xiek93bo.myshopify.com/cdn/shop/files/hoops-gold.jpg?v=1780268896&amp;width=400" alt="The Gold Hoops" srcset="https://atelier-demo-xiek93bo.myshopify.com/cdn/shop/files/hoops-gold.jpg?v=1780268896&amp;width=200 200w, https://atelier-demo-xiek93bo.myshopify.com/cdn/shop/files/hoops-gold.jpg?v=1780268896&amp;width=400 400w" width="400" height="497" loading="lazy" class="megapro__card-img"></a>
+                              <div class="megapro__card-info"><span class="megapro__card-vendor">Atelier</span><a href="products/the-gold-hoops.html" class="megapro__card-title">The Gold Hoops</a>
+                                <span class="megapro__card-price">$70.00</span></div>
+                            </li><li class="megapro__card">
+                              <a href="products/the-leather-belt.html" class="megapro__card-media"><img src="https://atelier-demo-xiek93bo.myshopify.com/cdn/shop/files/belt-tan.jpg?v=1780268893&amp;width=400" alt="The Leather Belt" srcset="https://atelier-demo-xiek93bo.myshopify.com/cdn/shop/files/belt-tan.jpg?v=1780268893&amp;width=200 200w, https://atelier-demo-xiek93bo.myshopify.com/cdn/shop/files/belt-tan.jpg?v=1780268893&amp;width=400 400w" width="400" height="497" loading="lazy" class="megapro__card-img"></a>
+                              <div class="megapro__card-info"><span class="megapro__card-vendor">Atelier</span><a href="products/the-leather-belt.html" class="megapro__card-title">The Leather Belt</a>
+                                <span class="megapro__card-price">$90.00</span></div>
+                            </li><li class="megapro__card">
+                              <a href="products/the-mini-bag.html" class="megapro__card-media"><img src="https://atelier-demo-xiek93bo.myshopify.com/cdn/shop/files/bag-tan.jpg?v=1780268890&amp;width=400" alt="The Mini Bag" srcset="https://atelier-demo-xiek93bo.myshopify.com/cdn/shop/files/bag-tan.jpg?v=1780268890&amp;width=200 200w, https://atelier-demo-xiek93bo.myshopify.com/cdn/shop/files/bag-tan.jpg?v=1780268890&amp;width=400 400w" width="400" height="497" loading="lazy" class="megapro__card-img"></a>
+                              <div class="megapro__card-info"><span class="megapro__card-vendor">Atelier</span><a href="products/the-mini-bag.html" class="megapro__card-title">The Mini Bag</a>
+                                <span class="megapro__card-price">$240.00</span><span class="megapro__swatches"><span class="megapro__swatch"><img src="https://atelier-demo-xiek93bo.myshopify.com/cdn/shop/files/bag-tan.jpg?v=1780268890&amp;width=64" alt="Tan" srcset="https://atelier-demo-xiek93bo.myshopify.com/cdn/shop/files/bag-tan.jpg?v=1780268890&amp;width=32 32w, https://atelier-demo-xiek93bo.myshopify.com/cdn/shop/files/bag-tan.jpg?v=1780268890&amp;width=64 64w" width="64" height="80" loading="lazy"></span><span class="megapro__swatch"><img src="https://atelier-demo-xiek93bo.myshopify.com/cdn/shop/files/bag-black.jpg?v=1780268890&amp;width=64" alt="Black" srcset="https://atelier-demo-xiek93bo.myshopify.com/cdn/shop/files/bag-black.jpg?v=1780268890&amp;width=32 32w, https://atelier-demo-xiek93bo.myshopify.com/cdn/shop/files/bag-black.jpg?v=1780268890&amp;width=64 64w" width="64" height="80" loading="lazy"></span></span></div>
+                            </li></ul>
+                      </div></div>
+                </div></li><li class="header__nav-item has-dropdown">
+              <a href="collections/accessories.html" class="header__nav-link">Accessories</a><div class="header__dropdown"><ul class="header__submenu" role="list"><li><a href="products/the-mini-bag.html">Bags</a></li><li><a href="products/the-leather-belt.html">Belts</a></li><li><a href="products/the-gold-hoops.html">Jewellery</a></li></ul></div></li><li class="header__nav-item">
+              <a href="collections/sale.html" class="header__nav-link">Sale</a></li><li class="header__nav-item">
+              <a href="pages/about.html" class="header__nav-link">About</a></li></ul>
+      </nav></div>
+
+  <div class="header__drawer" id="header-drawer" data-drawer hidden>
+    <div class="header__drawer-overlay" data-drawer-close></div>
+    <div class="header__drawer-panel scheme-contrast" role="dialog" aria-modal="true" aria-label="Menu">
+      <button class="header__icon header__drawer-close" type="button" aria-label="Close menu" data-drawer-close>
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button><ul class="header__drawer-list" role="list"><li>
+              <a href="collections/new-arrivals.html" class="header__drawer-link">New</a></li><li>
+              <a href="collections/new-arrivals.html" class="header__drawer-link">Clothing</a><ul role="list" class="header__drawer-sub"><li><a href="collections/knitwear.html">Knitwear</a></li><li><a href="collections/shirts.html">Shirts</a></li><li><a href="collections/trousers.html">Trousers</a></li><li><a href="collections/outerwear.html">Outerwear</a></li></ul></li><li>
+              <a href="collections/accessories.html" class="header__drawer-link">Accessories</a><ul role="list" class="header__drawer-sub"><li><a href="products/the-mini-bag.html">Bags</a></li><li><a href="products/the-leather-belt.html">Belts</a></li><li><a href="products/the-gold-hoops.html">Jewellery</a></li></ul></li><li>
+              <a href="collections/sale.html" class="header__drawer-link">Sale</a></li><li>
+              <a href="pages/about.html" class="header__drawer-link">About</a></li></ul></div>
+  </div>
+</store-header>
+
+
+
+
+
+
+</div>
+<!-- END sections: header-group -->
+
+    <main id="MainContent" role="main" tabindex="-1">
+      <div id="shopify-section-template--26687945998639__main" class="shopify-section"><article class="page page-section">
+  <header class="page__header">
+    <h1 class="page__title">Contact</h1>
+  </header></article>
+
+
+
+
+</div>
+    </main>
+
+    <!-- BEGIN sections: footer-group -->
+<div id="shopify-section-sections--26687945703727__footer" class="shopify-section shopify-section-group-footer-group"><footer class="footer scheme-muted full-width">
+  <div class="footer__inner">
+    <div class="footer__top">
+      <div class="footer__brand">
+        <a href="index.html" class="footer__logo" aria-label="l&#39;Atelier"><svg class="atelier-logo" viewBox="0 0 300 70" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="l&#39;Atelier" focusable="false">
+  <text x="150" y="42" text-anchor="middle" font-family="Georgia, 'Times New Roman', Times, serif" font-size="40" letter-spacing="0.5" fill="currentColor">l’Atelier</text>
+  <text x="150" y="60" text-anchor="middle" font-family="'Helvetica Neue', Arial, sans-serif" font-size="8.5" letter-spacing="4" fill="currentColor" opacity="0.65">PARIS · SINCE 2026</text>
+</svg>
+</a><p class="footer__brand-text">Considered essentials, made to last. Designed in-house and crafted from natural, responsibly sourced materials.</p></div><div class="footer__col"><p class="footer__col-title">Shop</p><ul role="list" class="footer__links"><li><a href="collections/new-arrivals.html">New Arrivals</a></li><li><a href="collections/knitwear.html">Knitwear</a></li><li><a href="collections/outerwear.html">Outerwear</a></li><li><a href="collections/accessories.html">Accessories</a></li><li><a href="collections/sale.html">Sale</a></li></ul>
+        </div><div class="footer__col"><p class="footer__col-title">Help</p><ul role="list" class="footer__links"><li><a href="pages/about.html">About</a></li><li><a href="pages/contact.html">Contact</a></li><li><a href="pages/shipping-returns.html">Shipping &amp; Returns</a></li><li><a href="pages/faq.html">FAQ</a></li><li><a href="pages/sustainability.html">Sustainability</a></li></ul>
+        </div><div class="footer__newsletter"><p class="footer__col-title">Join the Atelier list</p><p class="footer__news-text">Early access to new arrivals and members-only offers.</p><form method="post" action="#" id="contact_form" accept-charset="UTF-8" class="footer__form"><input type="hidden" name="form_type" value="customer" /><input type="hidden" name="utf8" value="✓" /><input type="hidden" name="contact[tags]" value="newsletter"><div class="footer__form-row">
+                <input type="email" name="contact[email]" placeholder="Email address" aria-label="Email address" required class="footer__input">
+                <button type="submit" class="button" aria-label="Subscribe">→</button>
+              </div></form></div></div>
+
+    <div class="footer__bottom">
+      <p class="footer__copyright">&copy; 2026 l&#39;Atelier. <a target="_blank" rel="nofollow" href="https://www.shopify.com?utm_campaign=poweredby&amp;utm_medium=shopify&amp;utm_source=onlinestore">Powered by Shopify</a></p><div class="footer__payment" aria-label="Payment methods"><svg class="footer__payment-icon" viewBox="0 0 38 24" xmlns="http://www.w3.org/2000/svg" role="img" width="38" height="24" aria-labelledby="pi-visa"><title id="pi-visa">Visa</title><path opacity=".07" d="M35 0H3C1.3 0 0 1.3 0 3v18c0 1.7 1.4 3 3 3h32c1.7 0 3-1.3 3-3V3c0-1.7-1.4-3-3-3z"/><path fill="#fff" d="M35 1c1.1 0 2 .9 2 2v18c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V3c0-1.1.9-2 2-2h32"/><path d="M28.3 10.1H28c-.4 1-.7 1.5-1 3h1.9c-.3-1.5-.3-2.2-.6-3zm2.9 5.9h-1.7c-.1 0-.1 0-.2-.1l-.2-.9-.1-.2h-2.4c-.1 0-.2 0-.2.2l-.3.9c0 .1-.1.1-.1.1h-2.1l.2-.5L27 8.7c0-.5.3-.7.8-.7h1.5c.1 0 .2 0 .2.2l1.4 6.5c.1.4.2.7.2 1.1.1.1.1.1.1.2zm-13.4-.3l.4-1.8c.1 0 .2.1.2.1.7.3 1.4.5 2.1.4.2 0 .5-.1.7-.2.5-.2.5-.7.1-1.1-.2-.2-.5-.3-.8-.5-.4-.2-.8-.4-1.1-.7-1.2-1-.8-2.4-.1-3.1.6-.4.9-.8 1.7-.8 1.2 0 2.5 0 3.1.2h.1c-.1.6-.2 1.1-.4 1.7-.5-.2-1-.4-1.5-.4-.3 0-.6 0-.9.1-.2 0-.3.1-.4.2-.2.2-.2.5 0 .7l.5.4c.4.2.8.4 1.1.6.5.3 1 .8 1.1 1.4.2.9-.1 1.7-.9 2.3-.5.4-.7.6-1.4.6-1.4 0-2.5.1-3.4-.2-.1.2-.1.2-.2.1zm-3.5.3c.1-.7.1-.7.2-1 .5-2.2 1-4.5 1.4-6.7.1-.2.1-.3.3-.3H18c-.2 1.2-.4 2.1-.7 3.2-.3 1.5-.6 3-1 4.5 0 .2-.1.2-.3.2M5 8.2c0-.1.2-.2.3-.2h3.4c.5 0 .9.3 1 .8l.9 4.4c0 .1 0 .1.1.2 0-.1.1-.1.1-.1l2.1-5.1c-.1-.1 0-.2.1-.2h2.1c0 .1 0 .1-.1.2l-3.1 7.3c-.1.2-.1.3-.2.4-.1.1-.3 0-.5 0H9.7c-.1 0-.2 0-.2-.2L7.9 9.5c-.2-.2-.5-.5-.9-.6-.6-.3-1.7-.5-1.9-.5L5 8.2z" fill="#142688"/></svg><svg class="footer__payment-icon" viewBox="0 0 38 24" xmlns="http://www.w3.org/2000/svg" role="img" width="38" height="24" aria-labelledby="pi-master"><title id="pi-master">Mastercard</title><path opacity=".07" d="M35 0H3C1.3 0 0 1.3 0 3v18c0 1.7 1.4 3 3 3h32c1.7 0 3-1.3 3-3V3c0-1.7-1.4-3-3-3z"/><path fill="#fff" d="M35 1c1.1 0 2 .9 2 2v18c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V3c0-1.1.9-2 2-2h32"/><circle fill="#EB001B" cx="15" cy="12" r="7"/><circle fill="#F79E1B" cx="23" cy="12" r="7"/><path fill="#FF5F00" d="M22 12c0-2.4-1.2-4.5-3-5.7-1.8 1.3-3 3.4-3 5.7s1.2 4.5 3 5.7c1.8-1.2 3-3.3 3-5.7z"/></svg><svg class="footer__payment-icon" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="pi-american_express" viewBox="0 0 38 24" width="38" height="24"><title id="pi-american_express">American Express</title><path fill="#000" d="M35 0H3C1.3 0 0 1.3 0 3v18c0 1.7 1.4 3 3 3h32c1.7 0 3-1.3 3-3V3c0-1.7-1.4-3-3-3Z" opacity=".07"/><path fill="#006FCF" d="M35 1c1.1 0 2 .9 2 2v18c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V3c0-1.1.9-2 2-2h32Z"/><path fill="#FFF" d="M22.012 19.936v-8.421L37 11.528v2.326l-1.732 1.852L37 17.573v2.375h-2.766l-1.47-1.622-1.46 1.628-9.292-.02Z"/><path fill="#006FCF" d="M23.013 19.012v-6.57h5.572v1.513h-3.768v1.028h3.678v1.488h-3.678v1.01h3.768v1.531h-5.572Z"/><path fill="#006FCF" d="m28.557 19.012 3.083-3.289-3.083-3.282h2.386l1.884 2.083 1.89-2.082H37v.051l-3.017 3.23L37 18.92v.093h-2.307l-1.917-2.103-1.898 2.104h-2.321Z"/><path fill="#FFF" d="M22.71 4.04h3.614l1.269 2.881V4.04h4.46l.77 2.159.771-2.159H37v8.421H19l3.71-8.421Z"/><path fill="#006FCF" d="m23.395 4.955-2.916 6.566h2l.55-1.315h2.98l.55 1.315h2.05l-2.904-6.566h-2.31Zm.25 3.777.875-2.09.873 2.09h-1.748Z"/><path fill="#006FCF" d="M28.581 11.52V4.953l2.811.01L32.84 9l1.456-4.046H37v6.565l-1.74.016v-4.51l-1.644 4.494h-1.59L30.35 7.01v4.51h-1.768Z"/></svg>
+<svg class="footer__payment-icon" viewBox="0 0 38 24" xmlns="http://www.w3.org/2000/svg" width="38" height="24" role="img" aria-labelledby="pi-paypal"><title id="pi-paypal">PayPal</title><path opacity=".07" d="M35 0H3C1.3 0 0 1.3 0 3v18c0 1.7 1.4 3 3 3h32c1.7 0 3-1.3 3-3V3c0-1.7-1.4-3-3-3z"/><path fill="#fff" d="M35 1c1.1 0 2 .9 2 2v18c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V3c0-1.1.9-2 2-2h32"/><path fill="#003087" d="M23.9 8.3c.2-1 0-1.7-.6-2.3-.6-.7-1.7-1-3.1-1h-4.1c-.3 0-.5.2-.6.5L14 15.6c0 .2.1.4.3.4H17l.4-3.4 1.8-2.2 4.7-2.1z"/><path fill="#3086C8" d="M23.9 8.3l-.2.2c-.5 2.8-2.2 3.8-4.6 3.8H18c-.3 0-.5.2-.6.5l-.6 3.9-.2 1c0 .2.1.4.3.4H19c.3 0 .5-.2.5-.4v-.1l.4-2.4v-.1c0-.2.3-.4.5-.4h.3c2.1 0 3.7-.8 4.1-3.2.2-1 .1-1.8-.4-2.4-.1-.5-.3-.7-.5-.8z"/><path fill="#012169" d="M23.3 8.1c-.1-.1-.2-.1-.3-.1-.1 0-.2 0-.3-.1-.3-.1-.7-.1-1.1-.1h-3c-.1 0-.2 0-.2.1-.2.1-.3.2-.3.4l-.7 4.4v.1c0-.3.3-.5.6-.5h1.3c2.5 0 4.1-1 4.6-3.8v-.2c-.1-.1-.3-.2-.5-.2h-.1z"/></svg><svg class="footer__payment-icon" viewBox="0 0 38 24" xmlns="http://www.w3.org/2000/svg" role="img" width="38" height="24" aria-labelledby="pi-diners_club"><title id="pi-diners_club">Diners Club</title><path opacity=".07" d="M35 0H3C1.3 0 0 1.3 0 3v18c0 1.7 1.4 3 3 3h32c1.7 0 3-1.3 3-3V3c0-1.7-1.4-3-3-3z"/><path fill="#fff" d="M35 1c1.1 0 2 .9 2 2v18c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V3c0-1.1.9-2 2-2h32"/><path d="M12 12v3.7c0 .3-.2.3-.5.2-1.9-.8-3-3.3-2.3-5.4.4-1.1 1.2-2 2.3-2.4.4-.2.5-.1.5.2V12zm2 0V8.3c0-.3 0-.3.3-.2 2.1.8 3.2 3.3 2.4 5.4-.4 1.1-1.2 2-2.3 2.4-.4.2-.4.1-.4-.2V12zm7.2-7H13c3.8 0 6.8 3.1 6.8 7s-3 7-6.8 7h8.2c3.8 0 6.8-3.1 6.8-7s-3-7-6.8-7z" fill="#3086C8"/></svg><svg class="footer__payment-icon" viewBox="0 0 38 24" width="38" height="24" role="img" aria-labelledby="pi-discover" fill="none" xmlns="http://www.w3.org/2000/svg"><title id="pi-discover">Discover</title><path fill="#000" opacity=".07" d="M35 0H3C1.3 0 0 1.3 0 3v18c0 1.7 1.4 3 3 3h32c1.7 0 3-1.3 3-3V3c0-1.7-1.4-3-3-3z"/><path d="M35 1c1.1 0 2 .9 2 2v18c0 1.1-.9 2-2 2H3c-1.1 0-2-.9-2-2V3c0-1.1.9-2 2-2h32z" fill="#fff"/><path d="M3.57 7.16H2v5.5h1.57c.83 0 1.43-.2 1.96-.63.63-.52 1-1.3 1-2.11-.01-1.63-1.22-2.76-2.96-2.76zm1.26 4.14c-.34.3-.77.44-1.47.44h-.29V8.1h.29c.69 0 1.11.12 1.47.44.37.33.59.84.59 1.37 0 .53-.22 1.06-.59 1.39zm2.19-4.14h1.07v5.5H7.02v-5.5zm3.69 2.11c-.64-.24-.83-.4-.83-.69 0-.35.34-.61.8-.61.32 0 .59.13.86.45l.56-.73c-.46-.4-1.01-.61-1.62-.61-.97 0-1.72.68-1.72 1.58 0 .76.35 1.15 1.35 1.51.42.15.63.25.74.31.21.14.32.34.32.57 0 .45-.35.78-.83.78-.51 0-.92-.26-1.17-.73l-.69.67c.49.73 1.09 1.05 1.9 1.05 1.11 0 1.9-.74 1.9-1.81.02-.89-.35-1.29-1.57-1.74zm1.92.65c0 1.62 1.27 2.87 2.9 2.87.46 0 .86-.09 1.34-.32v-1.26c-.43.43-.81.6-1.29.6-1.08 0-1.85-.78-1.85-1.9 0-1.06.79-1.89 1.8-1.89.51 0 .9.18 1.34.62V7.38c-.47-.24-.86-.34-1.32-.34-1.61 0-2.92 1.28-2.92 2.88zm12.76.94l-1.47-3.7h-1.17l2.33 5.64h.58l2.37-5.64h-1.16l-1.48 3.7zm3.13 1.8h3.04v-.93h-1.97v-1.48h1.9v-.93h-1.9V8.1h1.97v-.94h-3.04v5.5zm7.29-3.87c0-1.03-.71-1.62-1.95-1.62h-1.59v5.5h1.07v-2.21h.14l1.48 2.21h1.32l-1.73-2.32c.81-.17 1.26-.72 1.26-1.56zm-2.16.91h-.31V8.03h.33c.67 0 1.03.28 1.03.82 0 .55-.36.85-1.05.85z" fill="#231F20"/><path d="M20.16 12.86a2.931 2.931 0 100-5.862 2.931 2.931 0 000 5.862z" fill="url(#pi-paint0_linear)"/><path opacity=".65" d="M20.16 12.86a2.931 2.931 0 100-5.862 2.931 2.931 0 000 5.862z" fill="url(#pi-paint1_linear)"/><path d="M36.57 7.506c0-.1-.07-.15-.18-.15h-.16v.48h.12v-.19l.14.19h.14l-.16-.2c.06-.01.1-.06.1-.13zm-.2.07h-.02v-.13h.02c.06 0 .09.02.09.06 0 .05-.03.07-.09.07z" fill="#231F20"/><path d="M36.41 7.176c-.23 0-.42.19-.42.42 0 .23.19.42.42.42.23 0 .42-.19.42-.42 0-.23-.19-.42-.42-.42zm0 .77c-.18 0-.34-.15-.34-.35 0-.19.15-.35.34-.35.18 0 .33.16.33.35 0 .19-.15.35-.33.35z" fill="#231F20"/><path d="M37 12.984S27.09 19.873 8.976 23h26.023a2 2 0 002-1.984l.024-3.02L37 12.985z" fill="#F48120"/><defs><linearGradient id="pi-paint0_linear" x1="21.657" y1="12.275" x2="19.632" y2="9.104" gradientUnits="userSpaceOnUse"><stop stop-color="#F89F20"/><stop offset=".25" stop-color="#F79A20"/><stop offset=".533" stop-color="#F68D20"/><stop offset=".62" stop-color="#F58720"/><stop offset=".723" stop-color="#F48120"/><stop offset="1" stop-color="#F37521"/></linearGradient><linearGradient id="pi-paint1_linear" x1="21.338" y1="12.232" x2="18.378" y2="6.446" gradientUnits="userSpaceOnUse"><stop stop-color="#F58720"/><stop offset=".359" stop-color="#E16F27"/><stop offset=".703" stop-color="#D4602C"/><stop offset=".982" stop-color="#D05B2E"/></linearGradient></defs></svg></div></div>
+  </div>
+</footer>
+
+
+
+
+</div>
+<!-- END sections: footer-group -->
+
+    <div id="shopify-section-cart-drawer" class="shopify-section"><cart-drawer class="cart-drawer" data-item-count="0">
+  <div class="cart-drawer__overlay" data-cart-close></div>
+  <div class="cart-drawer__panel" role="dialog" aria-modal="true" aria-label="Cart" tabindex="-1">
+    <div class="cart-drawer__head">
+      <p class="cart-drawer__title">Cart <span class="cart-drawer__count">(0)</span></p>
+      <button type="button" class="cart-drawer__close" aria-label="Close" data-cart-close>
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div><div class="cart-drawer__empty">
+        <p>Your cart is empty</p>
+        <a href="collections/all.html" class="button">Continue shopping</a>
+      </div></div>
+</cart-drawer>
+
+
+
+
+
+
+</div>
+    <div id="shopify-section-newsletter-popup" class="shopify-section"><newsletter-popup
+    class="nlpop"
+    data-delay="4"
+    data-frequency="14"
+    data-just-subscribed="false"
+  ><button type="button" class="nlpop__launcher" data-nlpop-open>Get 20% off</button><div class="nlpop__overlay" data-nlpop-close></div>
+    <div class="nlpop__panel" role="dialog" aria-modal="true" aria-label="Sign up and get">
+      <button type="button" class="nlpop__close" aria-label="Close" data-nlpop-close>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button><div class="nlpop__media"><img src="https://atelier-demo-xiek93bo.myshopify.com/cdn/shop/t/4/assets/atelier-demo-newsletter.jpg?v=164594689218385328501780477273" class="nlpop__img" alt="" width="1127" height="1400" loading="lazy"></div><div class="nlpop__body"><p class="nlpop__eyebrow">First timer?</p><h2 class="nlpop__heading">Sign up and get <span class="nlpop__hl">20% off your first order</span></h2><form method="post" action="#" id="contact_form" accept-charset="UTF-8" class="nlpop__form"><input type="hidden" name="form_type" value="customer" /><input type="hidden" name="utf8" value="✓" /><input type="hidden" name="contact[tags]" value="newsletter">
+            <label for="nlpop-email" class="visually-hidden">Email</label>
+            <div class="nlpop__field">
+              <input type="email" id="nlpop-email" name="contact[email]" placeholder="Enter your email" required autocomplete="email">
+              <button type="submit" class="nlpop__submit" aria-label="Subscribe">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12h15M13 6l6 6-6 6"/></svg>
+              </button>
+            </div></form><p class="nlpop__sub">Subscribe to our newsletter and be the first to hear about new arrivals, special promotions and online exclusives.</p><button type="button" class="nlpop__dismiss" data-nlpop-close>No thanks</button></div>
+    </div>
+  </newsletter-popup>
+
+
+
+
+</div>
+  <script src="https://cdn.shopify.com/storefront/standard-actions.js" type="module" data-source-attribution="shopify.standard_actions"></script>
+</body>
+</html>
+
+
+

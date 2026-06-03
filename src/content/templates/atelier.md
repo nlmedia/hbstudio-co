@@ -30,7 +30,7 @@ features:
   - Fast & accessible — Online Store 2.0, no paid apps
   - Multilingual — EN · FR · ES · DE
 tags: [fashion, editorial, minimal, luxury, lookbook, multilingual]
-demoUrl: "#"
+demoUrl: "/demo/atelier/index.html"
 buyUrl: "#"
 docsUrl: "https://webcomsysteme.com/hbstudio/atelier/"
 ---
