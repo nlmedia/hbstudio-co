@@ -37,7 +37,7 @@ const { Content } = await render(entry);
         </div>
         {!soon && <p class="mt-3 text-sm text-paper/50">One-time payment · single store · lifetime updates</p>}
       </div>
-      <div>
+      <div class="relative">
         {d.preview ? (
           <div class="tilt" aria-hidden="true">
             <div class="tilt__card overflow-hidden rounded-2xl border border-white/10 bg-paper shadow-[0_50px_100px_-35px_rgba(0,0,0,0.6)]">
@@ -55,6 +55,14 @@ const { Content } = await render(entry);
         ) : (
           <div class="flex aspect-[16/11] items-center justify-center rounded-2xl border border-white/10 bg-white/5">
             <span class="font-display text-4xl font-bold text-white/20">{d.title}</span>
+          </div>
+        )}
+
+        {d.previewMobile && (
+          <div class="absolute -bottom-12 -left-6 z-10 hidden lg:block" style="transform: rotate(-5deg)" aria-hidden="true">
+            <div class="phone">
+              <div class="phone__screen"><img src={d.previewMobile} alt="" class="phone__img" /></div>
+            </div>
           </div>
         )}
       </div>

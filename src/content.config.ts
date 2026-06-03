@@ -15,6 +15,7 @@ const templates = defineCollection({
     order: z.number().default(100),
     cover: z.string().optional(),
     preview: z.string().optional(), // tall full-page capture for the 3D scrolling mockup
+    previewMobile: z.string().optional(), // tall mobile capture for the phone mockup
     gallery: z.array(z.string()).default([]),
     features: z.array(z.string()).default([]),
     tags: z.array(z.string()).default([]),

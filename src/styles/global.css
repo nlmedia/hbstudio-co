@@ -68,6 +68,13 @@
 .mock-img { width: 100%; display: block; animation: mock-scroll 28s ease-in-out infinite alternate; }
 @keyframes mock-scroll { from { transform: translateY(0); } to { transform: translateY(calc(-100% + 32rem)); } }
 
+/* ---------- phone mockup ---------- */
+.phone { position: relative; width: 200px; border-radius: 2.4rem; background: #0c0c10; padding: 7px; box-shadow: 0 45px 80px -28px rgba(14,14,18,0.55), inset 0 0 0 1px rgba(255,255,255,0.08); }
+.phone::before { content: ""; position: absolute; top: 13px; left: 50%; transform: translateX(-50%); width: 58px; height: 16px; border-radius: 999px; background: #0c0c10; z-index: 3; }
+.phone__screen { position: relative; border-radius: 1.9rem; overflow: hidden; height: 25rem; background: #fff; }
+.phone__img { width: 100%; display: block; animation: phone-scroll 24s ease-in-out infinite alternate; }
+@keyframes phone-scroll { from { transform: translateY(0); } to { transform: translateY(calc(-100% + 25rem)); } }
+
 /* ---------- toast ---------- */
 #toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px); opacity: 0; pointer-events: none; background: var(--color-ink); color: var(--color-paper); padding: 12px 20px; border-radius: 999px; font-size: 14px; box-shadow: 0 16px 40px rgba(0,0,0,.25); transition: opacity .3s ease, transform .3s ease; z-index: 100; }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }

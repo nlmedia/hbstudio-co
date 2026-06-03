@@ -13,6 +13,7 @@ featured: true
 order: 1
 cover: /templates/atelier/home-hero.jpg
 preview: /templates/atelier/home-full.jpg
+previewMobile: /templates/atelier/home-mobile.jpg
 gallery:
   - /templates/atelier/home-tiles.jpg
   - /templates/atelier/product-top.jpg
