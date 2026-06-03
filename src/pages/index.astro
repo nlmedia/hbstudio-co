@@ -27,12 +27,6 @@ const testimonials = [
   { name: 'Marco Conti', role: 'Founder, Conti Leather', quote: 'Premium feel, fair price, and real support that answers fast. Exactly what an independent shop needs.', rating: 5, c: '#7a5cff' },
 ];
 
-const tiers = [
-  { name: 'Single', key: 'single', price: 69, blurb: 'For one store.', features: ['1 store license', 'Lifetime updates', 'Email support', 'Full documentation'], popular: false },
-  { name: 'Extended', key: 'extended', price: 149, blurb: 'For agencies & client work.', features: ['Up to 5 stores', 'Use in client projects', 'Lifetime updates', 'Priority email support'], popular: true },
-  { name: 'All-Access', key: 'all-access', price: 299, blurb: 'Every template, one year.', features: ['All current templates', 'All new releases (1 year)', 'Lifetime updates on owned', 'Priority support'], popular: false },
-];
-
 const faqs = [
   ['Which platforms do you support?', 'Today: Shopify (live), with WordPress and WooCommerce coming soon. More platforms (Webflow, Framer) are on the roadmap.'],
   ['Do I need any paid apps?', 'No. Our themes build in the features most stores pay apps for — slide-out cart, free-shipping bar, filters, urgency and more.'],
@@ -67,7 +61,7 @@ const faqs = [
               Browse templates
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="transition group-hover:translate-x-1"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </a>
-            <a href="#pricing" class="rounded-full border border-line-strong px-6 py-3 font-medium transition hover:bg-surface-2">See pricing</a>
+            <a href="/demo/atelier/index.html" target="_blank" rel="noopener" class="rounded-full border border-line-strong px-6 py-3 font-medium transition hover:bg-surface-2">Live demo</a>
           </div>
           <dl data-reveal style="transition-delay:420ms" class="mt-14 grid max-w-md grid-cols-3 gap-6 border-t border-line pt-8">
             <div><dt class="font-display text-4xl font-bold"><span data-count={availableCount} data-suffix="+">0</span></dt><dd class="mt-1 text-sm text-muted">Templates</dd></div>
@@ -217,32 +211,6 @@ const faqs = [
           </figcaption>
         </figure>
       ))}
-    </div>
-  </section>
-
-  <!-- PRICING -->
-  <section id="pricing" class="scroll-mt-20 border-y border-line bg-surface-2/50">
-    <div class="mx-auto max-w-6xl px-5 py-24">
-      <div class="text-center">
-        <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">Pricing</p>
-        <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">Simple, one-time licenses</h2>
-        <p data-reveal style="transition-delay:160ms" class="mx-auto mt-3 max-w-md text-muted">No subscriptions. Pay once, own it, get lifetime updates.</p>
-      </div>
-      <div class="mt-12 grid gap-6 lg:grid-cols-3">
-        {tiers.map((tier, i) => (
-          <div data-reveal style={`transition-delay:${i * 90}ms`} class:list={['relative flex flex-col rounded-3xl border bg-surface p-8', tier.popular ? 'border-accent shadow-[0_30px_70px_-30px_rgba(109,74,255,0.5)]' : 'border-line']}>
-            {tier.popular && <span class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-accent px-3 py-1 text-xs font-medium text-white">Most popular</span>}
-            <h3 class="font-display text-lg font-semibold">{tier.name}</h3>
-            <p class="mt-1 text-sm text-muted">{tier.blurb}</p>
-            <p class="mt-5 font-display text-5xl font-bold">€{tier.price}<span class="text-base font-medium text-muted"> once</span></p>
-            <ul class="mt-6 flex-1 space-y-3 border-t border-line pt-6 text-sm">
-              {tier.features.map((f) => (<li class="flex gap-2.5"><span class="text-accent">✓</span>{f}</li>))}
-            </ul>
-            <a href="#" data-checkout={tier.key} class:list={['mt-7 block rounded-full px-6 py-3 text-center font-medium transition', tier.popular ? 'bg-accent text-white hover:bg-accent-700' : 'bg-ink text-paper hover:bg-accent']}>Buy {tier.name}</a>
-          </div>
-        ))}
-      </div>
-      <p class="mt-6 text-center text-xs text-muted">Secure checkout · instant download · prices in EUR.</p>
     </div>
   </section>
 
