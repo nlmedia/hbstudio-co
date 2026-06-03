@@ -6,7 +6,7 @@ description: >-
   A refined, conversion-focused Shopify theme for fashion, apparel and lifestyle
   stores. Editorial layouts, a fast storefront, and every selling tool built in —
   no paid apps required. Three preset styles, four languages, fully accessible.
-price: 69
+price: 169
 currency: "€"
 status: available
 featured: true
