@@ -1,0 +1,86 @@
+---
+interface Props { t?: any; action: string; submitLabel?: string; }
+const { t = {}, action, submitLabel = 'Save' } = Astro.props;
+const arr = (v: any) => (Array.isArray(v) ? v.join('\n') : '');
+const field = 'w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-accent';
+const label = 'block text-xs font-medium text-ink/70 mb-1.5';
+---
+<form method="POST" action={action} class="grid max-w-3xl gap-6">
+  <div class="grid gap-4 sm:grid-cols-2">
+    <label><span class={label}>Title</span><input class={field} name="title" required value={t.title ?? ''} /></label>
+    <label><span class={label}>Slug (URL)</span><input class={field} name="slug" required value={t.slug ?? ''} placeholder="atelier" /></label>
+  </div>
+  <div class="grid gap-4 sm:grid-cols-4">
+    <label><span class={label}>Platform</span>
+      <select class={field} name="cms">
+        {['shopify','wordpress','woocommerce','other'].map((o) => <option value={o} selected={t.cms===o}>{o}</option>)}
+      </select>
+    </label>
+    <label><span class={label}>Status</span>
+      <select class={field} name="status">
+        {['draft','published','coming-soon'].map((o) => <option value={o} selected={(t.status??'draft')===o}>{o}</option>)}
+      </select>
+    </label>
+    <label><span class={label}>Price (€, empty = none)</span><input class={field} name="price" type="number" step="1" value={t.price ?? ''} /></label>
+    <label><span class={label}>Sort order</span><input class={field} name="sort_order" type="number" value={t.sort_order ?? 100} /></label>
+  </div>
+  <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="featured" checked={!!t.featured} /> Featured on homepage</label>
+
+  <label><span class={label}>Tagline</span><input class={field} name="tagline" value={t.tagline ?? ''} /></label>
+  <label><span class={label}>Short description</span><textarea class={field} name="description" rows="3">{t.description ?? ''}</textarea></label>
+  <label><span class={label}>Body (paragraphs, blank line between)</span><textarea class={field} name="body" rows="4">{t.body ?? ''}</textarea></label>
+
+  <fieldset class="grid gap-4 rounded-2xl border border-line p-4">
+    <legend class="px-2 text-xs font-semibold uppercase tracking-wide text-muted">Images</legend>
+    {[['cover','Cover (card)'],['preview','Desktop full-page (mockup)'],['preview_mobile','Mobile full-page (phone)']].map(([n, lbl]) => (
+      <div>
+        <span class={label}>{lbl}</span>
+        <div class="flex gap-2">
+          <input class={field} name={n} value={t[n] ?? ''} placeholder="/templates/... or uploaded URL" data-img-field={n} />
+          <label class="shrink-0 cursor-pointer rounded-xl border border-line px-3 py-2.5 text-xs font-medium transition hover:bg-surface-2">
+            Upload<input type="file" accept="image/*" class="hidden" data-img-upload={n} />
+          </label>
+        </div>
+      </div>
+    ))}
+  </fieldset>
+
+  <div class="grid gap-4 sm:grid-cols-3">
+    <label><span class={label}>Gallery URLs (one/line)</span><textarea class={field} name="gallery" rows="4">{arr(t.gallery)}</textarea></label>
+    <label><span class={label}>Features (one/line)</span><textarea class={field} name="features" rows="4">{arr(t.features)}</textarea></label>
+    <label><span class={label}>Tags (one/line)</span><textarea class={field} name="tags" rows="4">{arr(t.tags)}</textarea></label>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-3">
+    <label><span class={label}>Demo URL</span><input class={field} name="demo_url" value={t.demo_url ?? ''} /></label>
+    <label><span class={label}>Buy URL</span><input class={field} name="buy_url" value={t.buy_url ?? ''} /></label>
+    <label><span class={label}>Docs URL</span><input class={field} name="docs_url" value={t.docs_url ?? ''} /></label>
+  </div>
+
+  <div class="flex items-center gap-3 pt-2">
+    <button type="submit" class="rounded-full bg-ink px-6 py-2.5 text-sm font-medium text-paper transition hover:bg-accent">{submitLabel}</button>
+    <a href="/admin/templates" class="text-sm font-medium text-muted hover:text-ink">Cancel</a>
+    <span id="upmsg" class="text-xs text-muted"></span>
+  </div>
+</form>
+
+<script>
+  import { createSupabaseBrowser } from '../../lib/supabase';
+  const supabase = createSupabaseBrowser();
+  const msg = document.getElementById('upmsg');
+  document.querySelectorAll('[data-img-upload]').forEach((input) => {
+    input.addEventListener('change', async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      const key = (input as HTMLElement).getAttribute('data-img-upload');
+      const path = `${Date.now()}-${file.name.replace(/[^a-z0-9.\-]/gi, '_')}`;
+      if (msg) msg.textContent = 'Uploading ' + file.name + '…';
+      const { error } = await supabase.storage.from('templates').upload(path, file, { upsert: true });
+      if (error) { if (msg) msg.textContent = 'Upload failed: ' + error.message; return; }
+      const { data } = supabase.storage.from('templates').getPublicUrl(path);
+      const target = document.querySelector(`[data-img-field="${key}"]`) as HTMLInputElement;
+      if (target) target.value = data.publicUrl;
+      if (msg) msg.textContent = '✓ Uploaded';
+    });
+  });
+</script>

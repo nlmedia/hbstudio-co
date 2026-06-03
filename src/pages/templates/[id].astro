@@ -1,11 +1,11 @@
 ---
-import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import DeviceMockup from '../../components/DeviceMockup.astro';
 import { CMS } from '../../data/cms';
+import { getTemplates } from '../../lib/catalog';
 
 export async function getStaticPaths() {
-  const all = await getCollection('templates');
+  const all = await getTemplates();
   return all.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
 }
 
@@ -13,7 +13,7 @@ const { entry } = Astro.props;
 const d = entry.data;
 const c = CMS[d.cms as keyof typeof CMS];
 const soon = d.status === 'coming-soon';
-const { Content } = await render(entry);
+const bodyParagraphs = (d.body || '').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
 ---
 <Base title={`${d.title} — ${c.label} template | HB Studio Co`} description={d.tagline} image={d.cover ?? '/brand/og.jpg'}>
   <!-- HERO -->
@@ -55,8 +55,8 @@ const { Content } = await render(entry);
   <!-- FEATURES + BODY -->
   <section class="mx-auto grid max-w-6xl gap-12 px-5 py-16 lg:grid-cols-3">
     <div class="lg:col-span-2">
-      <div class="text-lg leading-relaxed text-ink/75">
-        <Content />
+      <div class="space-y-4 text-lg leading-relaxed text-ink/75">
+        {bodyParagraphs.map((p) => <p>{p}</p>)}
       </div>
       {d.features.length > 0 && (
         <>

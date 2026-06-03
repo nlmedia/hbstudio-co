@@ -1,10 +1,10 @@
 ---
-import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import TemplateCard from '../../components/TemplateCard.astro';
 import { CMS, CMS_ORDER } from '../../data/cms';
+import { getTemplates } from '../../lib/catalog';
 
-const all = (await getCollection('templates')).sort((a, b) => a.data.order - b.data.order);
+const all = await getTemplates();
 ---
 <Base title="All templates — HB Studio Co" description="Browse premium templates for Shopify, WordPress, WooCommerce and more.">
   <section class="relative overflow-hidden">

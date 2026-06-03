@@ -1,0 +1,25 @@
+---
+export const prerender = false;
+import Admin from '../../../layouts/Admin.astro';
+import TemplateForm from '../../../components/admin/TemplateForm.astro';
+import { parseTemplateForm } from '../../../lib/templateForm';
+
+const supabase = Astro.locals.supabase!;
+const email = Astro.locals.user?.email ?? '';
+let error = '';
+
+if (Astro.request.method === 'POST') {
+  const row = parseTemplateForm(await Astro.request.formData());
+  if (!row.title || !row.slug) {
+    error = 'Title and slug are required.';
+  } else {
+    const { error: e } = await supabase.from('hb_templates').insert(row);
+    if (e) error = e.message;
+    else return Astro.redirect('/admin/templates?created=1');
+  }
+}
+---
+<Admin title="New template" active="templates" email={email}>
+  {error && <p class="mb-5 rounded-xl bg-[#fbeaea] px-4 py-3 text-sm text-[#b3261e]">{error}</p>}
+  <TemplateForm action="/admin/templates/new" submitLabel="Create template" />
+</Admin>

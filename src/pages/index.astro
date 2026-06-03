@@ -1,14 +1,14 @@
 ---
-import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import TemplateCard from '../components/TemplateCard.astro';
 import DeviceMockup from '../components/DeviceMockup.astro';
 import { CMS, CMS_ORDER } from '../data/cms';
+import { getTemplates } from '../lib/catalog';
 
-const all = (await getCollection('templates')).sort((a, b) => a.data.order - b.data.order);
-const featured = all.filter((t) => t.data.featured || t.data.status === 'available').slice(0, 3);
-const counts = Object.fromEntries(CMS_ORDER.map((k) => [k, all.filter((t) => t.data.cms === k && t.data.status === 'available').length]));
-const availableCount = all.filter((t) => t.data.status === 'available').length;
+const all = await getTemplates();
+const featured = all.filter((t) => t.data.featured || t.data.status === 'published').slice(0, 3);
+const counts = Object.fromEntries(CMS_ORDER.map((k) => [k, all.filter((t) => t.data.cms === k && t.data.status === 'published').length]));
+const availableCount = all.filter((t) => t.data.status === 'published').length;
 const marquee = ['Shopify', 'WordPress', 'WooCommerce', 'Webflow', 'Framer', 'Squarespace', 'Wix'];
 
 const steps = [

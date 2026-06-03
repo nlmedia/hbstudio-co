@@ -1,8 +1,8 @@
 ---
-import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import TemplateCard from '../../components/TemplateCard.astro';
 import { CMS, CMS_ORDER } from '../../data/cms';
+import { getTemplates } from '../../lib/catalog';
 
 export async function getStaticPaths() {
   return CMS_ORDER.map((cms) => ({ params: { cms } }));
@@ -10,9 +10,7 @@ export async function getStaticPaths() {
 
 const { cms } = Astro.params;
 const c = CMS[cms as keyof typeof CMS];
-const all = (await getCollection('templates'))
-  .filter((t) => t.data.cms === cms)
-  .sort((a, b) => a.data.order - b.data.order);
+const all = (await getTemplates()).filter((t) => t.data.cms === cms);
 ---
 <Base title={`${c.label} templates — HB Studio Co`} description={c.blurb}>
   <section class="relative overflow-hidden border-b border-line">

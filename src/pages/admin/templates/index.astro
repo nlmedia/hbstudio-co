@@ -1,11 +1,73 @@
 ---
 export const prerender = false;
 import Admin from '../../../layouts/Admin.astro';
+
+const supabase = Astro.locals.supabase!;
 const email = Astro.locals.user?.email ?? '';
+const { data: templates } = await supabase
+  .from('hb_templates')
+  .select('id, slug, title, cms, status, price, currency, cover, sort_order')
+  .order('sort_order', { ascending: true });
+
+const flash = Astro.url.searchParams.get('created') ? 'Template created.'
+  : Astro.url.searchParams.get('saved') ? 'Changes saved.'
+  : Astro.url.searchParams.get('deleted') ? 'Template deleted.' : '';
+
+const badge: Record<string, string> = {
+  published: 'bg-[#e6f4ea] text-[#1e7d34]',
+  draft: 'bg-surface-2 text-muted',
+  'coming-soon': 'bg-accent-soft text-accent',
+};
 ---
 <Admin title="Templates" active="templates" email={email}>
-  <div class="rounded-2xl border border-dashed border-line-strong bg-surface-2/40 p-12 text-center">
-    <h2 class="font-display text-xl font-semibold">Templates</h2>
-    <p class="mt-2 max-w-md mx-auto text-muted">Create, edit and publish your templates. Coming in the next phase.</p>
+  <div class="mb-6 flex items-center justify-between gap-4">
+    <p class="text-sm text-muted">{templates?.length ?? 0} templates</p>
+    <a href="/admin/templates/new" class="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition hover:bg-accent">+ New template</a>
   </div>
+
+  {flash && <p class="mb-5 rounded-xl bg-[#e6f4ea] px-4 py-3 text-sm text-[#1e7d34]">{flash}</p>}
+
+  <div class="overflow-hidden rounded-2xl border border-line bg-surface">
+    <table class="w-full text-sm">
+      <thead class="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
+        <tr>
+          <th class="px-5 py-3 font-medium">Template</th>
+          <th class="px-5 py-3 font-medium">Platform</th>
+          <th class="px-5 py-3 font-medium">Status</th>
+          <th class="px-5 py-3 font-medium">Price</th>
+          <th class="px-5 py-3 font-medium text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-line">
+        {(templates ?? []).map((t) => (
+          <tr class="hover:bg-surface-2/50">
+            <td class="px-5 py-3">
+              <a href={`/admin/templates/${t.id}`} class="flex items-center gap-3 font-medium hover:text-accent">
+                {t.cover
+                  ? <img src={t.cover} alt="" class="h-9 w-12 rounded-md object-cover" />
+                  : <span class="grid h-9 w-12 place-items-center rounded-md bg-surface-2 text-[10px] text-muted">—</span>}
+                {t.title}
+              </a>
+            </td>
+            <td class="px-5 py-3 capitalize text-muted">{t.cms}</td>
+            <td class="px-5 py-3"><span class:list={['rounded-full px-2.5 py-1 text-xs font-medium', badge[t.status] ?? 'bg-surface-2']}>{t.status}</span></td>
+            <td class="px-5 py-3">{t.price != null ? `${t.currency}${t.price}` : '—'}</td>
+            <td class="px-5 py-3">
+              <div class="flex items-center justify-end gap-2">
+                <a href={`/admin/templates/${t.id}`} class="rounded-lg border border-line px-3 py-1.5 text-xs font-medium transition hover:bg-surface-2">Edit</a>
+                <form method="POST" action={`/admin/templates/${t.id}`}>
+                  <input type="hidden" name="_action" value={t.status === 'published' ? 'unpublish' : 'publish'} />
+                  <button class="rounded-lg border border-line px-3 py-1.5 text-xs font-medium transition hover:bg-surface-2">
+                    {t.status === 'published' ? 'Unpublish' : 'Publish'}
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <p class="mt-4 text-xs text-muted">Published &amp; coming-soon templates appear on the public site. After changes, the live site updates on the next build (auto-rebuild hook coming next).</p>
 </Admin>
