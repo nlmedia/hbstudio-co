@@ -1,41 +1,72 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #0e0e12;
-  --color-ink-soft: #1a1a20;
-  --color-paper: #f8f7f4;
-  --color-paper-dim: #efede8;
-  --color-muted: #6b6b73;
-  --color-accent: #6d4aff;
-  --color-accent-700: #5639d6;
-  --color-accent-soft: #ece7ff;
-  --color-line: rgba(14, 14, 18, 0.10);
+  /* dark-first palette */
+  --color-ink: #08080b;          /* page background */
+  --color-surface: #101016;      /* cards */
+  --color-surface-2: #17171f;    /* elevated / hover */
+  --color-paper: #f4f3f1;        /* primary text */
+  --color-muted: #9a9aa6;        /* secondary text */
+  --color-line: rgba(255, 255, 255, 0.09);
+  --color-line-strong: rgba(255, 255, 255, 0.16);
+
+  --color-accent: #7c5cff;       /* primary violet */
+  --color-accent-2: #b9a6ff;
+  --color-accent-3: #4ad6c4;     /* secondary cyan/mint accent */
 
   --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-
-  --radius-xl2: 1.25rem;
 }
 
 @layer base {
   html {
     scroll-behavior: smooth;
     font-family: var(--font-sans);
-    background: var(--color-paper);
-    color: var(--color-ink);
+    background: var(--color-ink);
+    color: var(--color-paper);
     -webkit-font-smoothing: antialiased;
   }
-  body { margin: 0; }
-  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
+  body { margin: 0; overflow-x: hidden; }
+  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.025em; }
   a { color: inherit; text-decoration: none; }
   ::selection { background: var(--color-accent); color: #fff; }
-  :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; border-radius: 4px; }
+  :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; border-radius: 4px; }
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-track { background: var(--color-ink); }
+  ::-webkit-scrollbar-thumb { background: #26262f; border-radius: 999px; border: 2px solid var(--color-ink); }
 }
 
-/* gradient helpers (unlayered so they always apply where used) */
+/* ---------- gradient helpers ---------- */
 .grad-accent { background-image: linear-gradient(135deg, var(--color-accent), #9b6bff); }
-.text-grad { background: linear-gradient(120deg, var(--color-accent), #b07bff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.text-grad { background: linear-gradient(110deg, var(--color-accent-2), var(--color-accent) 45%, var(--color-accent-3)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.ring-glow { box-shadow: 0 0 0 1px var(--color-line), 0 30px 80px -20px rgba(124, 92, 255, 0.35); }
+
+/* ---------- scroll reveal ---------- */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.8s cubic-bezier(0.16, 0.8, 0.3, 1), transform 0.8s cubic-bezier(0.16, 0.8, 0.3, 1);
+  will-change: opacity, transform;
+}
+[data-reveal].in { opacity: 1; transform: none; }
+[data-reveal-scale] { opacity: 0; transform: scale(0.96); transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.16,0.8,0.3,1); }
+[data-reveal-scale].in { opacity: 1; transform: none; }
+
+/* ---------- marquee ---------- */
+.marquee { display: flex; overflow: hidden; user-select: none; gap: 0; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.marquee__track { display: flex; flex-shrink: 0; align-items: center; gap: 3.5rem; padding-right: 3.5rem; animation: marquee 28s linear infinite; }
+.marquee:hover .marquee__track { animation-play-state: paused; }
+@keyframes marquee { to { transform: translateX(-100%); } }
+
+/* ---------- shimmer underline link ---------- */
+.link-underline { position: relative; }
+.link-underline::after { content: ""; position: absolute; left: 0; bottom: -2px; height: 1px; width: 100%; background: currentColor; transform: scaleX(0); transform-origin: right; transition: transform 0.35s cubic-bezier(0.16,0.8,0.3,1); }
+.link-underline:hover::after { transform: scaleX(1); transform-origin: left; }
+
+/* ---------- floating blur orbs ---------- */
+.orb { position: absolute; border-radius: 9999px; filter: blur(120px); pointer-events: none; }
 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  [data-reveal], [data-reveal-scale] { opacity: 1 !important; transform: none !important; }
 }

@@ -36,12 +36,56 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
       rel="stylesheet"
     />
   </head>
-  <body class="bg-paper text-ink antialiased">
-    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-3 focus:rounded-lg focus:bg-ink focus:px-4 focus:py-2 focus:text-paper">Skip to content</a>
+  <body class="bg-ink text-paper antialiased">
+    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-3 focus:rounded-lg focus:bg-paper focus:px-4 focus:py-2 focus:text-ink">Skip to content</a>
     <Header />
     <main id="main">
       <slot />
     </main>
     <Footer />
+
+    <script>
+      // Scroll reveals
+      const els = document.querySelectorAll('[data-reveal], [data-reveal-scale]');
+      if (els.length) {
+        const io = new IntersectionObserver((entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+          });
+        }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+        els.forEach((el) => io.observe(el));
+      }
+
+      // Animated counters: <span data-count="1200" data-suffix="+">
+      const counters = document.querySelectorAll('[data-count]');
+      if (counters.length) {
+        const cio = new IntersectionObserver((entries) => {
+          entries.forEach((e) => {
+            if (!e.isIntersecting) return;
+            const el = e.target as HTMLElement;
+            cio.unobserve(el);
+            const target = parseFloat(el.dataset.count || '0');
+            const suffix = el.dataset.suffix || '';
+            const dur = 1400; const t0 = performance.now();
+            const tick = (now: number) => {
+              const p = Math.min((now - t0) / dur, 1);
+              const eased = 1 - Math.pow(1 - p, 3);
+              el.textContent = Math.round(target * eased).toString() + suffix;
+              if (p < 1) requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+          });
+        }, { threshold: 0.6 });
+        counters.forEach((c) => cio.observe(c));
+      }
+
+      // Header shadow on scroll
+      const header = document.querySelector('[data-header]');
+      if (header) {
+        const onScroll = () => header.classList.toggle('is-scrolled', window.scrollY > 12);
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+      }
+    </script>
   </body>
 </html>
