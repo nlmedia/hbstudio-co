@@ -1,0 +1,26 @@
+---
+interface Props {
+  desktop: string;
+  mobile?: string;
+  url?: string;
+}
+const { desktop, mobile, url = 'atelier.myshopify.com' } = Astro.props;
+---
+<div class="relative">
+  <div class="tilt" aria-hidden="true">
+    <div class="tilt__card overflow-hidden rounded-2xl border border-line bg-white shadow-[0_50px_100px_-35px_rgba(14,14,18,0.45)]">
+      <div class="flex items-center gap-1.5 border-b border-line px-4 py-3">
+        <span class="h-2.5 w-2.5 rounded-full bg-[#ff5f57]"></span>
+        <span class="h-2.5 w-2.5 rounded-full bg-[#febc2e]"></span>
+        <span class="h-2.5 w-2.5 rounded-full bg-[#28c840]"></span>
+        <span class="ml-3 truncate rounded-md bg-surface-2 px-3 py-1 text-xs text-muted">{url}</span>
+      </div>
+      <div class="mock-screen"><img src={desktop} alt="" class="mock-img" /></div>
+    </div>
+  </div>
+  {mobile && (
+    <div class="absolute -bottom-12 -left-4 z-10 hidden lg:block" style="transform: rotate(-5deg)" aria-hidden="true">
+      <div class="phone"><div class="phone__screen"><img src={mobile} alt="" class="phone__img" /></div></div>
+    </div>
+  )}
+</div>
