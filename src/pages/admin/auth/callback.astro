@@ -1,0 +1,15 @@
+---
+export const prerender = false;
+import { createSupabaseServer } from '../../../lib/supabase';
+
+const code = Astro.url.searchParams.get('code');
+const tokenHash = Astro.url.searchParams.get('token_hash');
+const supabase = createSupabaseServer(Astro.cookies, Astro.request.headers);
+
+if (code) {
+  await supabase.auth.exchangeCodeForSession(code);
+} else if (tokenHash) {
+  await supabase.auth.verifyOtp({ type: 'email', token_hash: tokenHash });
+}
+return Astro.redirect('/admin');
+---

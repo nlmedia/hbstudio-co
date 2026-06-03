@@ -1,0 +1,86 @@
+---
+export const prerender = false;
+import Admin from '../../layouts/Admin.astro';
+
+const supabase = Astro.locals.supabase!;
+const email = Astro.locals.user?.email ?? '';
+
+const [pubRes, totRes, subRes, salesRes, recentSales, recentSubs] = await Promise.all([
+  supabase.from('hb_templates').select('*', { count: 'exact', head: true }).eq('status', 'published'),
+  supabase.from('hb_templates').select('*', { count: 'exact', head: true }),
+  supabase.from('hb_subscribers').select('*', { count: 'exact', head: true }).eq('status', 'subscribed'),
+  supabase.from('hb_sales').select('amount'),
+  supabase.from('hb_sales').select('item, amount, email, created_at').order('created_at', { ascending: false }).limit(5),
+  supabase.from('hb_subscribers').select('email, created_at').order('created_at', { ascending: false }).limit(5),
+]);
+
+const publishedCount = pubRes.count ?? 0;
+const totalTemplates = totRes.count ?? 0;
+const subscribers = subRes.count ?? 0;
+const sales = salesRes.data ?? [];
+const revenue = sales.reduce((s, r) => s + (r.amount || 0), 0) / 100;
+const salesCount = sales.length;
+
+const kpis = [
+  { label: 'Revenue', value: `€${revenue.toLocaleString('fr-FR')}`, sub: 'all time', icon: 'M3 3v18h18M7 14l3-3 3 3 5-5' },
+  { label: 'Sales', value: salesCount, sub: 'orders', icon: 'M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0' },
+  { label: 'Subscribers', value: subscribers, sub: 'newsletter', icon: 'M4 4h16v16H4zM4 7l8 6 8-6' },
+  { label: 'Templates', value: `${publishedCount}/${totalTemplates}`, sub: 'published / total', icon: 'M4 5h16M4 12h16M4 19h10' },
+];
+const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+---
+<Admin title="Dashboard" active="dashboard" email={email}>
+  <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    {kpis.map((k) => (
+      <div class="rounded-2xl border border-line bg-surface p-5">
+        <div class="flex items-center justify-between">
+          <span class="text-sm text-muted">{k.label}</span>
+          <span class="grid h-8 w-8 place-items-center rounded-lg bg-accent-soft text-accent">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d={k.icon} /></svg>
+          </span>
+        </div>
+        <p class="mt-3 font-display text-3xl font-bold">{k.value}</p>
+        <p class="mt-1 text-xs text-muted">{k.sub}</p>
+      </div>
+    ))}
+  </div>
+
+  <div class="mt-8 grid gap-6 lg:grid-cols-2">
+    <section class="rounded-2xl border border-line bg-surface p-6">
+      <h2 class="font-display text-lg font-semibold">Recent sales</h2>
+      {recentSales.data && recentSales.data.length > 0 ? (
+        <ul class="mt-4 divide-y divide-line text-sm">
+          {recentSales.data.map((s) => (
+            <li class="flex items-center justify-between py-3">
+              <span><span class="font-medium">{s.item}</span> <span class="text-muted">· {s.email}</span></span>
+              <span class="font-medium">€{((s.amount || 0) / 100).toFixed(0)}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="mt-4 text-sm text-muted">No sales yet. Connect Stripe and sales will appear here.</p>
+      )}
+    </section>
+
+    <section class="rounded-2xl border border-line bg-surface p-6">
+      <h2 class="font-display text-lg font-semibold">New subscribers</h2>
+      {recentSubs.data && recentSubs.data.length > 0 ? (
+        <ul class="mt-4 divide-y divide-line text-sm">
+          {recentSubs.data.map((s) => (
+            <li class="flex items-center justify-between py-3">
+              <span class="truncate">{s.email}</span>
+              <span class="shrink-0 text-muted">{fmt(s.created_at)}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="mt-4 text-sm text-muted">No subscribers yet.</p>
+      )}
+    </section>
+  </div>
+
+  <div class="mt-8 rounded-2xl border border-dashed border-line-strong bg-surface-2/40 p-6">
+    <h2 class="font-display text-lg font-semibold">Next phases</h2>
+    <p class="mt-1 text-sm text-muted">Templates editor, Stripe sales sync, subscriber management, and the Brevo auto-newsletter are coming in the next phases. The secure foundation (auth + database + dashboard) is ready.</p>
+  </div>
+</Admin>

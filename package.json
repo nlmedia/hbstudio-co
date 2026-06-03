@@ -11,9 +11,12 @@
   },
   "dependencies": {
     "astro": "^5.6.1",
+    "@astrojs/netlify": "^6.2.0",
     "@tailwindcss/vite": "^4.0.17",
     "tailwindcss": "^4.0.17",
     "stripe": "^17.5.0",
-    "@netlify/blobs": "^8.1.0"
+    "@netlify/blobs": "^8.1.0",
+    "@supabase/supabase-js": "^2.47.10",
+    "@supabase/ssr": "^0.5.2"
   }
 }

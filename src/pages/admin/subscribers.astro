@@ -1,0 +1,11 @@
+---
+export const prerender = false;
+import Admin from '../../layouts/Admin.astro';
+const email = Astro.locals.user?.email ?? '';
+---
+<Admin title="Subscribers" active="subscribers" email={email}>
+  <div class="rounded-2xl border border-dashed border-line-strong bg-surface-2/40 p-12 text-center">
+    <h2 class="font-display text-xl font-semibold">Subscribers</h2>
+    <p class="mt-2 max-w-md mx-auto text-muted">Manage newsletter subscribers, search and export. Coming next.</p>
+  </div>
+</Admin>

@@ -1,0 +1,7 @@
+---
+export const prerender = false;
+import { createSupabaseServer } from '../../../lib/supabase';
+const supabase = createSupabaseServer(Astro.cookies, Astro.request.headers);
+await supabase.auth.signOut();
+return Astro.redirect('/admin/login');
+---
