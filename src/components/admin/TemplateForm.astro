@@ -68,6 +68,17 @@ const label = 'block text-xs font-medium text-ink/70 mb-1.5';
     <label><span class={label}>URL docs</span><input class={field} name="docs_url" value={t.docs_url ?? ''} /></label>
   </div>
 
+  <fieldset class="grid gap-2 rounded-2xl border border-line p-4">
+    <legend class="px-2 text-xs font-semibold uppercase tracking-wide text-muted">Fichier livrable (téléchargement après achat)</legend>
+    <div class="flex gap-2">
+      <input class={field} name="deliverable" value={t.deliverable ?? ''} placeholder="ex. atelier/atelier-v1.0.0.zip (chemin dans le stockage privé)" data-deliverable-field />
+      <label class="shrink-0 cursor-pointer rounded-xl border border-line px-3 py-2.5 text-xs font-medium transition hover:bg-surface-2">
+        Importer le ZIP<input type="file" accept=".zip,application/zip" class="hidden" data-deliverable-upload />
+      </label>
+    </div>
+    <p class="text-xs text-muted">Stocké dans un bucket privé. Livré uniquement via un lien signé temporaire après un paiement réussi.</p>
+  </fieldset>
+
   <div class="flex items-center gap-3 pt-2">
     <button type="submit" class="rounded-full bg-ink px-6 py-2.5 text-sm font-medium text-paper transition hover:bg-accent">{submitLabel}</button>
     <a href="/admin/templates" class="text-sm font-medium text-muted hover:text-ink">Annuler</a>
@@ -109,5 +120,27 @@ const label = 'block text-xs font-medium text-ink/70 mb-1.5';
       if (target) target.value = data.publicUrl;
       if (msg) msg.textContent = '✓ Uploaded';
     });
+  });
+
+  // Deliverable (private bucket) — uploaded server-side via an admin-only endpoint.
+  const delInput = document.querySelector('[data-deliverable-upload]') as HTMLInputElement | null;
+  delInput?.addEventListener('change', async (e) => {
+    const file = (e.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const slug = (document.querySelector('[name="slug"]') as HTMLInputElement)?.value || 'misc';
+    if (msg) msg.textContent = `Envoi de ${file.name}… (cela peut prendre un moment)`;
+    const fd = new FormData();
+    fd.append('file', file);
+    fd.append('slug', slug);
+    try {
+      const res = await fetch('/admin/api/upload-deliverable', { method: 'POST', body: fd });
+      const json = await res.json();
+      if (!res.ok) { if (msg) msg.textContent = 'Échec : ' + (json.error || res.status); return; }
+      const target = document.querySelector('[data-deliverable-field]') as HTMLInputElement;
+      if (target) target.value = json.path;
+      if (msg) msg.textContent = '✓ Fichier livrable importé';
+    } catch (err) {
+      if (msg) msg.textContent = 'Échec de l\'upload : ' + (err as Error).message;
+    }
   });
 </script>

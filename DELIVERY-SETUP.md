@@ -2,8 +2,9 @@
 
 Flow: customer pays → Stripe sends a `checkout.session.completed` webhook →
 `/api/stripe-webhook` emails a **signed, 7-day download link** → `/api/download`
-verifies the link and serves the file from a **private Netlify Blobs store**
-(the files are never in the public repo).
+verifies the link, resolves the file **per template from the DB**, and redirects to a
+short-lived **Supabase Storage signed URL** from the private `deliverables` bucket
+(the files are never public nor in the repo).
 
 ## Prerequisites
 Stripe Checkout already works (see `STRIPE-SETUP.md`, `STRIPE_SECRET_KEY` set).
@@ -14,6 +15,8 @@ Stripe Checkout already works (see `STRIPE-SETUP.md`, `STRIPE_SECRET_KEY` set).
 | `STRIPE_SECRET_KEY` | your Stripe secret key (already set for checkout) |
 | `STRIPE_WEBHOOK_SECRET` | from the webhook you create in step 2 (`whsec_…`) |
 | `DOWNLOAD_SECRET` | any long random string (e.g. `openssl rand -hex 32`) |
+| `PUBLIC_SUPABASE_URL` | Supabase project URL (resolves the deliverable + signs the URL) |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service-role key (reads the private bucket) |
 | `RESEND_API_KEY` | from https://resend.com (free tier) |
 | `EMAIL_FROM` | e.g. `HB Studio Co <support@webcomsysteme.com>` (verify the domain in Resend; or use `onboarding@resend.dev` to test) |
 
@@ -26,17 +29,13 @@ Stripe Checkout already works (see `STRIPE-SETUP.md`, `STRIPE_SECRET_KEY` set).
 - Save, then copy the **Signing secret** (`whsec_…`) → set `STRIPE_WEBHOOK_SECRET` in Netlify.
 
 ## 3. Upload the deliverable files (private — not in the repo)
-Build the buyer package(s) and upload to the private Blobs store. Keys must be
-`atelier` and/or `all-access` (see `FILES` in `netlify/functions/download.mjs`).
+**Per template:** in **Admin → Templates → (edit) → Fichier livrable**, click
+“Importer le ZIP”. The file is stored in the private Supabase `deliverables` bucket
+and its path is saved on the template — that's all.
 
-```bash
-# Personal access token: https://app.netlify.com/user/applications
-NETLIFY_SITE_ID=cb16d4a2-8ceb-4bbd-a5fa-ee0d7bbaa6e0 \
-NETLIFY_AUTH_TOKEN=<your-token> \
-node tools/upload-deliverable.mjs atelier "../Shopify/themes/atelier-v1.0.0.zip"
-```
-
-(Repeat with `all-access` and a bundle zip when ready.)
+**License bundles** (`single`/`extended`/`all-access`) resolve to fixed paths in the
+same bucket (see `BUNDLES` in `netlify/functions/download.mjs`, e.g. `bundles/atelier.zip`).
+Upload those once via the Supabase dashboard (Storage → `deliverables`) at the matching paths.
 
 ## 4. Test end to end
 - Use Stripe **test mode** keys + card `4242 4242 4242 4242`.
@@ -47,5 +46,6 @@ node tools/upload-deliverable.mjs atelier "../Shopify/themes/atelier-v1.0.0.zip"
 ## Notes
 - Links expire after 7 days (`DOWNLOAD_TTL_MS` in `stripe-webhook.mjs`). Adjust if needed.
 - The download is gated by an HMAC signature tied to item + email + expiry — links can’t be forged or guessed.
-- To add a new product: add it to `PRODUCTS` (webhook), `FILES` (download), `CATALOG`
-  (create-checkout), and upload its file with a matching key.
+- To sell a new template: just create/publish it in the admin and upload its
+  “Fichier livrable” — pricing, checkout and delivery are all DB-driven. No code changes.
+- Legacy: `tools/upload-deliverable.mjs` (Netlify Blobs) is no longer used.

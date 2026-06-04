@@ -47,6 +47,7 @@ create table if not exists public.hb_templates (
   demo_url text,
   buy_url text,
   docs_url text,
+  deliverable text, -- path in the private "deliverables" storage bucket
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

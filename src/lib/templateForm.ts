@@ -27,5 +27,6 @@ export function parseTemplateForm(form: FormData) {
     demo_url: str('demo_url') || null,
     buy_url: str('buy_url') || null,
     docs_url: str('docs_url') || null,
+    deliverable: str('deliverable') || null,
   };
 }

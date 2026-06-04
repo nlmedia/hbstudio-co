@@ -19,34 +19,45 @@ async function recordSale(session, item, productName, email) {
   }, { onConflict: 'id' });
 }
 
-// item -> { name, file }  (file = Netlify Blobs key under the "deliverables" store)
-const PRODUCTS = {
-  atelier:      { name: 'Atelier — Shopify theme', file: 'atelier' },
-  single:       { name: 'Single license',          file: 'atelier' },
-  extended:     { name: 'Extended license',        file: 'atelier' },
-  'all-access': { name: 'All-Access bundle',        file: 'all-access' },
+// Display names for fixed license bundles (templates resolve their name from the DB).
+const BUNDLE_NAMES = {
+  single: 'Single license',
+  extended: 'Extended license',
+  'all-access': 'All-Access bundle',
 };
 
 const DOWNLOAD_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export const config = { path: '/api/stripe-webhook' };
 
-function sign(item, file, email, exp) {
+function sign(item, email, exp) {
   return crypto
     .createHmac('sha256', process.env.DOWNLOAD_SECRET)
-    .update(`${item}.${file}.${email}.${exp}`)
+    .update(`${item}.${email}.${exp}`)
     .digest('hex');
 }
 
-async function sendEmail(to, item, link) {
+/** Friendly product name: bundle map, else the template title from the DB. */
+async function productName(item) {
+  if (BUNDLE_NAMES[item]) return BUNDLE_NAMES[item];
+  const url = process.env.PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (url && key) {
+    const sb = createClient(url, key, { auth: { persistSession: false } });
+    const { data } = await sb.from('hb_templates').select('title').eq('slug', item).maybeSingle();
+    if (data?.title) return data.title;
+  }
+  return item;
+}
+
+async function sendEmail(to, name, link) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM || 'HB Studio Co <onboarding@resend.dev>';
   if (!apiKey) return; // email not configured yet
-  const product = PRODUCTS[item];
   const html = `
     <div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:auto;color:#0e0e12">
       <h1 style="font-family:Georgia,serif">Thank you for your purchase 🎉</h1>
-      <p>Your <strong>${product.name}</strong> is ready to download.</p>
+      <p>Your <strong>${name}</strong> is ready to download.</p>
       <p><a href="${link}" style="display:inline-block;background:#0e0e12;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:600">Download your files</a></p>
       <p style="font-size:13px;color:#6b6b73">This link is valid for 7 days. Documentation is included in the download.<br>Questions? Just reply to this email.</p>
       <p style="font-size:12px;color:#9a9aa6">— HB Studio Co</p>
@@ -54,7 +65,7 @@ async function sendEmail(to, item, link) {
   await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from, to, subject: `Your ${product.name} download`, html }),
+    body: JSON.stringify({ from, to, subject: `Your ${name} download`, html }),
   });
 }
 
@@ -78,16 +89,16 @@ export default async (req) => {
     const s = event.data.object;
     const item = s.metadata?.item;
     const email = s.customer_details?.email || s.customer_email;
-    const product = item && PRODUCTS[item];
+    const name = item ? await productName(item) : null;
     // Record the sale in the admin DB (independent of email delivery).
-    try { await recordSale(s, item, product?.name, email); } catch { /* logged by Netlify */ }
-    if (product && email) {
+    try { await recordSale(s, item, name, email); } catch { /* logged by Netlify */ }
+    if (item && email) {
       const exp = Date.now() + DOWNLOAD_TTL_MS;
-      const sigv = sign(item, product.file, email, exp);
+      const sigv = sign(item, email, exp);
       const origin = process.env.URL || 'https://hbstudio-co.netlify.app';
       const params = new URLSearchParams({ item, email, exp: String(exp), sig: sigv });
       const link = `${origin}/api/download?${params.toString()}`;
-      try { await sendEmail(email, item, link); } catch { /* logged by Netlify */ }
+      try { await sendEmail(email, name, link); } catch { /* logged by Netlify */ }
     }
   }
 
