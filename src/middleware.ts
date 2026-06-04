@@ -1,5 +1,5 @@
 import { defineMiddleware } from 'astro:middleware';
-import { createSupabaseServer } from './lib/supabase';
+import { createSupabaseServer, createSupabaseAdmin } from './lib/supabase';
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const { url, cookies, request, locals } = context;
@@ -12,10 +12,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const supabase = createSupabaseServer(cookies, request.headers);
   const { data: { user } } = await supabase.auth.getUser();
 
-  // DEV-ONLY preview bypass (never active in production builds)
+  // DEV-ONLY preview bypass (never active in production builds).
+  // Use the service-role client when available so writes work locally (RLS
+  // requires an authenticated admin, which the preview session is not).
   if (!user && import.meta.env.DEV) {
     locals.user = { email: 'preview@local (dev)' } as any;
-    locals.supabase = supabase;
+    locals.supabase = createSupabaseAdmin() ?? supabase;
     return next();
   }
 

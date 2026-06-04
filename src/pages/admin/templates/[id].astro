@@ -24,8 +24,9 @@ if (Astro.request.method === 'POST') {
   if (!row.title || !row.slug) {
     error = 'Le titre et le slug sont requis.';
   } else {
-    const { error: e } = await supabase.from('hb_templates').update(row).eq('id', id);
+    const { data: updated, error: e } = await supabase.from('hb_templates').update(row).eq('id', id).select();
     if (e) error = e.message;
+    else if (!updated || updated.length === 0) error = "Aucune modification enregistrée — droits insuffisants (connexion admin requise).";
     else return Astro.redirect('/admin/templates?saved=1');
   }
 }

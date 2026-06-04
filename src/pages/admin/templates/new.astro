@@ -13,8 +13,9 @@ if (Astro.request.method === 'POST') {
   if (!row.title || !row.slug) {
     error = 'Le titre et le slug sont requis.';
   } else {
-    const { error: e } = await supabase.from('hb_templates').insert(row);
+    const { data: inserted, error: e } = await supabase.from('hb_templates').insert(row).select();
     if (e) error = e.message;
+    else if (!inserted || inserted.length === 0) error = "Création impossible — droits insuffisants (connexion admin requise).";
     else return Astro.redirect('/admin/templates?created=1');
   }
 }
