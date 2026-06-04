@@ -1,12 +1,30 @@
 import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
 
-// Server-side catalogue (amounts in cents, EUR). Edit prices here.
+// Fixed license bundles (amounts in cents, EUR). Templates are priced from the DB.
 const CATALOG = {
-  atelier:      { name: 'Atelier — Shopify theme',     amount: 16900 },
   single:       { name: 'Single license',              amount: 6900 },
   extended:     { name: 'Extended license (5 stores)', amount: 14900 },
   'all-access': { name: 'All-Access (1 year)',         amount: 29900 },
 };
+
+/** Resolve a template purchase from the DB by slug, applying an active promo. */
+async function templateProduct(slug) {
+  const url = process.env.PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const anon = process.env.PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !anon) return null;
+  const sb = createClient(url, anon, { auth: { persistSession: false } });
+  const { data: t } = await sb
+    .from('hb_templates')
+    .select('title, cms, price, sale_price, sale_ends_at, status')
+    .eq('slug', slug)
+    .maybeSingle();
+  if (!t || t.status !== 'published' || t.price == null) return null;
+  const notExpired = !t.sale_ends_at || new Date(t.sale_ends_at).getTime() > Date.now();
+  const onSale = t.sale_price != null && t.sale_price < t.price && notExpired;
+  const eur = onSale ? Number(t.sale_price) : Number(t.price);
+  return { name: `${t.title} — ${t.cms} template`, amount: Math.round(eur * 100) };
+}
 
 export const config = { path: '/api/checkout' };
 
@@ -23,7 +41,8 @@ export default async (req) => {
 
   let item;
   try { ({ item } = await req.json()); } catch { /* ignore */ }
-  const product = CATALOG[item];
+  // License bundles come from the static catalogue; anything else is a template slug priced from the DB.
+  const product = CATALOG[item] || (item ? await templateProduct(item) : null);
   if (!product) {
     return Response.json({ error: 'unknown_item' }, { status: 400 });
   }

@@ -1,5 +1,23 @@
 import Stripe from 'stripe';
 import crypto from 'node:crypto';
+import { createClient } from '@supabase/supabase-js';
+
+/** Record a paid order into hb_sales (admin DB). Idempotent on the Stripe session id. */
+async function recordSale(session, item, productName, email) {
+  const url = process.env.PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceKey) return; // DB sync not configured
+  const sb = createClient(url, serviceKey, { auth: { persistSession: false } });
+  await sb.from('hb_sales').upsert({
+    id: session.id,
+    item: productName || item || 'unknown',
+    amount: session.amount_total ?? null,
+    currency: session.currency ?? 'eur',
+    email: email ?? null,
+    status: 'paid',
+    raw: { item, payment_intent: session.payment_intent, customer: session.customer },
+  }, { onConflict: 'id' });
+}
 
 // item -> { name, file }  (file = Netlify Blobs key under the "deliverables" store)
 const PRODUCTS = {
@@ -61,6 +79,8 @@ export default async (req) => {
     const item = s.metadata?.item;
     const email = s.customer_details?.email || s.customer_email;
     const product = item && PRODUCTS[item];
+    // Record the sale in the admin DB (independent of email delivery).
+    try { await recordSale(s, item, product?.name, email); } catch { /* logged by Netlify */ }
     if (product && email) {
       const exp = Date.now() + DOWNLOAD_TTL_MS;
       const sigv = sign(item, product.file, email, exp);
