@@ -32,6 +32,8 @@ create table if not exists public.hb_templates (
   description text,
   body text,
   price numeric,
+  sale_price numeric,
+  sale_ends_at timestamptz,
   currency text not null default '€',
   status text not null default 'draft' check (status in ('draft','published','coming-soon')),
   featured boolean not null default false,

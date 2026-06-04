@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import DeviceMockup from '../../components/DeviceMockup.astro';
+import Countdown from '../../components/Countdown.astro';
 import { CMS } from '../../data/cms';
 import { getTemplates } from '../../lib/catalog';
 
@@ -26,17 +27,33 @@ const bodyParagraphs = (d.body || '').split(/\n\s*\n/).map((p) => p.trim()).filt
         <h1 class="mt-5 font-display text-5xl font-bold leading-tight">{d.title}</h1>
         <p class="mt-3 text-lg text-paper/70">{d.tagline}</p>
         <p class="mt-5 max-w-md text-paper/60">{d.description}</p>
-        <div class="mt-8 flex flex-wrap items-center gap-4">
-          {soon ? (
-            <a href="/contact" class="rounded-full bg-paper px-6 py-3 font-medium text-ink transition hover:bg-accent hover:text-white">Notify me at launch</a>
-          ) : (
-            <>
-              <a href="#" data-checkout={entry.id} class="rounded-full bg-paper px-6 py-3 font-medium text-ink transition hover:bg-accent hover:text-white">Buy — {d.currency}{d.price}</a>
+        {soon ? (
+          <div class="mt-8">
+            <a href="/contact" class="inline-block rounded-full bg-paper px-6 py-3 font-medium text-ink transition hover:bg-accent hover:text-white">Notify me at launch</a>
+          </div>
+        ) : (
+          <div class="mt-8" data-promo-scope>
+            {d.onSale && d.saleEndsAt && (
+              <div data-when-promo class="mb-5">
+                <Countdown deadline={d.saleEndsAt} dark />
+              </div>
+            )}
+            <div class="flex flex-wrap items-center gap-4">
+              <a href="#" data-checkout={entry.id} class="rounded-full bg-paper px-6 py-3 font-medium text-ink transition hover:bg-accent hover:text-white">
+                {d.onSale ? (
+                  <>
+                    <span data-when-promo>Buy — <span class="text-ink/45 line-through">{d.currency}{d.price}</span> {d.currency}{d.salePrice}</span>
+                    <span data-when-ended class="hidden">Buy — {d.currency}{d.price}</span>
+                  </>
+                ) : (
+                  <>Buy — {d.currency}{d.price}</>
+                )}
+              </a>
               {d.demoUrl && <a href={d.demoUrl} target="_blank" rel="noopener" class="rounded-full border border-white/25 px-6 py-3 font-medium transition hover:bg-white/10">Live demo</a>}
-            </>
-          )}
-        </div>
-        {!soon && <p class="mt-3 text-sm text-paper/50">One-time payment · single store · lifetime updates</p>}
+            </div>
+            <p class="mt-3 text-sm text-paper/50">One-time payment · single store · lifetime updates</p>
+          </div>
+        )}
       </div>
       <div>
         {d.preview ? (
@@ -72,11 +89,29 @@ const bodyParagraphs = (d.body || '').split(/\n\s*\n/).map((p) => p.trim()).filt
       )}
     </div>
     <aside class="lg:col-span-1">
-      <div class="sticky top-24 rounded-2xl border border-line bg-surface p-6">
-        <div class="flex items-baseline justify-between">
+      <div class="sticky top-24 rounded-2xl border border-line bg-surface p-6" data-promo-scope>
+        <div class="flex items-baseline justify-between gap-2">
           <span class="text-sm text-muted">Price</span>
-          <span class="font-display text-2xl font-bold">{d.price != null ? `${d.currency}${d.price}` : '—'}</span>
+          {d.price != null ? (
+            d.onSale ? (
+              <span class="text-right">
+                <span data-when-promo class="flex items-baseline justify-end gap-2">
+                  <span class="text-sm font-medium text-muted line-through">{d.currency}{d.price}</span>
+                  <span class="font-display text-2xl font-bold text-[#e23b3b]">{d.currency}{d.salePrice}</span>
+                  <span class="rounded-md bg-[#e23b3b] px-1.5 py-0.5 text-xs font-bold text-white">−{d.discountPct}%</span>
+                </span>
+                <span data-when-ended class="hidden font-display text-2xl font-bold">{d.currency}{d.price}</span>
+              </span>
+            ) : (
+              <span class="font-display text-2xl font-bold">{d.currency}{d.price}</span>
+            )
+          ) : <span class="font-display text-2xl font-bold">—</span>}
         </div>
+        {!soon && d.onSale && d.saleEndsAt && (
+          <div data-when-promo class="mt-4 rounded-xl border border-[#e23b3b]/20 bg-[#e23b3b]/5 p-3">
+            <Countdown deadline={d.saleEndsAt} compact />
+          </div>
+        )}
         <div class="mt-4 space-y-2 border-t border-line pt-4 text-sm text-ink/70">
           {d.tags.map((t: string) => <span class="mr-1.5 inline-block rounded-full bg-surface-2 px-2.5 py-1 text-xs">{t}</span>)}
         </div>

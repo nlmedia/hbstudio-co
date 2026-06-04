@@ -26,6 +26,17 @@ const label = 'block text-xs font-medium text-ink/70 mb-1.5';
   </div>
   <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="featured" checked={!!t.featured} /> Mis en avant sur l'accueil</label>
 
+  <fieldset class="grid gap-4 rounded-2xl border border-line p-4 sm:grid-cols-2">
+    <legend class="px-2 text-xs font-semibold uppercase tracking-wide text-muted">Promotion (optionnel)</legend>
+    <label><span class={label}>Prix promo (€, vide = pas de promo)</span><input class={field} name="sale_price" type="number" step="1" value={t.sale_price ?? ''} placeholder="ex. 129" /></label>
+    <label>
+      <span class={label}>Fin de la promo (vide = sans limite)</span>
+      <input class={field} type="datetime-local" data-sale-ends-local />
+      <input type="hidden" name="sale_ends_at" value={t.sale_ends_at ?? ''} data-sale-ends-iso />
+    </label>
+    <p class="text-xs text-muted sm:col-span-2">Le prix promo doit être inférieur au prix normal. Le prix barré et le compte à rebours s'affichent automatiquement sur le site jusqu'à la date de fin.</p>
+  </fieldset>
+
   <label><span class={label}>Accroche</span><input class={field} name="tagline" value={t.tagline ?? ''} /></label>
   <label><span class={label}>Description courte</span><textarea class={field} name="description" rows="3">{t.description ?? ''}</textarea></label>
   <label><span class={label}>Contenu (paragraphes, ligne vide entre chaque)</span><textarea class={field} name="body" rows="4">{t.body ?? ''}</textarea></label>
@@ -68,6 +79,22 @@ const label = 'block text-xs font-medium text-ink/70 mb-1.5';
   import { createSupabaseBrowser } from '../../lib/supabase';
   const supabase = createSupabaseBrowser();
   const msg = document.getElementById('upmsg');
+
+  // Promo end date: visible <datetime-local> (local time) ⇄ hidden ISO (UTC) submitted to the DB
+  const localInput = document.querySelector('[data-sale-ends-local]') as HTMLInputElement | null;
+  const isoInput = document.querySelector('[data-sale-ends-iso]') as HTMLInputElement | null;
+  if (localInput && isoInput) {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    if (isoInput.value) {
+      const d = new Date(isoInput.value);
+      if (!isNaN(d.getTime())) {
+        localInput.value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      }
+    }
+    localInput.addEventListener('change', () => {
+      isoInput.value = localInput.value ? new Date(localInput.value).toISOString() : '';
+    });
+  }
   document.querySelectorAll('[data-img-upload]').forEach((input) => {
     input.addEventListener('change', async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];

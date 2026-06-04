@@ -6,7 +6,7 @@ const supabase = Astro.locals.supabase!;
 const email = Astro.locals.user?.email ?? '';
 const { data: templates } = await supabase
   .from('hb_templates')
-  .select('id, slug, title, cms, status, price, currency, cover, sort_order')
+  .select('id, slug, title, cms, status, price, sale_price, sale_ends_at, currency, cover, sort_order')
   .order('sort_order', { ascending: true });
 
 const flash = Astro.url.searchParams.get('created') ? 'Template créé.'
@@ -19,6 +19,9 @@ const badge: Record<string, string> = {
   'coming-soon': 'bg-accent-soft text-accent',
 };
 const statusLabel: Record<string, string> = { published: 'Publié', draft: 'Brouillon', 'coming-soon': 'Bientôt' };
+const isOnSale = (t: any) =>
+  t.price != null && t.sale_price != null && Number(t.sale_price) < Number(t.price) &&
+  (!t.sale_ends_at || new Date(t.sale_ends_at).getTime() > Date.now());
 ---
 <Admin title="Templates" active="templates" email={email}>
   <div class="mb-6 flex items-center justify-between gap-4">
@@ -52,7 +55,15 @@ const statusLabel: Record<string, string> = { published: 'Publié', draft: 'Brou
             </td>
             <td class="px-5 py-3 capitalize text-muted">{t.cms}</td>
             <td class="px-5 py-3"><span class:list={['rounded-full px-2.5 py-1 text-xs font-medium', badge[t.status] ?? 'bg-surface-2']}>{statusLabel[t.status] ?? t.status}</span></td>
-            <td class="px-5 py-3">{t.price != null ? `${t.currency}${t.price}` : '—'}</td>
+            <td class="px-5 py-3">
+              {t.price == null ? '—' : isOnSale(t) ? (
+                <span class="flex items-baseline gap-1.5">
+                  <span class="text-xs text-muted line-through">{t.currency}{t.price}</span>
+                  <span class="font-medium text-[#e23b3b]">{t.currency}{t.sale_price}</span>
+                  <span class="rounded bg-[#fbeaea] px-1.5 py-0.5 text-[10px] font-semibold text-[#e23b3b]">PROMO</span>
+                </span>
+              ) : `${t.currency}${t.price}`}
+            </td>
             <td class="px-5 py-3">
               <div class="flex items-center justify-end gap-2">
                 <a href={`/admin/templates/${t.id}`} class="rounded-lg border border-line px-3 py-1.5 text-xs font-medium transition hover:bg-surface-2">Modifier</a>

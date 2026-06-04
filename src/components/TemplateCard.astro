@@ -7,7 +7,7 @@ const cms = CMS[d.cms as keyof typeof CMS];
 const href = `/templates/${entry.id}`;
 const soon = d.status === 'coming-soon';
 ---
-<a href={href} data-reveal class="group block overflow-hidden rounded-2xl border border-line bg-surface transition duration-300 hover:-translate-y-1.5 hover:border-line-strong hover:bg-surface-2 hover:shadow-[0_30px_70px_-25px_rgba(124,92,255,0.45)]">
+<a href={href} data-reveal data-promo-scope={soon ? undefined : ''} class="group block overflow-hidden rounded-2xl border border-line bg-surface transition duration-300 hover:-translate-y-1.5 hover:border-line-strong hover:bg-surface-2 hover:shadow-[0_30px_70px_-25px_rgba(124,92,255,0.45)]">
   <div class="relative aspect-[16/11] overflow-hidden bg-surface-2">
     {d.cover ? (
       <img src={d.cover} alt={d.title} loading="lazy" class="h-full w-full object-cover object-top transition duration-[650ms] ease-out group-hover:scale-[1.06]" />
@@ -21,12 +21,25 @@ const soon = d.status === 'coming-soon';
       <span class="h-2 w-2 rounded-full" style={`background:${cms.accent}`}></span>{cms.label}
     </span>
     {soon && <span class="absolute right-3 top-3 rounded-full bg-paper px-2.5 py-1 text-xs font-medium text-ink">Coming soon</span>}
+    {!soon && d.onSale && (
+      <span data-when-promo class="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-[#e23b3b] px-2.5 py-1 text-xs font-bold text-white shadow-lg">−{d.discountPct}%</span>
+    )}
   </div>
   <div class="p-5">
     <div class="flex items-baseline justify-between gap-3">
       <h3 class="font-display text-lg font-semibold">{d.title}</h3>
       {d.price != null ? (
-        <span class="shrink-0 font-display text-lg font-bold">{d.currency}{d.price}</span>
+        d.onSale ? (
+          <span class="shrink-0 text-right leading-none">
+            <span data-when-promo class="flex items-baseline justify-end gap-1.5">
+              <span class="text-xs font-medium text-muted line-through">{d.currency}{d.price}</span>
+              <span class="font-display text-lg font-bold text-[#e23b3b]">{d.currency}{d.salePrice}</span>
+            </span>
+            <span data-when-ended class="hidden font-display text-lg font-bold">{d.currency}{d.price}</span>
+          </span>
+        ) : (
+          <span class="shrink-0 font-display text-lg font-bold">{d.currency}{d.price}</span>
+        )
       ) : (
         <span class="shrink-0 text-sm text-muted">—</span>
       )}

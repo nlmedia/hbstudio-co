@@ -1,0 +1,81 @@
+---
+/**
+ * Visible, designed promo countdown.
+ * Renders a labelled days/hours/minutes/seconds timer that ticks client-side.
+ * When the deadline passes it hides itself and, if wrapped in a
+ * `[data-promo-scope]` element, swaps `[data-when-promo]` → `[data-when-ended]`.
+ */
+interface Props { deadline: string; dark?: boolean; label?: string; compact?: boolean; class?: string; }
+const { deadline, dark = false, label = 'Limited offer — ends in', compact = false, class: extra = '' } = Astro.props;
+
+const cell = dark
+  ? 'bg-white/10 text-paper ring-1 ring-white/15'
+  : 'bg-ink text-paper';
+const unit = dark ? 'text-paper/55' : 'text-paper/60';
+const labelCls = dark ? 'text-paper/70' : 'text-accent';
+const numSize = compact ? 'text-lg' : 'text-2xl';
+const cellSize = compact ? 'min-w-[2.6rem] px-1.5 py-1' : 'min-w-[3.25rem] px-2 py-1.5';
+const cells = [['cd-d', 'Days'], ['cd-h', 'Hrs'], ['cd-m', 'Min'], ['cd-s', 'Sec']] as const;
+---
+<div data-countdown data-deadline={deadline} class:list={['inline-block', extra]}>
+  <p class:list={['mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide', labelCls]}>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>
+    {label}
+  </p>
+  <div class="flex items-stretch gap-1.5">
+    {cells.map(([k, u], i) => (
+      <>
+        {i > 0 && <span class:list={['self-center font-display text-lg font-bold', dark ? 'text-paper/30' : 'text-ink/25']}>:</span>}
+        <div class:list={['flex flex-col items-center justify-center rounded-lg tabular-nums', cell, cellSize]}>
+          <span class:list={['font-display font-bold leading-none', numSize]} data-cd={k}>00</span>
+          <span class:list={['mt-0.5 text-[9px] font-medium uppercase tracking-wide', unit]}>{u}</span>
+        </div>
+      </>
+    ))}
+  </div>
+</div>
+
+<script>
+  (function initCountdowns() {
+    const nodes = document.querySelectorAll<HTMLElement>('[data-countdown]:not([data-cd-init])');
+    if (!nodes.length) return;
+    const pad = (n: number) => String(Math.max(0, n)).padStart(2, '0');
+
+    nodes.forEach((el) => {
+      el.setAttribute('data-cd-init', '');
+      const deadline = new Date(el.getAttribute('data-deadline') || '').getTime();
+      const out = {
+        d: el.querySelector('[data-cd="cd-d"]'),
+        h: el.querySelector('[data-cd="cd-h"]'),
+        m: el.querySelector('[data-cd="cd-m"]'),
+        s: el.querySelector('[data-cd="cd-s"]'),
+      };
+
+      const expire = () => {
+        el.style.display = 'none';
+        const scope = el.closest('[data-promo-scope]');
+        if (scope) {
+          // inline display wins over any Tailwind display utility (flex/inline-flex)
+          scope.querySelectorAll<HTMLElement>('[data-when-promo]').forEach((n) => { n.style.display = 'none'; });
+          scope.querySelectorAll<HTMLElement>('[data-when-ended]').forEach((n) => { n.classList.remove('hidden'); n.style.removeProperty('display'); });
+        }
+      };
+
+      const tick = () => {
+        if (isNaN(deadline)) return;
+        let diff = Math.floor((deadline - Date.now()) / 1000);
+        if (diff <= 0) { expire(); clearInterval(timer); return; }
+        const d = Math.floor(diff / 86400); diff -= d * 86400;
+        const h = Math.floor(diff / 3600); diff -= h * 3600;
+        const m = Math.floor(diff / 60); const s = diff - m * 60;
+        if (out.d) out.d.textContent = pad(d);
+        if (out.h) out.h.textContent = pad(h);
+        if (out.m) out.m.textContent = pad(m);
+        if (out.s) out.s.textContent = pad(s);
+      };
+
+      tick();
+      const timer = setInterval(tick, 1000);
+    });
+  })();
+</script>

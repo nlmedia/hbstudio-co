@@ -12,6 +12,14 @@ export interface TemplateData {
   description: string;
   body: string;
   price: number | null;
+  salePrice: number | null;
+  saleEndsAt: string | null;
+  /** true at build time when a sale price is set, lower than price, and not past its end date */
+  onSale: boolean;
+  /** effective price to display/charge: salePrice when on sale, else price */
+  effectivePrice: number | null;
+  /** rounded discount percentage, e.g. 30 → "-30%" (0 when not on sale) */
+  discountPct: number;
   currency: string;
   status: 'draft' | 'published' | 'coming-soon';
   featured: boolean;
@@ -29,6 +37,13 @@ export interface TemplateData {
 export interface TemplateEntry { id: string; data: TemplateData; }
 
 function normalize(r: any): TemplateEntry {
+  const price = r.price != null ? Number(r.price) : null;
+  const salePrice = r.sale_price != null ? Number(r.sale_price) : null;
+  const saleEndsAt = r.sale_ends_at ?? null;
+  const notExpired = !saleEndsAt || new Date(saleEndsAt).getTime() > Date.now();
+  const onSale = price != null && salePrice != null && salePrice < price && notExpired;
+  const effectivePrice = onSale ? salePrice : price;
+  const discountPct = onSale && price ? Math.round((1 - (salePrice as number) / price) * 100) : 0;
   return {
     id: r.slug,
     data: {
@@ -37,7 +52,12 @@ function normalize(r: any): TemplateEntry {
       tagline: r.tagline ?? '',
       description: r.description ?? '',
       body: r.body ?? '',
-      price: r.price != null ? Number(r.price) : null,
+      price,
+      salePrice,
+      saleEndsAt,
+      onSale,
+      effectivePrice,
+      discountPct,
       currency: r.currency ?? '€',
       status: r.status,
       featured: !!r.featured,

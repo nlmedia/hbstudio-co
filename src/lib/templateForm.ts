@@ -2,6 +2,8 @@ export function parseTemplateForm(form: FormData) {
   const str = (k: string) => String(form.get(k) ?? '').trim();
   const lines = (k: string) => str(k).split('\n').map((s) => s.trim()).filter(Boolean);
   const price = str('price');
+  const salePrice = str('sale_price');
+  const saleEnds = str('sale_ends_at'); // ISO string set by the form's client script
   const sort = Number(str('sort_order'));
   return {
     title: str('title'),
@@ -11,6 +13,8 @@ export function parseTemplateForm(form: FormData) {
     featured: form.get('featured') === 'on',
     sort_order: Number.isFinite(sort) ? sort : 100,
     price: price === '' ? null : Number(price),
+    sale_price: salePrice === '' ? null : Number(salePrice),
+    sale_ends_at: saleEnds === '' ? null : saleEnds,
     tagline: str('tagline'),
     description: str('description'),
     body: str('body'),
