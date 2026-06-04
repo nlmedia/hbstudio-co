@@ -84,6 +84,13 @@ create table if not exists public.hb_campaigns (
   created_at timestamptz not null default now()
 );
 
+-- Settings (key/value, admin-only — can hold secrets like the Brevo API key)
+create table if not exists public.hb_settings (
+  key text primary key,
+  value text,
+  updated_at timestamptz not null default now()
+);
+
 -- Audit log
 create table if not exists public.hb_audit_log (
   id bigint generated always as identity primary key,
@@ -108,6 +115,7 @@ alter table public.hb_templates   enable row level security;
 alter table public.hb_subscribers enable row level security;
 alter table public.hb_sales       enable row level security;
 alter table public.hb_campaigns   enable row level security;
+alter table public.hb_settings    enable row level security;
 alter table public.hb_audit_log   enable row level security;
 
 drop policy if exists hb_admins_admin_all on public.hb_admins;
@@ -133,6 +141,9 @@ create policy hb_sales_admin_all on public.hb_sales
   for all to authenticated using (public.hb_is_admin()) with check (public.hb_is_admin());
 drop policy if exists hb_campaigns_admin_all on public.hb_campaigns;
 create policy hb_campaigns_admin_all on public.hb_campaigns
+  for all to authenticated using (public.hb_is_admin()) with check (public.hb_is_admin());
+drop policy if exists hb_settings_admin_all on public.hb_settings;
+create policy hb_settings_admin_all on public.hb_settings
   for all to authenticated using (public.hb_is_admin()) with check (public.hb_is_admin());
 drop policy if exists hb_audit_admin_read on public.hb_audit_log;
 create policy hb_audit_admin_read on public.hb_audit_log

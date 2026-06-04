@@ -1,11 +1,126 @@
 ---
 export const prerender = false;
 import Admin from '../../layouts/Admin.astro';
+
+const supabase = Astro.locals.supabase!;
 const email = Astro.locals.user?.email ?? '';
+let flash = '';
+let error = '';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const action = form.get('_action');
+  const id = String(form.get('id') ?? '');
+
+  if (action === 'add') {
+    const addr = String(form.get('email') ?? '').trim().toLowerCase();
+    if (!addr || !addr.includes('@')) error = 'Email invalide.';
+    else {
+      const { error: e } = await supabase.from('hb_subscribers').upsert(
+        { email: addr, status: 'subscribed', source: 'admin' },
+        { onConflict: 'email' },
+      );
+      if (e) error = e.message; else flash = `${addr} ajouté.`;
+    }
+  } else if (action === 'unsubscribe' || action === 'resubscribe') {
+    const { error: e } = await supabase.from('hb_subscribers')
+      .update({ status: action === 'unsubscribe' ? 'unsubscribed' : 'subscribed' }).eq('id', id);
+    if (e) error = e.message; else flash = 'Statut mis à jour.';
+  } else if (action === 'delete') {
+    const { error: e } = await supabase.from('hb_subscribers').delete().eq('id', id);
+    if (e) error = e.message; else flash = 'Abonné supprimé.';
+  }
+}
+
+const q = (Astro.url.searchParams.get('q') ?? '').trim();
+
+// CSV export
+if (Astro.url.searchParams.get('export') === 'csv') {
+  let query = supabase.from('hb_subscribers').select('email, status, source, created_at').order('created_at', { ascending: false });
+  if (q) query = query.ilike('email', `%${q}%`);
+  const { data } = await query;
+  const rows = [['email', 'status', 'source', 'created_at'],
+    ...(data ?? []).map((r) => [r.email, r.status, r.source ?? '', r.created_at])];
+  const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+  return new Response(csv, {
+    headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="abonnes.csv"' },
+  });
+}
+
+let listQuery = supabase.from('hb_subscribers').select('id, email, status, source, created_at').order('created_at', { ascending: false }).limit(500);
+if (q) listQuery = listQuery.ilike('email', `%${q}%`);
+const { data: subs } = await listQuery;
+
+const [{ count: total }, { count: active }] = await Promise.all([
+  supabase.from('hb_subscribers').select('*', { count: 'exact', head: true }),
+  supabase.from('hb_subscribers').select('*', { count: 'exact', head: true }).eq('status', 'subscribed'),
+]);
+
+const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+const exportHref = `/admin/subscribers?export=csv${q ? `&q=${encodeURIComponent(q)}` : ''}`;
 ---
 <Admin title="Abonnés" active="subscribers" email={email}>
-  <div class="rounded-2xl border border-dashed border-line-strong bg-surface-2/40 p-12 text-center">
-    <h2 class="font-display text-xl font-semibold">Abonnés</h2>
-    <p class="mt-2 max-w-md mx-auto text-muted">Gérez les abonnés à la newsletter, recherchez et exportez. Bientôt disponible.</p>
+  {flash && <p class="mb-5 rounded-xl bg-[#e6f4ea] px-4 py-3 text-sm text-[#1e7d34]">{flash}</p>}
+  {error && <p class="mb-5 rounded-xl bg-[#fbeaea] px-4 py-3 text-sm text-[#b3261e]">{error}</p>}
+
+  <div class="mb-6 grid gap-4 sm:grid-cols-3">
+    <div class="rounded-2xl border border-line bg-surface p-5"><p class="text-sm text-muted">Total</p><p class="mt-1 font-display text-3xl font-bold">{total ?? 0}</p></div>
+    <div class="rounded-2xl border border-line bg-surface p-5"><p class="text-sm text-muted">Abonnés actifs</p><p class="mt-1 font-display text-3xl font-bold">{active ?? 0}</p></div>
+    <div class="rounded-2xl border border-line bg-surface p-5"><p class="text-sm text-muted">Désabonnés</p><p class="mt-1 font-display text-3xl font-bold">{(total ?? 0) - (active ?? 0)}</p></div>
   </div>
+
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <form method="GET" class="flex items-center gap-2">
+      <input name="q" value={q} placeholder="Rechercher un email…" class="w-64 rounded-full border border-line bg-surface px-4 py-2 text-sm outline-none focus:border-accent" />
+      <button class="rounded-full border border-line px-4 py-2 text-sm font-medium transition hover:bg-surface-2">Rechercher</button>
+      {q && <a href="/admin/subscribers" class="text-sm text-muted hover:text-ink">Réinitialiser</a>}
+    </form>
+    <a href={exportHref} class="rounded-full border border-line px-4 py-2 text-sm font-medium transition hover:bg-surface-2">Exporter CSV</a>
+  </div>
+
+  <form method="POST" class="mb-5 flex items-center gap-2 rounded-2xl border border-dashed border-line-strong bg-surface-2/40 p-4">
+    <input type="hidden" name="_action" value="add" />
+    <input name="email" type="email" required placeholder="ajouter-un-email@exemple.com" class="flex-1 rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm outline-none focus:border-accent" />
+    <button class="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition hover:bg-accent">+ Ajouter</button>
+  </form>
+
+  <div class="overflow-hidden rounded-2xl border border-line bg-surface">
+    <table class="w-full text-sm">
+      <thead class="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
+        <tr><th class="px-5 py-3 font-medium">Email</th><th class="px-5 py-3 font-medium">Statut</th><th class="px-5 py-3 font-medium">Source</th><th class="px-5 py-3 font-medium">Inscrit le</th><th class="px-5 py-3 font-medium text-right">Actions</th></tr>
+      </thead>
+      <tbody class="divide-y divide-line">
+        {(subs ?? []).map((sub) => (
+          <tr class="hover:bg-surface-2/50">
+            <td class="px-5 py-3 font-medium">{sub.email}</td>
+            <td class="px-5 py-3">
+              <span class:list={['rounded-full px-2.5 py-1 text-xs font-medium', sub.status === 'subscribed' ? 'bg-[#e6f4ea] text-[#1e7d34]' : 'bg-surface-2 text-muted']}>
+                {sub.status === 'subscribed' ? 'Abonné' : 'Désabonné'}
+              </span>
+            </td>
+            <td class="px-5 py-3 text-muted">{sub.source ?? '—'}</td>
+            <td class="px-5 py-3 text-muted">{fmt(sub.created_at)}</td>
+            <td class="px-5 py-3">
+              <div class="flex items-center justify-end gap-2">
+                <form method="POST">
+                  <input type="hidden" name="id" value={sub.id} />
+                  <input type="hidden" name="_action" value={sub.status === 'subscribed' ? 'unsubscribe' : 'resubscribe'} />
+                  <button class="rounded-lg border border-line px-3 py-1.5 text-xs font-medium transition hover:bg-surface-2">{sub.status === 'subscribed' ? 'Désabonner' : 'Réabonner'}</button>
+                </form>
+                <form method="POST" onsubmit="return confirm('Supprimer cet abonné ?')">
+                  <input type="hidden" name="id" value={sub.id} />
+                  <input type="hidden" name="_action" value="delete" />
+                  <button class="rounded-lg border border-line px-3 py-1.5 text-xs font-medium text-[#b3261e] transition hover:bg-[#fbeaea]">Suppr.</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        ))}
+        {(!subs || subs.length === 0) && (
+          <tr><td colspan="5" class="px-5 py-10 text-center text-muted">{q ? 'Aucun résultat.' : 'Aucun abonné pour le moment.'}</td></tr>
+        )}
+      </tbody>
+    </table>
+  </div>
+  <p class="mt-4 text-xs text-muted">500 abonnés les plus récents affichés. Utilisez la recherche ou l'export CSV pour le reste.</p>
 </Admin>

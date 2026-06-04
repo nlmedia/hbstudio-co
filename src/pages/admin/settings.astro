@@ -1,11 +1,79 @@
 ---
 export const prerender = false;
 import Admin from '../../layouts/Admin.astro';
+import { getSettings, saveSettings, maskSecret, SECRET_KEYS, type Settings } from '../../lib/settings';
+
+const supabase = Astro.locals.supabase!;
 const email = Astro.locals.user?.email ?? '';
+let flash = '';
+let error = '';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const str = (k: string) => String(form.get(k) ?? '').trim();
+  const next: Settings = {
+    brevo_list_id: str('brevo_list_id'),
+    sender_name: str('sender_name'),
+    sender_email: str('sender_email'),
+    reply_to: str('reply_to'),
+    rebuild_hook_url: str('rebuild_hook_url'),
+    auto_email_on_publish: form.get('auto_email_on_publish') === 'on' ? 'true' : 'false',
+  };
+  // Only overwrite the secret when a new value is typed (the field is blank otherwise).
+  const newKey = str('brevo_api_key');
+  if (newKey) next.brevo_api_key = newKey;
+
+  const { error: e } = await saveSettings(supabase, next);
+  if (e) error = e.message;
+  else flash = 'Réglages enregistrés.';
+}
+
+const s = await getSettings(supabase);
+const field = 'w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-accent';
+const label = 'block text-xs font-medium text-ink/70 mb-1.5';
+const brevoSet = !!s.brevo_api_key;
 ---
 <Admin title="Réglages" active="settings" email={email}>
-  <div class="rounded-2xl border border-dashed border-line-strong bg-surface-2/40 p-12 text-center">
-    <h2 class="font-display text-xl font-semibold">Réglages</h2>
-    <p class="mt-2 max-w-md mx-auto text-muted">Clés Brevo & Stripe, expéditeur, hook de re-build. Bientôt disponible.</p>
-  </div>
+  {flash && <p class="mb-5 rounded-xl bg-[#e6f4ea] px-4 py-3 text-sm text-[#1e7d34]">{flash}</p>}
+  {error && <p class="mb-5 rounded-xl bg-[#fbeaea] px-4 py-3 text-sm text-[#b3261e]">{error}</p>}
+
+  <form method="POST" class="grid max-w-2xl gap-8">
+    <section class="rounded-2xl border border-line bg-surface p-6">
+      <h2 class="font-display text-lg font-semibold">Email (Brevo)</h2>
+      <p class="mt-1 text-sm text-muted">Utilisé pour les campagnes et l'envoi automatique aux abonnés.</p>
+      <div class="mt-5 grid gap-4">
+        <label>
+          <span class={label}>Clé API Brevo {brevoSet && <span class="text-[#1e7d34]">· définie ({maskSecret(s.brevo_api_key)})</span>}</span>
+          <input class={field} name="brevo_api_key" type="password" autocomplete="off" placeholder={brevoSet ? 'Laisser vide pour conserver la clé actuelle' : 'xkeysib-…'} />
+        </label>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label><span class={label}>ID de liste Brevo</span><input class={field} name="brevo_list_id" value={s.brevo_list_id ?? ''} placeholder="ex. 2" /></label>
+          <label><span class={label}>Nom de l'expéditeur</span><input class={field} name="sender_name" value={s.sender_name ?? ''} placeholder="HB Studio Co" /></label>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label><span class={label}>Email expéditeur</span><input class={field} name="sender_email" type="email" value={s.sender_email ?? ''} placeholder="hello@hbstudio.co" /></label>
+          <label><span class={label}>Répondre à (optionnel)</span><input class={field} name="reply_to" type="email" value={s.reply_to ?? ''} /></label>
+        </div>
+        <label class="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="auto_email_on_publish" checked={s.auto_email_on_publish === 'true'} />
+          Envoyer automatiquement un email aux abonnés à la publication d'une nouvelle template
+        </label>
+      </div>
+    </section>
+
+    <section class="rounded-2xl border border-line bg-surface p-6">
+      <h2 class="font-display text-lg font-semibold">Déploiement</h2>
+      <p class="mt-1 text-sm text-muted">Le site public est statique : un hook de rebuild régénère le site après modification du catalogue.</p>
+      <label class="mt-5 block">
+        <span class={label}>URL du build hook (Netlify)</span>
+        <input class={field} name="rebuild_hook_url" value={s.rebuild_hook_url ?? ''} placeholder="https://api.netlify.com/build_hooks/…" />
+      </label>
+    </section>
+
+    <div class="flex items-center gap-3">
+      <button type="submit" class="rounded-full bg-ink px-6 py-2.5 text-sm font-medium text-paper transition hover:bg-accent">Enregistrer les réglages</button>
+    </div>
+  </form>
+
+  <p class="mt-4 max-w-2xl text-xs text-muted">Les clés sont stockées dans une table protégée (accès admin uniquement) et ne sont jamais exposées au site public ni au navigateur.</p>
 </Admin>

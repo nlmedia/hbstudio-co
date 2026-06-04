@@ -3,6 +3,7 @@ export const prerender = false;
 import Admin from '../../../layouts/Admin.astro';
 import TemplateForm from '../../../components/admin/TemplateForm.astro';
 import { parseTemplateForm } from '../../../lib/templateForm';
+import { autoAnnounceTemplate } from '../../../lib/brevo';
 
 const supabase = Astro.locals.supabase!;
 const email = Astro.locals.user?.email ?? '';
@@ -16,7 +17,10 @@ if (Astro.request.method === 'POST') {
     const { data: inserted, error: e } = await supabase.from('hb_templates').insert(row).select();
     if (e) error = e.message;
     else if (!inserted || inserted.length === 0) error = "Création impossible — droits insuffisants (connexion admin requise).";
-    else return Astro.redirect('/admin/templates?created=1');
+    else {
+      if (inserted[0]?.id) await autoAnnounceTemplate(supabase, inserted[0].id, { prevStatus: null, newStatus: row.status });
+      return Astro.redirect('/admin/templates?created=1');
+    }
   }
 }
 ---

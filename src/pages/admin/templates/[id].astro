@@ -3,6 +3,7 @@ export const prerender = false;
 import Admin from '../../../layouts/Admin.astro';
 import TemplateForm from '../../../components/admin/TemplateForm.astro';
 import { parseTemplateForm } from '../../../lib/templateForm';
+import { autoAnnounceTemplate } from '../../../lib/brevo';
 
 const supabase = Astro.locals.supabase!;
 const email = Astro.locals.user?.email ?? '';
@@ -17,17 +18,24 @@ if (Astro.request.method === 'POST') {
     return Astro.redirect('/admin/templates?deleted=1');
   }
   if (action === 'publish' || action === 'unpublish') {
-    await supabase.from('hb_templates').update({ status: action === 'publish' ? 'published' : 'draft' }).eq('id', id);
+    const { data: cur } = await supabase.from('hb_templates').select('status').eq('id', id).maybeSingle();
+    const newStatus = action === 'publish' ? 'published' : 'draft';
+    await supabase.from('hb_templates').update({ status: newStatus }).eq('id', id);
+    await autoAnnounceTemplate(supabase, id, { prevStatus: cur?.status, newStatus });
     return Astro.redirect('/admin/templates?saved=1');
   }
   const row = parseTemplateForm(form);
   if (!row.title || !row.slug) {
     error = 'Le titre et le slug sont requis.';
   } else {
+    const { data: cur } = await supabase.from('hb_templates').select('status').eq('id', id).maybeSingle();
     const { data: updated, error: e } = await supabase.from('hb_templates').update(row).eq('id', id).select();
     if (e) error = e.message;
     else if (!updated || updated.length === 0) error = "Aucune modification enregistrée — droits insuffisants (connexion admin requise).";
-    else return Astro.redirect('/admin/templates?saved=1');
+    else {
+      await autoAnnounceTemplate(supabase, id, { prevStatus: cur?.status, newStatus: row.status });
+      return Astro.redirect('/admin/templates?saved=1');
+    }
   }
 }
 

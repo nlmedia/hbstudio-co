@@ -1,11 +1,108 @@
 ---
 export const prerender = false;
 import Admin from '../../layouts/Admin.astro';
+import { buildTemplateEmail, sendCampaign } from '../../lib/brevo';
+import { getSettings } from '../../lib/settings';
+
+const supabase = Astro.locals.supabase!;
 const email = Astro.locals.user?.email ?? '';
+let flash = '';
+let error = '';
+
+const settings = await getSettings(supabase);
+const brevoReady = !!settings.brevo_api_key && !!settings.sender_email;
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const templateId = String(form.get('template_id') ?? '');
+  const testOnly = form.get('test') === 'on';
+
+  const { data: tpl } = await supabase.from('hb_templates')
+    .select('id, slug, title, tagline, description, cms, price, sale_price, currency, cover')
+    .eq('id', templateId).maybeSingle();
+
+  if (!tpl) {
+    error = 'Template introuvable.';
+  } else if (!brevoReady) {
+    error = 'Configurez d\'abord la clé Brevo et l\'expéditeur dans Réglages.';
+  } else {
+    const { subject, html } = buildTemplateEmail(tpl);
+    let recipients: string[] = [];
+    if (testOnly) {
+      recipients = [email].filter(Boolean);
+    } else {
+      const { data: subs } = await supabase.from('hb_subscribers').select('email').eq('status', 'subscribed');
+      recipients = (subs ?? []).map((s) => s.email);
+    }
+    const result = await sendCampaign(supabase, { subject, html, recipients });
+    if (!result.ok) {
+      error = result.error ?? 'Échec de l\'envoi.';
+      if (!testOnly) await supabase.from('hb_campaigns').insert({ template_id: tpl.id, subject, recipients: 0, status: 'failed' });
+    } else if (testOnly) {
+      flash = `Email de test envoyé à ${email}.`;
+    } else {
+      await supabase.from('hb_campaigns').insert({ template_id: tpl.id, subject, recipients: result.sent, status: 'sent', brevo_message_id: result.messageId ?? null, sent_at: new Date().toISOString() });
+      flash = `Campagne envoyée à ${result.sent} abonné(s).`;
+    }
+  }
+}
+
+// Data for the composer + history
+const { data: templates } = await supabase.from('hb_templates')
+  .select('id, title, status').in('status', ['published', 'coming-soon']).order('sort_order', { ascending: true });
+const { count: activeSubs } = await supabase.from('hb_subscribers').select('*', { count: 'exact', head: true }).eq('status', 'subscribed');
+const { data: campaigns } = await supabase.from('hb_campaigns')
+  .select('id, subject, recipients, status, sent_at, created_at, template_id').order('created_at', { ascending: false }).limit(50);
+
+const fmt = (d: string | null) => d ? new Date(d).toLocaleString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+const statusBadge: Record<string, string> = { sent: 'bg-[#e6f4ea] text-[#1e7d34]', failed: 'bg-[#fbeaea] text-[#b3261e]', draft: 'bg-surface-2 text-muted' };
+const statusLabel: Record<string, string> = { sent: 'Envoyée', failed: 'Échec', draft: 'Brouillon' };
 ---
 <Admin title="Campagnes" active="campaigns" email={email}>
-  <div class="rounded-2xl border border-dashed border-line-strong bg-surface-2/40 p-12 text-center">
-    <h2 class="font-display text-xl font-semibold">Campagnes</h2>
-    <p class="mt-2 max-w-md mx-auto text-muted">Newsletter automatique aux abonnés via Brevo à chaque nouveau template. Bientôt disponible.</p>
+  {flash && <p class="mb-5 rounded-xl bg-[#e6f4ea] px-4 py-3 text-sm text-[#1e7d34]">{flash}</p>}
+  {error && <p class="mb-5 rounded-xl bg-[#fbeaea] px-4 py-3 text-sm text-[#b3261e]">{error}</p>}
+
+  {!brevoReady && (
+    <p class="mb-5 rounded-xl border border-dashed border-line-strong bg-surface-2/40 px-4 py-3 text-sm text-muted">
+      ⚙︎ L'envoi nécessite une clé API Brevo et un email expéditeur. <a href="/admin/settings" class="font-medium text-accent hover:underline">Configurer dans Réglages →</a>
+    </p>
+  )}
+
+  <section class="mb-8 rounded-2xl border border-line bg-surface p-6">
+    <h2 class="font-display text-lg font-semibold">Nouvelle campagne</h2>
+    <p class="mt-1 text-sm text-muted">Génère un email HTML à partir d'une template et l'envoie aux <strong>{activeSubs ?? 0}</strong> abonné(s) actifs.</p>
+    <form method="POST" class="mt-5 grid gap-4 sm:grid-cols-[1fr_auto]">
+      <select name="template_id" required class="rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm outline-none focus:border-accent">
+        <option value="" disabled selected>Choisir une template…</option>
+        {(templates ?? []).map((t) => <option value={t.id}>{t.title}</option>)}
+      </select>
+      <div class="flex items-center gap-2">
+        <button name="test" value="on" class="rounded-full border border-line px-5 py-2.5 text-sm font-medium transition hover:bg-surface-2" disabled={!brevoReady}>Envoi test</button>
+        <button onclick="return confirm('Envoyer à tous les abonnés actifs ?')" class="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition hover:bg-accent disabled:opacity-40" disabled={!brevoReady}>Envoyer à tous</button>
+      </div>
+    </form>
+    <p class="mt-3 text-xs text-muted">« Envoi test » envoie uniquement à votre adresse ({email}). L'envoi automatique à la publication se règle dans <a href="/admin/settings" class="text-accent hover:underline">Réglages</a>.</p>
+  </section>
+
+  <h2 class="mb-3 font-display text-lg font-semibold">Historique</h2>
+  <div class="overflow-hidden rounded-2xl border border-line bg-surface">
+    <table class="w-full text-sm">
+      <thead class="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
+        <tr><th class="px-5 py-3 font-medium">Sujet</th><th class="px-5 py-3 font-medium">Destinataires</th><th class="px-5 py-3 font-medium">Statut</th><th class="px-5 py-3 font-medium">Date</th></tr>
+      </thead>
+      <tbody class="divide-y divide-line">
+        {(campaigns ?? []).map((c) => (
+          <tr class="hover:bg-surface-2/50">
+            <td class="px-5 py-3 font-medium">{c.subject}</td>
+            <td class="px-5 py-3 text-muted">{c.recipients}</td>
+            <td class="px-5 py-3"><span class:list={['rounded-full px-2.5 py-1 text-xs font-medium', statusBadge[c.status] ?? 'bg-surface-2']}>{statusLabel[c.status] ?? c.status}</span></td>
+            <td class="px-5 py-3 text-muted">{fmt(c.sent_at ?? c.created_at)}</td>
+          </tr>
+        ))}
+        {(!campaigns || campaigns.length === 0) && (
+          <tr><td colspan="4" class="px-5 py-10 text-center text-muted">Aucune campagne envoyée pour le moment.</td></tr>
+        )}
+      </tbody>
+    </table>
   </div>
 </Admin>

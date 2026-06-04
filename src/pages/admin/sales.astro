@@ -1,11 +1,88 @@
 ---
 export const prerender = false;
 import Admin from '../../layouts/Admin.astro';
+
+const supabase = Astro.locals.supabase!;
 const email = Astro.locals.user?.email ?? '';
+
+// Period filter: 7d / 30d / 12m / all
+const period = Astro.url.searchParams.get('period') ?? '30d';
+const sinceFor = (p: string): string | null => {
+  const d = new Date();
+  if (p === '7d') { d.setDate(d.getDate() - 7); return d.toISOString(); }
+  if (p === '30d') { d.setDate(d.getDate() - 30); return d.toISOString(); }
+  if (p === '12m') { d.setMonth(d.getMonth() - 12); return d.toISOString(); }
+  return null;
+};
+const since = sinceFor(period);
+
+// CSV export (respects current period)
+if (Astro.url.searchParams.get('export') === 'csv') {
+  let q = supabase.from('hb_sales').select('id, item, amount, currency, email, status, created_at').order('created_at', { ascending: false });
+  if (since) q = q.gte('created_at', since);
+  const { data } = await q;
+  const rows = [['id', 'item', 'amount', 'currency', 'email', 'status', 'created_at'],
+    ...(data ?? []).map((r) => [r.id, r.item ?? '', ((r.amount ?? 0) / 100).toFixed(2), r.currency ?? 'eur', r.email ?? '', r.status ?? '', r.created_at])];
+  const csv = rows.map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(',')).join('\n');
+  return new Response(csv, {
+    headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="ventes.csv"' },
+  });
+}
+
+let listQuery = supabase.from('hb_sales').select('id, item, amount, currency, email, status, created_at').order('created_at', { ascending: false }).limit(500);
+if (since) listQuery = listQuery.gte('created_at', since);
+const { data: sales } = await listQuery;
+
+const paid = (sales ?? []).filter((s) => (s.status ?? 'paid') === 'paid');
+const revenue = paid.reduce((sum, s) => sum + (s.amount || 0), 0) / 100;
+const count = paid.length;
+const avg = count ? revenue / count : 0;
+
+const periods = [['7d', '7 jours'], ['30d', '30 jours'], ['12m', '12 mois'], ['all', 'Tout']] as const;
+const fmtMoney = (n: number) => '€' + n.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const fmtDate = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+const exportHref = `/admin/sales?period=${period}&export=csv`;
 ---
 <Admin title="Ventes" active="sales" email={email}>
-  <div class="rounded-2xl border border-dashed border-line-strong bg-surface-2/40 p-12 text-center">
-    <h2 class="font-display text-xl font-semibold">Ventes</h2>
-    <p class="mt-2 max-w-md mx-auto text-muted">Chaque transaction Stripe, le chiffre d'affaires et l'export CSV. Bientôt disponible.</p>
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center gap-1.5 rounded-full border border-line bg-surface p-1">
+      {periods.map(([p, lbl]) => (
+        <a href={`/admin/sales?period=${p}`} class:list={['rounded-full px-3.5 py-1.5 text-sm font-medium transition', p === period ? 'bg-ink text-paper' : 'text-muted hover:text-ink']}>{lbl}</a>
+      ))}
+    </div>
+    <a href={exportHref} class="rounded-full border border-line px-4 py-2 text-sm font-medium transition hover:bg-surface-2">Exporter CSV</a>
+  </div>
+
+  <div class="mb-6 grid gap-4 sm:grid-cols-3">
+    <div class="rounded-2xl border border-line bg-surface p-5"><p class="text-sm text-muted">Chiffre d'affaires</p><p class="mt-1 font-display text-3xl font-bold">{fmtMoney(revenue)}</p></div>
+    <div class="rounded-2xl border border-line bg-surface p-5"><p class="text-sm text-muted">Ventes</p><p class="mt-1 font-display text-3xl font-bold">{count}</p></div>
+    <div class="rounded-2xl border border-line bg-surface p-5"><p class="text-sm text-muted">Panier moyen</p><p class="mt-1 font-display text-3xl font-bold">{fmtMoney(avg)}</p></div>
+  </div>
+
+  <div class="overflow-hidden rounded-2xl border border-line bg-surface">
+    <table class="w-full text-sm">
+      <thead class="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
+        <tr><th class="px-5 py-3 font-medium">Date</th><th class="px-5 py-3 font-medium">Article</th><th class="px-5 py-3 font-medium">Client</th><th class="px-5 py-3 font-medium">Statut</th><th class="px-5 py-3 font-medium text-right">Montant</th></tr>
+      </thead>
+      <tbody class="divide-y divide-line">
+        {(sales ?? []).map((s) => (
+          <tr class="hover:bg-surface-2/50">
+            <td class="px-5 py-3 text-muted">{fmtDate(s.created_at)}</td>
+            <td class="px-5 py-3 font-medium">{s.item ?? '—'}</td>
+            <td class="px-5 py-3 text-muted">{s.email ?? '—'}</td>
+            <td class="px-5 py-3">
+              <span class:list={['rounded-full px-2.5 py-1 text-xs font-medium', (s.status ?? 'paid') === 'paid' ? 'bg-[#e6f4ea] text-[#1e7d34]' : 'bg-surface-2 text-muted']}>{s.status ?? 'paid'}</span>
+            </td>
+            <td class="px-5 py-3 text-right font-medium">€{((s.amount || 0) / 100).toFixed(2)}</td>
+          </tr>
+        ))}
+        {(!sales || sales.length === 0) && (
+          <tr><td colspan="5" class="px-5 py-12 text-center text-muted">
+            Aucune vente sur cette période.<br />
+            <span class="text-xs">Les ventes s'afficheront ici automatiquement une fois Stripe connecté (webhook → table <code>hb_sales</code>).</span>
+          </td></tr>
+        )}
+      </tbody>
+    </table>
   </div>
 </Admin>
