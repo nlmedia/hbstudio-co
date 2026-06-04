@@ -1,35 +1,90 @@
 ---
 export const prerender = false;
 import Admin from '../../layouts/Admin.astro';
+import { getSettings } from '../../lib/settings';
 
 const supabase = Astro.locals.supabase!;
 const email = Astro.locals.user?.email ?? '';
 
-const [pubRes, totRes, subRes, salesRes, recentSales, recentSubs] = await Promise.all([
-  supabase.from('hb_templates').select('*', { count: 'exact', head: true }).eq('status', 'published'),
-  supabase.from('hb_templates').select('*', { count: 'exact', head: true }),
+const now = new Date();
+const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+const [tplRes, subTotal, subActive, subMonth, salesRes, recentSubs, lastCampaign, settings] = await Promise.all([
+  supabase.from('hb_templates').select('id, slug, title, cms, status, price, sale_price, sale_ends_at, deliverable, cover').order('sort_order', { ascending: true }),
+  supabase.from('hb_subscribers').select('*', { count: 'exact', head: true }),
   supabase.from('hb_subscribers').select('*', { count: 'exact', head: true }).eq('status', 'subscribed'),
-  supabase.from('hb_sales').select('amount'),
-  supabase.from('hb_sales').select('item, amount, email, created_at').order('created_at', { ascending: false }).limit(5),
-  supabase.from('hb_subscribers').select('email, created_at').order('created_at', { ascending: false }).limit(5),
+  supabase.from('hb_subscribers').select('*', { count: 'exact', head: true }).gte('created_at', startOfMonth),
+  supabase.from('hb_sales').select('item, amount, email, status, created_at').order('created_at', { ascending: false }).limit(2000),
+  supabase.from('hb_subscribers').select('email, created_at').order('created_at', { ascending: false }).limit(6),
+  supabase.from('hb_campaigns').select('subject, recipients, sent_at, status').eq('status', 'sent').order('sent_at', { ascending: false }).limit(1).maybeSingle(),
+  getSettings(supabase),
 ]);
 
-const publishedCount = pubRes.count ?? 0;
-const totalTemplates = totRes.count ?? 0;
-const subscribers = subRes.count ?? 0;
-const sales = salesRes.data ?? [];
-const revenue = sales.reduce((s, r) => s + (r.amount || 0), 0) / 100;
-const salesCount = sales.length;
+const templates = tplRes.data ?? [];
+const sales = (salesRes.data ?? []).filter((s) => (s.status ?? 'paid') === 'paid');
+
+// ---- Templates breakdown
+const published = templates.filter((t) => t.status === 'published');
+const drafts = templates.filter((t) => t.status === 'draft');
+const monthKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+
+// ---- 12-month revenue series
+const months: { key: string; label: string }[] = [];
+for (let i = 11; i >= 0; i--) {
+  const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+  months.push({ key: monthKey(d), label: d.toLocaleDateString('fr-FR', { month: 'short' }) });
+}
+const monthRev: Record<string, number> = Object.fromEntries(months.map((m) => [m.key, 0]));
+for (const s of sales) {
+  const k = monthKey(new Date(s.created_at));
+  if (k in monthRev) monthRev[k] += (s.amount || 0) / 100;
+}
+const maxRev = Math.max(1, ...Object.values(monthRev));
+const tmKey = months[11].key, pmKey = months[10].key;
+const revThisMonth = monthRev[tmKey] ?? 0;
+const revPrevMonth = monthRev[pmKey] ?? 0;
+const deltaPct = revPrevMonth > 0 ? Math.round(((revThisMonth - revPrevMonth) / revPrevMonth) * 100) : (revThisMonth > 0 ? 100 : 0);
+const salesThisMonth = sales.filter((s) => monthKey(new Date(s.created_at)) === tmKey).length;
+const revenueAll = sales.reduce((a, s) => a + (s.amount || 0), 0) / 100;
+const aov = sales.length ? revenueAll / sales.length : 0;
+
+// ---- Top templates by revenue
+const byItem: Record<string, { revenue: number; count: number }> = {};
+for (const s of sales) {
+  const k = s.item || '—';
+  byItem[k] = byItem[k] || { revenue: 0, count: 0 };
+  byItem[k].revenue += (s.amount || 0) / 100;
+  byItem[k].count += 1;
+}
+const topTemplates = Object.entries(byItem).sort((a, b) => b[1].revenue - a[1].revenue).slice(0, 5);
+
+// ---- Active promos
+const activePromos = templates.filter((t) => t.price != null && t.sale_price != null && Number(t.sale_price) < Number(t.price) && (!t.sale_ends_at || new Date(t.sale_ends_at).getTime() > now.getTime()));
+
+// ---- Alerts / action items
+const brevoReady = !!settings.brevo_api_key && !!settings.sender_email;
+const publishedNoDeliverable = published.filter((t) => !t.deliverable);
+const noCover = templates.filter((t) => !t.cover);
+type Alert = { level: 'warn' | 'info'; text: string; href: string };
+const alerts: Alert[] = [];
+if (publishedNoDeliverable.length) alerts.push({ level: 'warn', text: `${publishedNoDeliverable.length} template(s) publié(s) sans fichier livrable — la livraison échouera`, href: '/admin/templates' });
+if (!brevoReady) alerts.push({ level: 'warn', text: 'Brevo non configuré — campagnes et emails automatiques désactivés', href: '/admin/settings' });
+if (drafts.length) alerts.push({ level: 'info', text: `${drafts.length} brouillon(s) à finaliser`, href: '/admin/templates' });
+if (noCover.length) alerts.push({ level: 'info', text: `${noCover.length} template(s) sans image de couverture`, href: '/admin/templates' });
+if (!settings.rebuild_hook_url) alerts.push({ level: 'info', text: 'Hook de rebuild non configuré (mises à jour du site public)', href: '/admin/settings' });
+
+const money = (n: number) => '€' + n.toLocaleString('fr-FR', { maximumFractionDigits: n % 1 ? 2 : 0 });
+const fmt = (d: string | null) => d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '—';
 
 const kpis = [
-  { label: 'Chiffre d’affaires', value: `€${revenue.toLocaleString('fr-FR')}`, sub: 'depuis le début', icon: 'M3 3v18h18M7 14l3-3 3 3 5-5' },
-  { label: 'Ventes', value: salesCount, sub: 'commandes', icon: 'M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0' },
-  { label: 'Abonnés', value: subscribers, sub: 'newsletter', icon: 'M4 4h16v16H4zM4 7l8 6 8-6' },
-  { label: 'Templates', value: `${publishedCount}/${totalTemplates}`, sub: 'publiés / total', icon: 'M4 5h16M4 12h16M4 19h10' },
+  { label: 'CA ce mois', value: money(revThisMonth), delta: deltaPct, sub: `mois préc. ${money(revPrevMonth)}`, icon: 'M3 3v18h18M7 14l3-3 3 3 5-5' },
+  { label: 'Ventes ce mois', value: String(salesThisMonth), sub: `${sales.length} au total`, icon: 'M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0' },
+  { label: 'Abonnés actifs', value: String(subActive.count ?? 0), sub: `+${subMonth.count ?? 0} ce mois · ${subTotal.count ?? 0} au total`, icon: 'M16 14a4 4 0 10-8 0M12 7a3 3 0 100-6 3 3 0 000 6zM4 21v-1a4 4 0 014-4h8a4 4 0 014 4v1' },
+  { label: 'Templates publiés', value: `${published.length}/${templates.length}`, sub: `panier moyen ${money(aov)}`, icon: 'M4 5h16M4 12h16M4 19h10' },
 ];
-const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
 ---
 <Admin title="Tableau de bord" active="dashboard" email={email}>
+  <!-- KPIs -->
   <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
     {kpis.map((k) => (
       <div class="rounded-2xl border border-line bg-surface p-5">
@@ -39,21 +94,120 @@ const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: '2-dig
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d={k.icon} /></svg>
           </span>
         </div>
-        <p class="mt-3 font-display text-3xl font-bold">{k.value}</p>
+        <div class="mt-3 flex items-baseline gap-2">
+          <p class="font-display text-3xl font-bold">{k.value}</p>
+          {typeof k.delta === 'number' && k.delta !== 0 && (
+            <span class:list={['rounded-full px-1.5 py-0.5 text-xs font-semibold', k.delta > 0 ? 'bg-[#e6f4ea] text-[#1e7d34]' : 'bg-[#fbeaea] text-[#b3261e]']}>
+              {k.delta > 0 ? '▲' : '▼'} {Math.abs(k.delta)}%
+            </span>
+          )}
+        </div>
         <p class="mt-1 text-xs text-muted">{k.sub}</p>
       </div>
     ))}
   </div>
 
-  <div class="mt-8 grid gap-6 lg:grid-cols-2">
+  <!-- Revenue chart + alerts -->
+  <div class="mt-6 grid gap-6 lg:grid-cols-3">
+    <section class="rounded-2xl border border-line bg-surface p-6 lg:col-span-2">
+      <div class="flex items-baseline justify-between">
+        <h2 class="font-display text-lg font-semibold">Chiffre d'affaires · 12 mois</h2>
+        <span class="text-sm text-muted">Total {money(revenueAll)}</span>
+      </div>
+      <div class="mt-6 flex h-44 items-end gap-2">
+        {months.map((m) => {
+          const v = monthRev[m.key] ?? 0;
+          const h = Math.round((v / maxRev) * 100);
+          return (
+            <div class="group flex flex-1 flex-col items-center justify-end gap-2">
+              <div class="relative flex w-full items-end justify-center" style="height:140px">
+                <div class:list={['w-full max-w-[34px] rounded-t-md transition', v > 0 ? 'bg-accent' : 'bg-surface-2']} style={`height:${Math.max(v > 0 ? 6 : 2, h)}%`}></div>
+                <span class="pointer-events-none absolute -top-5 hidden whitespace-nowrap rounded bg-ink px-1.5 py-0.5 text-[10px] font-medium text-paper group-hover:block">{money(v)}</span>
+              </div>
+              <span class:list={['text-[10px]', m.key === tmKey ? 'font-semibold text-ink' : 'text-muted']}>{m.label}</span>
+            </div>
+          );
+        })}
+      </div>
+      {revenueAll === 0 && <p class="mt-4 text-center text-xs text-muted">Aucune vente enregistrée pour l'instant — le graphique se remplira dès les premières ventes Stripe.</p>}
+    </section>
+
     <section class="rounded-2xl border border-line bg-surface p-6">
-      <h2 class="font-display text-lg font-semibold">Ventes récentes</h2>
-      {recentSales.data && recentSales.data.length > 0 ? (
+      <h2 class="font-display text-lg font-semibold">À faire</h2>
+      {alerts.length > 0 ? (
+        <ul class="mt-4 space-y-3 text-sm">
+          {alerts.map((a) => (
+            <li>
+              <a href={a.href} class="flex items-start gap-2.5 transition hover:text-accent">
+                <span class:list={['mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11px]', a.level === 'warn' ? 'bg-[#fbeaea] text-[#b3261e]' : 'bg-accent-soft text-accent']}>{a.level === 'warn' ? '!' : 'i'}</span>
+                <span class="text-ink/80">{a.text}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="mt-4 text-sm text-muted">✓ Tout est en ordre. Rien à signaler.</p>
+      )}
+    </section>
+  </div>
+
+  <!-- Top templates + Active promos -->
+  <div class="mt-6 grid gap-6 lg:grid-cols-2">
+    <section class="rounded-2xl border border-line bg-surface p-6">
+      <h2 class="font-display text-lg font-semibold">Top templates</h2>
+      {topTemplates.length > 0 ? (
+        <ul class="mt-4 space-y-3 text-sm">
+          {topTemplates.map(([name, d], i) => (
+            <li class="flex items-center gap-3">
+              <span class="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-surface-2 text-xs font-semibold text-muted">{i + 1}</span>
+              <span class="flex-1 truncate font-medium">{name}</span>
+              <span class="text-muted">{d.count} vente{d.count > 1 ? 's' : ''}</span>
+              <span class="w-20 text-right font-medium">{money(d.revenue)}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="mt-4 text-sm text-muted">Le classement par ventes s'affichera ici.</p>
+      )}
+    </section>
+
+    <section class="rounded-2xl border border-line bg-surface p-6">
+      <div class="flex items-baseline justify-between">
+        <h2 class="font-display text-lg font-semibold">Promotions actives</h2>
+        <a href="/admin/templates" class="text-sm font-medium text-accent hover:underline">Gérer</a>
+      </div>
+      {activePromos.length > 0 ? (
+        <ul class="mt-4 space-y-3 text-sm">
+          {activePromos.map((t) => (
+            <li class="flex items-center justify-between gap-3">
+              <span class="font-medium">{t.title}</span>
+              <span class="flex items-center gap-2">
+                <span class="text-xs text-muted line-through">{t.currency ?? '€'}{t.price}</span>
+                <span class="font-medium text-[#e23b3b]">€{t.sale_price}</span>
+                <span class="text-xs text-muted">{t.sale_ends_at ? `→ ${fmt(t.sale_ends_at)}` : 'sans limite'}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="mt-4 text-sm text-muted">Aucune promotion en cours.</p>
+      )}
+    </section>
+  </div>
+
+  <!-- Recent activity -->
+  <div class="mt-6 grid gap-6 lg:grid-cols-2">
+    <section class="rounded-2xl border border-line bg-surface p-6">
+      <div class="flex items-baseline justify-between">
+        <h2 class="font-display text-lg font-semibold">Ventes récentes</h2>
+        <a href="/admin/sales" class="text-sm font-medium text-accent hover:underline">Tout voir</a>
+      </div>
+      {sales.length > 0 ? (
         <ul class="mt-4 divide-y divide-line text-sm">
-          {recentSales.data.map((s) => (
+          {sales.slice(0, 6).map((s) => (
             <li class="flex items-center justify-between py-3">
-              <span><span class="font-medium">{s.item}</span> <span class="text-muted">· {s.email}</span></span>
-              <span class="font-medium">€{((s.amount || 0) / 100).toFixed(0)}</span>
+              <span class="min-w-0"><span class="font-medium">{s.item}</span> <span class="text-muted">· {s.email}</span></span>
+              <span class="shrink-0 font-medium">€{((s.amount || 0) / 100).toFixed(0)}</span>
             </li>
           ))}
         </ul>
@@ -63,7 +217,10 @@ const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: '2-dig
     </section>
 
     <section class="rounded-2xl border border-line bg-surface p-6">
-      <h2 class="font-display text-lg font-semibold">Nouveaux abonnés</h2>
+      <div class="flex items-baseline justify-between">
+        <h2 class="font-display text-lg font-semibold">Nouveaux abonnés</h2>
+        <a href="/admin/subscribers" class="text-sm font-medium text-accent hover:underline">Tout voir</a>
+      </div>
       {recentSubs.data && recentSubs.data.length > 0 ? (
         <ul class="mt-4 divide-y divide-line text-sm">
           {recentSubs.data.map((s) => (
@@ -76,11 +233,9 @@ const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: '2-dig
       ) : (
         <p class="mt-4 text-sm text-muted">Aucun abonné pour le moment.</p>
       )}
+      {lastCampaign && lastCampaign.subject && (
+        <p class="mt-4 border-t border-line pt-4 text-xs text-muted">Dernière campagne : « {lastCampaign.subject} » → {lastCampaign.recipients} destinataire(s) le {fmt(lastCampaign.sent_at)}.</p>
+      )}
     </section>
-  </div>
-
-  <div class="mt-8 rounded-2xl border border-dashed border-line-strong bg-surface-2/40 p-6">
-    <h2 class="font-display text-lg font-semibold">Prochaines phases</h2>
-    <p class="mt-1 text-sm text-muted">La synchro des ventes Stripe, la gestion des abonnés et la newsletter automatique via Brevo arrivent dans les prochaines phases. Le socle sécurisé (auth + base + dashboard) et la gestion des templates sont prêts.</p>
   </div>
 </Admin>
