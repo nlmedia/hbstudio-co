@@ -3,9 +3,9 @@ export const prerender = false;
 import Admin from '../../layouts/Admin.astro';
 const email = Astro.locals.user?.email ?? '';
 ---
-<Admin title="Sales" active="sales" email={email}>
+<Admin title="Ventes" active="sales" email={email}>
   <div class="rounded-2xl border border-dashed border-line-strong bg-surface-2/40 p-12 text-center">
-    <h2 class="font-display text-xl font-semibold">Sales</h2>
-    <p class="mt-2 max-w-md mx-auto text-muted">Every Stripe transaction, revenue and CSV export. Coming next.</p>
+    <h2 class="font-display text-xl font-semibold">Ventes</h2>
+    <p class="mt-2 max-w-md mx-auto text-muted">Chaque transaction Stripe, le chiffre d'affaires et l'export CSV. Bientôt disponible.</p>
   </div>
 </Admin>

@@ -3,12 +3,12 @@ export const prerender = false;
 const denied = Astro.url.searchParams.get('denied');
 ---
 <!doctype html>
-<html lang="en" class="bg-paper">
+<html lang="fr" class="bg-paper">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>Sign in — HB Studio Admin</title>
+    <title>Connexion — HB Studio Admin</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -26,13 +26,13 @@ const denied = Astro.url.searchParams.get('denied');
           <span style="font-family:'Space Grotesk';font-weight:700;font-size:16px">HB Studio<span style="color:#6d4aff">.</span>Admin</span>
         </div>
         <div style="background:#fff;border:1px solid rgba(14,14,18,.1);border-radius:20px;padding:32px;box-shadow:0 20px 60px rgba(14,14,18,.08)">
-          <h1 style="font-size:24px;font-weight:700;margin:0 0 6px">Sign in</h1>
-          <p style="color:#6b6b73;font-size:14px;margin:0 0 22px">Enter your admin email — we'll send you a secure login link.</p>
-          {denied && <p style="background:#fbeaea;color:#b3261e;border-radius:10px;padding:10px 14px;font-size:13px;margin:0 0 16px">This email isn't authorised for the admin.</p>}
+          <h1 style="font-size:24px;font-weight:700;margin:0 0 6px">Connexion</h1>
+          <p style="color:#6b6b73;font-size:14px;margin:0 0 22px">Saisissez votre e-mail admin — nous vous envoyons un lien de connexion sécurisé.</p>
+          {denied && <p style="background:#fbeaea;color:#b3261e;border-radius:10px;padding:10px 14px;font-size:13px;margin:0 0 16px">Cet e-mail n'est pas autorisé pour l'admin.</p>}
           <form id="f">
-            <label style="display:block;font-size:13px;font-weight:500;margin-bottom:6px">Email</label>
-            <input id="email" type="email" required autocomplete="email" placeholder="you@email.com" style="width:100%;border:1px solid rgba(14,14,18,.18);border-radius:12px;padding:12px 14px;font-size:15px;outline:none" />
-            <button id="btn" type="submit" style="width:100%;margin-top:16px;background:#0e0e12;color:#fff;border:0;border-radius:999px;padding:13px;font-size:15px;font-weight:500;cursor:pointer">Send magic link</button>
+            <label style="display:block;font-size:13px;font-weight:500;margin-bottom:6px">E-mail</label>
+            <input id="email" type="email" required autocomplete="email" placeholder="vous@email.com" style="width:100%;border:1px solid rgba(14,14,18,.18);border-radius:12px;padding:12px 14px;font-size:15px;outline:none" />
+            <button id="btn" type="submit" style="width:100%;margin-top:16px;background:#0e0e12;color:#fff;border:0;border-radius:999px;padding:13px;font-size:15px;font-weight:500;cursor:pointer">Envoyer le lien magique</button>
           </form>
           <p id="msg" style="font-size:14px;margin:16px 0 0;text-align:center"></p>
         </div>
@@ -48,14 +48,14 @@ const denied = Astro.url.searchParams.get('denied');
       f.addEventListener('submit', async (e) => {
         e.preventDefault();
         const email = (document.getElementById('email') as HTMLInputElement).value.trim();
-        btn.setAttribute('disabled', 'true'); btn.textContent = 'Sending…';
+        btn.setAttribute('disabled', 'true'); btn.textContent = 'Envoi…';
         const { error } = await supabase.auth.signInWithOtp({
           email,
           options: { emailRedirectTo: location.origin + '/admin/auth/callback' },
         });
-        btn.removeAttribute('disabled'); btn.textContent = 'Send magic link';
+        btn.removeAttribute('disabled'); btn.textContent = 'Envoyer le lien magique';
         if (error) { msg.style.color = '#b3261e'; msg.textContent = error.message; }
-        else { msg.style.color = '#3a7d44'; msg.textContent = '✓ Check your inbox for the login link.'; f.reset(); }
+        else { msg.style.color = '#3a7d44'; msg.textContent = '✓ Vérifiez votre boîte mail pour le lien de connexion.'; f.reset(); }
       });
     </script>
   </body>

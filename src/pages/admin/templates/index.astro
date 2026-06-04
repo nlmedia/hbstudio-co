@@ -9,20 +9,21 @@ const { data: templates } = await supabase
   .select('id, slug, title, cms, status, price, currency, cover, sort_order')
   .order('sort_order', { ascending: true });
 
-const flash = Astro.url.searchParams.get('created') ? 'Template created.'
-  : Astro.url.searchParams.get('saved') ? 'Changes saved.'
-  : Astro.url.searchParams.get('deleted') ? 'Template deleted.' : '';
+const flash = Astro.url.searchParams.get('created') ? 'Template créé.'
+  : Astro.url.searchParams.get('saved') ? 'Modifications enregistrées.'
+  : Astro.url.searchParams.get('deleted') ? 'Template supprimé.' : '';
 
 const badge: Record<string, string> = {
   published: 'bg-[#e6f4ea] text-[#1e7d34]',
   draft: 'bg-surface-2 text-muted',
   'coming-soon': 'bg-accent-soft text-accent',
 };
+const statusLabel: Record<string, string> = { published: 'Publié', draft: 'Brouillon', 'coming-soon': 'Bientôt' };
 ---
 <Admin title="Templates" active="templates" email={email}>
   <div class="mb-6 flex items-center justify-between gap-4">
     <p class="text-sm text-muted">{templates?.length ?? 0} templates</p>
-    <a href="/admin/templates/new" class="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition hover:bg-accent">+ New template</a>
+    <a href="/admin/templates/new" class="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition hover:bg-accent">+ Nouveau template</a>
   </div>
 
   {flash && <p class="mb-5 rounded-xl bg-[#e6f4ea] px-4 py-3 text-sm text-[#1e7d34]">{flash}</p>}
@@ -32,9 +33,9 @@ const badge: Record<string, string> = {
       <thead class="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
         <tr>
           <th class="px-5 py-3 font-medium">Template</th>
-          <th class="px-5 py-3 font-medium">Platform</th>
-          <th class="px-5 py-3 font-medium">Status</th>
-          <th class="px-5 py-3 font-medium">Price</th>
+          <th class="px-5 py-3 font-medium">Plateforme</th>
+          <th class="px-5 py-3 font-medium">Statut</th>
+          <th class="px-5 py-3 font-medium">Prix</th>
           <th class="px-5 py-3 font-medium text-right">Actions</th>
         </tr>
       </thead>
@@ -50,15 +51,15 @@ const badge: Record<string, string> = {
               </a>
             </td>
             <td class="px-5 py-3 capitalize text-muted">{t.cms}</td>
-            <td class="px-5 py-3"><span class:list={['rounded-full px-2.5 py-1 text-xs font-medium', badge[t.status] ?? 'bg-surface-2']}>{t.status}</span></td>
+            <td class="px-5 py-3"><span class:list={['rounded-full px-2.5 py-1 text-xs font-medium', badge[t.status] ?? 'bg-surface-2']}>{statusLabel[t.status] ?? t.status}</span></td>
             <td class="px-5 py-3">{t.price != null ? `${t.currency}${t.price}` : '—'}</td>
             <td class="px-5 py-3">
               <div class="flex items-center justify-end gap-2">
-                <a href={`/admin/templates/${t.id}`} class="rounded-lg border border-line px-3 py-1.5 text-xs font-medium transition hover:bg-surface-2">Edit</a>
+                <a href={`/admin/templates/${t.id}`} class="rounded-lg border border-line px-3 py-1.5 text-xs font-medium transition hover:bg-surface-2">Modifier</a>
                 <form method="POST" action={`/admin/templates/${t.id}`}>
                   <input type="hidden" name="_action" value={t.status === 'published' ? 'unpublish' : 'publish'} />
                   <button class="rounded-lg border border-line px-3 py-1.5 text-xs font-medium transition hover:bg-surface-2">
-                    {t.status === 'published' ? 'Unpublish' : 'Publish'}
+                    {t.status === 'published' ? 'Dépublier' : 'Publier'}
                   </button>
                 </form>
               </div>
@@ -69,5 +70,5 @@ const badge: Record<string, string> = {
     </table>
   </div>
 
-  <p class="mt-4 text-xs text-muted">Published &amp; coming-soon templates appear on the public site. After changes, the live site updates on the next build (auto-rebuild hook coming next).</p>
+  <p class="mt-4 text-xs text-muted">Les templates « Publié » et « Bientôt » apparaissent sur le site public. Après modification, le site se met à jour au prochain build (hook de re-build automatique à venir).</p>
 </Admin>

@@ -3,16 +3,16 @@ import '../styles/global.css';
 interface Props { title?: string; active?: string; email?: string | null; }
 const { title = 'Admin', active = 'dashboard', email = '' } = Astro.props;
 const nav = [
-  { key: 'dashboard', label: 'Dashboard', href: '/admin', icon: 'M4 13h6V4H4v9zm0 7h6v-5H4v5zm10 0h6V11h-6v9zm0-16v5h6V4h-6z' },
+  { key: 'dashboard', label: 'Tableau de bord', href: '/admin', icon: 'M4 13h6V4H4v9zm0 7h6v-5H4v5zm10 0h6V11h-6v9zm0-16v5h6V4h-6z' },
   { key: 'templates', label: 'Templates', href: '/admin/templates', icon: 'M4 5h16M4 12h16M4 19h10' },
-  { key: 'sales', label: 'Sales', href: '/admin/sales', icon: 'M3 3v18h18M7 14l3-3 3 3 5-5' },
-  { key: 'subscribers', label: 'Subscribers', href: '/admin/subscribers', icon: 'M16 14a4 4 0 10-8 0M12 7a3 3 0 100-6 3 3 0 000 6zM4 21v-1a4 4 0 014-4h8a4 4 0 014 4v1' },
-  { key: 'campaigns', label: 'Campaigns', href: '/admin/campaigns', icon: 'M4 6h16v12H4zM4 7l8 6 8-6' },
-  { key: 'settings', label: 'Settings', href: '/admin/settings', icon: 'M12 15a3 3 0 100-6 3 3 0 000 6zM19 12a7 7 0 00-.1-1l2-1.6-2-3.4-2.4 1a7 7 0 00-1.7-1L14.5 2h-5l-.3 2.9a7 7 0 00-1.7 1l-2.4-1-2 3.4L3 11a7 7 0 000 2l-2 1.6 2 3.4 2.4-1a7 7 0 001.7 1l.3 2.9h5l.3-2.9a7 7 0 001.7-1l2.4 1 2-3.4-2-1.6a7 7 0 00.1-1z' },
+  { key: 'sales', label: 'Ventes', href: '/admin/sales', icon: 'M3 3v18h18M7 14l3-3 3 3 5-5' },
+  { key: 'subscribers', label: 'Abonnés', href: '/admin/subscribers', icon: 'M16 14a4 4 0 10-8 0M12 7a3 3 0 100-6 3 3 0 000 6zM4 21v-1a4 4 0 014-4h8a4 4 0 014 4v1' },
+  { key: 'campaigns', label: 'Campagnes', href: '/admin/campaigns', icon: 'M4 6h16v12H4zM4 7l8 6 8-6' },
+  { key: 'settings', label: 'Réglages', href: '/admin/settings', icon: 'M12 15a3 3 0 100-6 3 3 0 000 6zM19 12a7 7 0 00-.1-1l2-1.6-2-3.4-2.4 1a7 7 0 00-1.7-1L14.5 2h-5l-.3 2.9a7 7 0 00-1.7 1l-2.4-1-2 3.4L3 11a7 7 0 000 2l-2 1.6 2 3.4 2.4-1a7 7 0 001.7 1l.3 2.9h5l.3-2.9a7 7 0 001.7-1l2.4 1 2-3.4-2-1.6a7 7 0 00.1-1z' },
 ];
 ---
 <!doctype html>
-<html lang="en" class="bg-paper">
+<html lang="fr" class="bg-paper">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -40,7 +40,7 @@ const nav = [
           ))}
         </nav>
         <a href="/" class="mt-2 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-paper/50 transition hover:bg-white/5 hover:text-paper">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M13 6l6 6-6 6"/></svg> View site
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M13 6l6 6-6 6"/></svg> Voir le site
         </a>
       </aside>
 
@@ -50,7 +50,7 @@ const nav = [
           <h1 class="font-display text-lg font-bold">{title}</h1>
           <div class="flex items-center gap-3 text-sm">
             <span class="hidden text-muted sm:inline">{email}</span>
-            <a href="/admin/auth/signout" class="rounded-full border border-line px-3.5 py-1.5 font-medium transition hover:bg-surface-2">Sign out</a>
+            <a href="/admin/auth/signout" class="rounded-full border border-line px-3.5 py-1.5 font-medium transition hover:bg-surface-2">Déconnexion</a>
           </div>
         </header>
         <main class="flex-1 p-6 sm:p-8"><slot /></main>

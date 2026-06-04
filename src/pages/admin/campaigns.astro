@@ -3,9 +3,9 @@ export const prerender = false;
 import Admin from '../../layouts/Admin.astro';
 const email = Astro.locals.user?.email ?? '';
 ---
-<Admin title="Campaigns" active="campaigns" email={email}>
+<Admin title="Campagnes" active="campaigns" email={email}>
   <div class="rounded-2xl border border-dashed border-line-strong bg-surface-2/40 p-12 text-center">
-    <h2 class="font-display text-xl font-semibold">Campaigns</h2>
-    <p class="mt-2 max-w-md mx-auto text-muted">Auto-newsletter to subscribers via Brevo on each new template. Coming next.</p>
+    <h2 class="font-display text-xl font-semibold">Campagnes</h2>
+    <p class="mt-2 max-w-md mx-auto text-muted">Newsletter automatique aux abonnés via Brevo à chaque nouveau template. Bientôt disponible.</p>
   </div>
 </Admin>

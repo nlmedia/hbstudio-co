@@ -22,14 +22,14 @@ const revenue = sales.reduce((s, r) => s + (r.amount || 0), 0) / 100;
 const salesCount = sales.length;
 
 const kpis = [
-  { label: 'Revenue', value: `€${revenue.toLocaleString('fr-FR')}`, sub: 'all time', icon: 'M3 3v18h18M7 14l3-3 3 3 5-5' },
-  { label: 'Sales', value: salesCount, sub: 'orders', icon: 'M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0' },
-  { label: 'Subscribers', value: subscribers, sub: 'newsletter', icon: 'M4 4h16v16H4zM4 7l8 6 8-6' },
-  { label: 'Templates', value: `${publishedCount}/${totalTemplates}`, sub: 'published / total', icon: 'M4 5h16M4 12h16M4 19h10' },
+  { label: 'Chiffre d’affaires', value: `€${revenue.toLocaleString('fr-FR')}`, sub: 'depuis le début', icon: 'M3 3v18h18M7 14l3-3 3 3 5-5' },
+  { label: 'Ventes', value: salesCount, sub: 'commandes', icon: 'M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0' },
+  { label: 'Abonnés', value: subscribers, sub: 'newsletter', icon: 'M4 4h16v16H4zM4 7l8 6 8-6' },
+  { label: 'Templates', value: `${publishedCount}/${totalTemplates}`, sub: 'publiés / total', icon: 'M4 5h16M4 12h16M4 19h10' },
 ];
 const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
 ---
-<Admin title="Dashboard" active="dashboard" email={email}>
+<Admin title="Tableau de bord" active="dashboard" email={email}>
   <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
     {kpis.map((k) => (
       <div class="rounded-2xl border border-line bg-surface p-5">
@@ -47,7 +47,7 @@ const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: '2-dig
 
   <div class="mt-8 grid gap-6 lg:grid-cols-2">
     <section class="rounded-2xl border border-line bg-surface p-6">
-      <h2 class="font-display text-lg font-semibold">Recent sales</h2>
+      <h2 class="font-display text-lg font-semibold">Ventes récentes</h2>
       {recentSales.data && recentSales.data.length > 0 ? (
         <ul class="mt-4 divide-y divide-line text-sm">
           {recentSales.data.map((s) => (
@@ -58,12 +58,12 @@ const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: '2-dig
           ))}
         </ul>
       ) : (
-        <p class="mt-4 text-sm text-muted">No sales yet. Connect Stripe and sales will appear here.</p>
+        <p class="mt-4 text-sm text-muted">Aucune vente pour le moment. Connectez Stripe et les ventes s'afficheront ici.</p>
       )}
     </section>
 
     <section class="rounded-2xl border border-line bg-surface p-6">
-      <h2 class="font-display text-lg font-semibold">New subscribers</h2>
+      <h2 class="font-display text-lg font-semibold">Nouveaux abonnés</h2>
       {recentSubs.data && recentSubs.data.length > 0 ? (
         <ul class="mt-4 divide-y divide-line text-sm">
           {recentSubs.data.map((s) => (
@@ -74,13 +74,13 @@ const fmt = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: '2-dig
           ))}
         </ul>
       ) : (
-        <p class="mt-4 text-sm text-muted">No subscribers yet.</p>
+        <p class="mt-4 text-sm text-muted">Aucun abonné pour le moment.</p>
       )}
     </section>
   </div>
 
   <div class="mt-8 rounded-2xl border border-dashed border-line-strong bg-surface-2/40 p-6">
-    <h2 class="font-display text-lg font-semibold">Next phases</h2>
-    <p class="mt-1 text-sm text-muted">Templates editor, Stripe sales sync, subscriber management, and the Brevo auto-newsletter are coming in the next phases. The secure foundation (auth + database + dashboard) is ready.</p>
+    <h2 class="font-display text-lg font-semibold">Prochaines phases</h2>
+    <p class="mt-1 text-sm text-muted">La synchro des ventes Stripe, la gestion des abonnés et la newsletter automatique via Brevo arrivent dans les prochaines phases. Le socle sécurisé (auth + base + dashboard) et la gestion des templates sont prêts.</p>
   </div>
 </Admin>

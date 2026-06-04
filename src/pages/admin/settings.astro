@@ -3,9 +3,9 @@ export const prerender = false;
 import Admin from '../../layouts/Admin.astro';
 const email = Astro.locals.user?.email ?? '';
 ---
-<Admin title="Settings" active="settings" email={email}>
+<Admin title="Réglages" active="settings" email={email}>
   <div class="rounded-2xl border border-dashed border-line-strong bg-surface-2/40 p-12 text-center">
-    <h2 class="font-display text-xl font-semibold">Settings</h2>
-    <p class="mt-2 max-w-md mx-auto text-muted">Brevo & Stripe keys, sender, rebuild hook. Coming next.</p>
+    <h2 class="font-display text-xl font-semibold">Réglages</h2>
+    <p class="mt-2 max-w-md mx-auto text-muted">Clés Brevo & Stripe, expéditeur, hook de re-build. Bientôt disponible.</p>
   </div>
 </Admin>

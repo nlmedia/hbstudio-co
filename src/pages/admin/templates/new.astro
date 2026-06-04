@@ -11,7 +11,7 @@ let error = '';
 if (Astro.request.method === 'POST') {
   const row = parseTemplateForm(await Astro.request.formData());
   if (!row.title || !row.slug) {
-    error = 'Title and slug are required.';
+    error = 'Le titre et le slug sont requis.';
   } else {
     const { error: e } = await supabase.from('hb_templates').insert(row);
     if (e) error = e.message;
@@ -19,7 +19,7 @@ if (Astro.request.method === 'POST') {
   }
 }
 ---
-<Admin title="New template" active="templates" email={email}>
+<Admin title="Nouveau template" active="templates" email={email}>
   {error && <p class="mb-5 rounded-xl bg-[#fbeaea] px-4 py-3 text-sm text-[#b3261e]">{error}</p>}
-  <TemplateForm action="/admin/templates/new" submitLabel="Create template" />
+  <TemplateForm action="/admin/templates/new" submitLabel="Créer le template" />
 </Admin>

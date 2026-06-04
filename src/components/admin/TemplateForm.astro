@@ -7,38 +7,38 @@ const label = 'block text-xs font-medium text-ink/70 mb-1.5';
 ---
 <form method="POST" action={action} class="grid max-w-3xl gap-6">
   <div class="grid gap-4 sm:grid-cols-2">
-    <label><span class={label}>Title</span><input class={field} name="title" required value={t.title ?? ''} /></label>
+    <label><span class={label}>Titre</span><input class={field} name="title" required value={t.title ?? ''} /></label>
     <label><span class={label}>Slug (URL)</span><input class={field} name="slug" required value={t.slug ?? ''} placeholder="atelier" /></label>
   </div>
   <div class="grid gap-4 sm:grid-cols-4">
-    <label><span class={label}>Platform</span>
+    <label><span class={label}>Plateforme</span>
       <select class={field} name="cms">
         {['shopify','wordpress','woocommerce','other'].map((o) => <option value={o} selected={t.cms===o}>{o}</option>)}
       </select>
     </label>
-    <label><span class={label}>Status</span>
+    <label><span class={label}>Statut</span>
       <select class={field} name="status">
-        {['draft','published','coming-soon'].map((o) => <option value={o} selected={(t.status??'draft')===o}>{o}</option>)}
+        {[['draft','Brouillon'],['published','Publié'],['coming-soon','Bientôt']].map(([o, lbl]) => <option value={o} selected={(t.status??'draft')===o}>{lbl}</option>)}
       </select>
     </label>
-    <label><span class={label}>Price (€, empty = none)</span><input class={field} name="price" type="number" step="1" value={t.price ?? ''} /></label>
-    <label><span class={label}>Sort order</span><input class={field} name="sort_order" type="number" value={t.sort_order ?? 100} /></label>
+    <label><span class={label}>Prix (€, vide = aucun)</span><input class={field} name="price" type="number" step="1" value={t.price ?? ''} /></label>
+    <label><span class={label}>Ordre de tri</span><input class={field} name="sort_order" type="number" value={t.sort_order ?? 100} /></label>
   </div>
-  <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="featured" checked={!!t.featured} /> Featured on homepage</label>
+  <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="featured" checked={!!t.featured} /> Mis en avant sur l'accueil</label>
 
-  <label><span class={label}>Tagline</span><input class={field} name="tagline" value={t.tagline ?? ''} /></label>
-  <label><span class={label}>Short description</span><textarea class={field} name="description" rows="3">{t.description ?? ''}</textarea></label>
-  <label><span class={label}>Body (paragraphs, blank line between)</span><textarea class={field} name="body" rows="4">{t.body ?? ''}</textarea></label>
+  <label><span class={label}>Accroche</span><input class={field} name="tagline" value={t.tagline ?? ''} /></label>
+  <label><span class={label}>Description courte</span><textarea class={field} name="description" rows="3">{t.description ?? ''}</textarea></label>
+  <label><span class={label}>Contenu (paragraphes, ligne vide entre chaque)</span><textarea class={field} name="body" rows="4">{t.body ?? ''}</textarea></label>
 
   <fieldset class="grid gap-4 rounded-2xl border border-line p-4">
     <legend class="px-2 text-xs font-semibold uppercase tracking-wide text-muted">Images</legend>
-    {[['cover','Cover (card)'],['preview','Desktop full-page (mockup)'],['preview_mobile','Mobile full-page (phone)']].map(([n, lbl]) => (
+    {[['cover','Couverture (carte)'],['preview','Pleine page desktop (mockup)'],['preview_mobile','Pleine page mobile (téléphone)']].map(([n, lbl]) => (
       <div>
         <span class={label}>{lbl}</span>
         <div class="flex gap-2">
-          <input class={field} name={n} value={t[n] ?? ''} placeholder="/templates/... or uploaded URL" data-img-field={n} />
+          <input class={field} name={n} value={t[n] ?? ''} placeholder="/templates/... ou URL importée" data-img-field={n} />
           <label class="shrink-0 cursor-pointer rounded-xl border border-line px-3 py-2.5 text-xs font-medium transition hover:bg-surface-2">
-            Upload<input type="file" accept="image/*" class="hidden" data-img-upload={n} />
+            Importer<input type="file" accept="image/*" class="hidden" data-img-upload={n} />
           </label>
         </div>
       </div>
@@ -46,20 +46,20 @@ const label = 'block text-xs font-medium text-ink/70 mb-1.5';
   </fieldset>
 
   <div class="grid gap-4 sm:grid-cols-3">
-    <label><span class={label}>Gallery URLs (one/line)</span><textarea class={field} name="gallery" rows="4">{arr(t.gallery)}</textarea></label>
-    <label><span class={label}>Features (one/line)</span><textarea class={field} name="features" rows="4">{arr(t.features)}</textarea></label>
-    <label><span class={label}>Tags (one/line)</span><textarea class={field} name="tags" rows="4">{arr(t.tags)}</textarea></label>
+    <label><span class={label}>URLs galerie (une/ligne)</span><textarea class={field} name="gallery" rows="4">{arr(t.gallery)}</textarea></label>
+    <label><span class={label}>Caractéristiques (une/ligne)</span><textarea class={field} name="features" rows="4">{arr(t.features)}</textarea></label>
+    <label><span class={label}>Tags (un/ligne)</span><textarea class={field} name="tags" rows="4">{arr(t.tags)}</textarea></label>
   </div>
 
   <div class="grid gap-4 sm:grid-cols-3">
-    <label><span class={label}>Demo URL</span><input class={field} name="demo_url" value={t.demo_url ?? ''} /></label>
-    <label><span class={label}>Buy URL</span><input class={field} name="buy_url" value={t.buy_url ?? ''} /></label>
-    <label><span class={label}>Docs URL</span><input class={field} name="docs_url" value={t.docs_url ?? ''} /></label>
+    <label><span class={label}>URL démo</span><input class={field} name="demo_url" value={t.demo_url ?? ''} /></label>
+    <label><span class={label}>URL achat</span><input class={field} name="buy_url" value={t.buy_url ?? ''} /></label>
+    <label><span class={label}>URL docs</span><input class={field} name="docs_url" value={t.docs_url ?? ''} /></label>
   </div>
 
   <div class="flex items-center gap-3 pt-2">
     <button type="submit" class="rounded-full bg-ink px-6 py-2.5 text-sm font-medium text-paper transition hover:bg-accent">{submitLabel}</button>
-    <a href="/admin/templates" class="text-sm font-medium text-muted hover:text-ink">Cancel</a>
+    <a href="/admin/templates" class="text-sm font-medium text-muted hover:text-ink">Annuler</a>
     <span id="upmsg" class="text-xs text-muted"></span>
   </div>
 </form>
