@@ -153,17 +153,55 @@ const bodyParagraphs = (d.body || '').split(/\n\s*\n/).map((p) => p.trim()).filt
       </div>
     </section>
   ) : d.gallery.length > 0 ? (
-    <section class="border-y border-line bg-surface/30">
+    <section class="overflow-hidden border-y border-line bg-surface/30">
       <div class="mx-auto max-w-6xl px-5 py-16">
         <h2 data-reveal class="font-display text-2xl font-bold">A closer look</h2>
-        <div class="mt-6 grid gap-5 sm:grid-cols-2">
-          {d.gallery.map((src: string, i: number) => (
-            <img src={src} alt={`${d.title} screenshot ${i + 1}`} loading="lazy" data-reveal class:list={['w-full rounded-2xl border border-line bg-surface shadow-sm', { 'sm:col-span-2': i === 0 }]} />
-          ))}
+        <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:items-start">
+          <div class="flex flex-col gap-5">
+            {d.gallery.filter((_: string, i: number) => i % 2 === 0).map((src: string, i: number) => (
+              <img src={src} alt={`${d.title} screenshot ${i * 2 + 1}`} loading="lazy" data-reveal class="w-full rounded-2xl border border-line bg-surface shadow-sm" />
+            ))}
+          </div>
+          <div data-gallery-parallax class="flex flex-col gap-5 sm:will-change-transform">
+            {d.gallery.filter((_: string, i: number) => i % 2 === 1).map((src: string, i: number) => (
+              <img src={src} alt={`${d.title} screenshot ${i * 2 + 2}`} loading="lazy" data-reveal class="w-full rounded-2xl border border-line bg-surface shadow-sm" />
+            ))}
+          </div>
         </div>
       </div>
     </section>
   ) : null}
+
+  <script>
+    // Parallax on the right gallery column: starts offset downward, drifts up to
+    // finish flush with the left column at the bottom. Desktop only, motion-safe.
+    (function () {
+      const col = document.querySelector('[data-gallery-parallax]') as HTMLElement | null;
+      if (!col) return;
+      const mqDesktop = window.matchMedia('(min-width: 640px)');
+      const mqMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      const OFFSET = 110; // px stagger between the two columns
+      let raf = 0;
+
+      const apply = () => {
+        raf = 0;
+        if (!mqDesktop.matches || mqMotion.matches) { col.style.transform = ''; return; }
+        const section = col.closest('section');
+        if (!section) return;
+        const rect = section.getBoundingClientRect();
+        const vh = window.innerHeight || document.documentElement.clientHeight;
+        // progress 0 → 1 as the section travels through the viewport
+        const p = Math.min(1, Math.max(0, (vh - rect.top) / (rect.height + vh)));
+        col.style.transform = `translate3d(0, ${((1 - p) * OFFSET).toFixed(1)}px, 0)`;
+      };
+      const onScroll = () => { if (!raf) raf = requestAnimationFrame(apply); };
+
+      apply();
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+      mqDesktop.addEventListener('change', apply);
+    })();
+  </script>
 
   <section class="mx-auto max-w-6xl px-5 py-12 text-center">
     <a href="/templates" class="text-sm font-medium text-accent hover:underline">← Back to all templates</a>
