@@ -1,6 +1,7 @@
 ---
 import Base from '../../layouts/Base.astro';
 import TemplateCard from '../../components/TemplateCard.astro';
+import CmsLogo from '../../components/CmsLogo.astro';
 import { CMS, CMS_ORDER } from '../../data/cms';
 import { getTemplates } from '../../lib/catalog';
 
@@ -23,8 +24,8 @@ const all = (await getTemplates()).filter((t) => t.data.cms === cms);
         ))}
       </nav>
       <div data-reveal class="mt-9 flex items-center gap-4">
-        <span class="grid h-14 w-14 place-items-center rounded-2xl text-white" style={`background:${c.accent}`}>
-          <span class="font-display text-2xl font-bold">{c.label[0]}</span>
+        <span class="grid h-14 w-14 place-items-center rounded-2xl border border-line bg-paper shadow-sm" style={c.key === 'other' ? `color:${c.accent}` : undefined}>
+          <CmsLogo cms={c.key} class="h-8 w-8" />
         </span>
         <div>
           <h1 class="font-display text-4xl font-bold sm:text-5xl">{c.label}</h1>

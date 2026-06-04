@@ -1,0 +1,26 @@
+---
+/**
+ * Real CMS brand logo. Renders the official colored mark for shopify/wordpress/
+ * woocommerce; a generic "more platforms" glyph for the `other` bucket.
+ */
+import type { CmsKey } from '../data/cms';
+interface Props { cms: CmsKey; class?: string; }
+const { cms, class: extra = 'h-7 w-7' } = Astro.props;
+
+const FILE: Partial<Record<CmsKey, string>> = {
+  shopify: '/cms/shopify.svg',
+  wordpress: '/cms/wordpress.svg',
+  woocommerce: '/cms/woocommerce.svg',
+};
+const src = FILE[cms];
+---
+{src ? (
+  <img src={src} alt={`${cms} logo`} loading="lazy" class:list={['object-contain', extra]} />
+) : (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class:list={[extra]}>
+    <rect x="3" y="3" width="7" height="7" rx="1.5" />
+    <rect x="14" y="3" width="7" height="7" rx="1.5" />
+    <rect x="3" y="14" width="7" height="7" rx="1.5" />
+    <path d="M17.5 14.5v6M14.5 17.5h6" />
+  </svg>
+)}

@@ -1,5 +1,6 @@
 ---
 import { CMS } from '../data/cms';
+import CmsLogo from './CmsLogo.astro';
 interface Props { entry: any; }
 const { entry } = Astro.props;
 const d = entry.data;
@@ -17,8 +18,8 @@ const soon = d.status === 'coming-soon';
       </div>
     )}
     <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/40 to-transparent opacity-0 transition group-hover:opacity-100"></div>
-    <span class="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-ink/80 px-2.5 py-1 text-xs font-medium backdrop-blur" style={`color:${cms.accent}`}>
-      <span class="h-2 w-2 rounded-full" style={`background:${cms.accent}`}></span>{cms.label}
+    <span class="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-paper/95 px-2.5 py-1 text-xs font-medium text-ink backdrop-blur" style={d.cms === 'other' ? `color:${cms.accent}` : undefined}>
+      <CmsLogo cms={d.cms} class="h-3.5 w-3.5" />{cms.label}
     </span>
     {soon && <span class="absolute right-3 top-3 rounded-full bg-paper px-2.5 py-1 text-xs font-medium text-ink">Coming soon</span>}
     {!soon && d.onSale && (

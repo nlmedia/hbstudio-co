@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import TemplateCard from '../components/TemplateCard.astro';
 import DeviceMockup from '../components/DeviceMockup.astro';
+import CmsLogo from '../components/CmsLogo.astro';
 import { CMS, CMS_ORDER } from '../data/cms';
 import { getTemplates } from '../lib/catalog';
 
@@ -108,8 +109,8 @@ const faqs = [
         return (
           <a href={`/category/${k}`} data-reveal style={`transition-delay:${i * 90}ms`} class="group relative overflow-hidden rounded-2xl border border-line bg-surface p-6 transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_30px_60px_-25px_rgba(14,14,18,0.25)]">
             <div class="absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-0 blur-2xl transition duration-500 group-hover:opacity-40" style={`background:${c.accent}`}></div>
-            <span class="relative grid h-12 w-12 place-items-center rounded-xl text-white" style={`background:${c.accent}`}>
-              <span class="font-display text-lg font-bold">{c.label[0]}</span>
+            <span class="relative grid h-12 w-12 place-items-center rounded-xl border border-line bg-paper shadow-sm" style={c.key === 'other' ? `color:${c.accent}` : undefined}>
+              <CmsLogo cms={c.key} class="h-7 w-7" />
             </span>
             <h3 class="relative mt-5 font-display text-xl font-semibold">{c.label}</h3>
             <p class="relative mt-1 text-sm text-muted">{c.blurb}</p>
