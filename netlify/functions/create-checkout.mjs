@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
-import { createClient } from '@supabase/supabase-js';
+import { getSupabase, loadSettings, pick } from './_lib.mjs';
 
-// Fixed license bundles (amounts in cents, EUR). Templates are priced from the DB.
+// Fixed license bundles (amounts in cents). Templates are priced from the DB.
 const CATALOG = {
   single:       { name: 'Single license',              amount: 6900 },
   extended:     { name: 'Extended license (5 stores)', amount: 14900 },
@@ -9,11 +9,8 @@ const CATALOG = {
 };
 
 /** Resolve a template purchase from the DB by slug, applying an active promo. */
-async function templateProduct(slug) {
-  const url = process.env.PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-  const anon = process.env.PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !anon) return null;
-  const sb = createClient(url, anon, { auth: { persistSession: false } });
+async function templateProduct(sb, slug) {
+  if (!sb) return null;
   const { data: t } = await sb
     .from('hb_templates')
     .select('title, cms, price, sale_price, sale_ends_at, status')
@@ -33,7 +30,10 @@ export default async (req) => {
     return new Response('Method not allowed', { status: 405 });
   }
 
-  const key = process.env.STRIPE_SECRET_KEY;
+  const sb = getSupabase();
+  const settings = await loadSettings(sb, ['stripe_secret_key', 'currency']);
+  const key = pick(settings, 'stripe_secret_key', 'STRIPE_SECRET_KEY');
+  const currency = (settings.currency || 'eur').toLowerCase();
   // Not activated yet — the front-end shows a friendly "opens soon" message.
   if (!key) {
     return Response.json({ error: 'not_configured' }, { status: 503 });
@@ -42,7 +42,7 @@ export default async (req) => {
   let item;
   try { ({ item } = await req.json()); } catch { /* ignore */ }
   // License bundles come from the static catalogue; anything else is a template slug priced from the DB.
-  const product = CATALOG[item] || (item ? await templateProduct(item) : null);
+  const product = CATALOG[item] || (item ? await templateProduct(sb, item) : null);
   if (!product) {
     return Response.json({ error: 'unknown_item' }, { status: 400 });
   }
@@ -57,7 +57,7 @@ export default async (req) => {
         {
           quantity: 1,
           price_data: {
-            currency: 'eur',
+            currency,
             unit_amount: product.amount,
             product_data: { name: product.name },
           },

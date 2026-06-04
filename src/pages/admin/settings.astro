@@ -1,7 +1,7 @@
 ---
 export const prerender = false;
 import Admin from '../../layouts/Admin.astro';
-import { getSettings, saveSettings, maskSecret, SECRET_KEYS, type Settings } from '../../lib/settings';
+import { getSettings, saveSettings, maskSecret, type Settings } from '../../lib/settings';
 
 const supabase = Astro.locals.supabase!;
 const email = Astro.locals.user?.email ?? '';
@@ -18,11 +18,14 @@ if (Astro.request.method === 'POST') {
     reply_to: str('reply_to'),
     rebuild_hook_url: str('rebuild_hook_url'),
     auto_email_on_publish: form.get('auto_email_on_publish') === 'on' ? 'true' : 'false',
+    currency: str('currency') || 'eur',
+    download_ttl_days: str('download_ttl_days') || '7',
   };
-  // Only overwrite the secret when a new value is typed (the field is blank otherwise).
-  const newKey = str('brevo_api_key');
-  if (newKey) next.brevo_api_key = newKey;
-
+  // Secrets: only overwrite when a new value is typed (blank = keep current).
+  for (const k of ['brevo_api_key', 'stripe_secret_key', 'stripe_webhook_secret', 'download_secret'] as const) {
+    const v = str(k);
+    if (v) next[k] = v;
+  }
   const { error: e } = await saveSettings(supabase, next);
   if (e) error = e.message;
   else flash = 'Réglages enregistrés.';
@@ -31,19 +34,32 @@ if (Astro.request.method === 'POST') {
 const s = await getSettings(supabase);
 const field = 'w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-accent';
 const label = 'block text-xs font-medium text-ink/70 mb-1.5';
+
 const brevoSet = !!s.brevo_api_key;
+const stripeSet = !!s.stripe_secret_key;
+const whSet = !!s.stripe_webhook_secret;
+const dlSet = !!s.download_secret;
+const stripeMode = s.stripe_secret_key?.startsWith('sk_live') ? 'live' : s.stripe_secret_key?.startsWith('sk_test') ? 'test' : null;
+
+const Badge = (ok: boolean) => ok
+  ? '<span class="rounded-full bg-[#e6f4ea] px-2 py-0.5 text-xs font-medium text-[#1e7d34]">Configuré</span>'
+  : '<span class="rounded-full bg-surface-2 px-2 py-0.5 text-xs font-medium text-muted">À configurer</span>';
 ---
 <Admin title="Réglages" active="settings" email={email}>
   {flash && <p class="mb-5 rounded-xl bg-[#e6f4ea] px-4 py-3 text-sm text-[#1e7d34]">{flash}</p>}
   {error && <p class="mb-5 rounded-xl bg-[#fbeaea] px-4 py-3 text-sm text-[#b3261e]">{error}</p>}
 
   <form method="POST" class="grid max-w-2xl gap-8">
+    <!-- EMAIL -->
     <section class="rounded-2xl border border-line bg-surface p-6">
-      <h2 class="font-display text-lg font-semibold">Email (Brevo)</h2>
-      <p class="mt-1 text-sm text-muted">Utilisé pour les campagnes et l'envoi automatique aux abonnés.</p>
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="font-display text-lg font-semibold">Email (Brevo)</h2>
+        <Fragment set:html={Badge(brevoSet)} />
+      </div>
+      <p class="mt-1 text-sm text-muted">Campagnes, envoi automatique aux abonnés et emails de livraison après achat.</p>
       <div class="mt-5 grid gap-4">
         <label>
-          <span class={label}>Clé API Brevo {brevoSet && <span class="text-[#1e7d34]">· définie ({maskSecret(s.brevo_api_key)})</span>}</span>
+          <span class={label}>Clé API Brevo {brevoSet && <span class="text-[#1e7d34]">· {maskSecret(s.brevo_api_key)}</span>}</span>
           <input class={field} name="brevo_api_key" type="password" autocomplete="off" placeholder={brevoSet ? 'Laisser vide pour conserver la clé actuelle' : 'xkeysib-…'} />
         </label>
         <div class="grid gap-4 sm:grid-cols-2">
@@ -61,8 +77,63 @@ const brevoSet = !!s.brevo_api_key;
       </div>
     </section>
 
+    <!-- PAIEMENT (STRIPE) -->
     <section class="rounded-2xl border border-line bg-surface p-6">
-      <h2 class="font-display text-lg font-semibold">Déploiement</h2>
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="font-display text-lg font-semibold">Paiement (Stripe)</h2>
+        <span class="flex items-center gap-2">
+          {stripeMode && <span class:list={['rounded-full px-2 py-0.5 text-xs font-medium', stripeMode === 'live' ? 'bg-[#e6f4ea] text-[#1e7d34]' : 'bg-accent-soft text-accent']}>{stripeMode === 'live' ? 'Live' : 'Test'}</span>}
+          <Fragment set:html={Badge(stripeSet && whSet)} />
+        </span>
+      </div>
+      <p class="mt-1 text-sm text-muted">Encaissement des paiements. La clé secrète sert au checkout, le secret du webhook valide les notifications de paiement.</p>
+      <div class="mt-5 grid gap-4">
+        <label>
+          <span class={label}>Clé secrète Stripe {stripeSet && <span class="text-[#1e7d34]">· {maskSecret(s.stripe_secret_key)}</span>}</span>
+          <input class={field} name="stripe_secret_key" type="password" autocomplete="off" placeholder={stripeSet ? 'Laisser vide pour conserver' : 'sk_live_… ou sk_test_…'} />
+        </label>
+        <label>
+          <span class={label}>Secret du webhook Stripe {whSet && <span class="text-[#1e7d34]">· {maskSecret(s.stripe_webhook_secret)}</span>}</span>
+          <input class={field} name="stripe_webhook_secret" type="password" autocomplete="off" placeholder={whSet ? 'Laisser vide pour conserver' : 'whsec_…'} />
+        </label>
+        <label class="sm:max-w-[12rem]">
+          <span class={label}>Devise</span>
+          <select class={field} name="currency">
+            {['eur', 'usd', 'gbp', 'cad', 'chf'].map((c) => <option value={c} selected={(s.currency ?? 'eur') === c}>{c.toUpperCase()}</option>)}
+          </select>
+        </label>
+      </div>
+      <p class="mt-4 rounded-xl bg-surface-2/60 px-3.5 py-2.5 text-xs text-muted">
+        URL du webhook à déclarer dans Stripe : <code class="text-ink/70">/api/stripe-webhook</code> · évènement <code class="text-ink/70">checkout.session.completed</code>.
+      </p>
+    </section>
+
+    <!-- LIVRAISON -->
+    <section class="rounded-2xl border border-line bg-surface p-6">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="font-display text-lg font-semibold">Livraison (téléchargements)</h2>
+        <Fragment set:html={Badge(dlSet)} />
+      </div>
+      <p class="mt-1 text-sm text-muted">Lien de téléchargement signé envoyé après paiement. Le secret protège les liens contre la falsification.</p>
+      <div class="mt-5 grid gap-4 sm:grid-cols-[1fr_auto]">
+        <label>
+          <span class={label}>Secret de téléchargement {dlSet && <span class="text-[#1e7d34]">· {maskSecret(s.download_secret)}</span>}</span>
+          <input class={field} name="download_secret" type="text" autocomplete="off" data-download-secret placeholder={dlSet ? 'Laisser vide pour conserver' : 'chaîne aléatoire longue'} />
+        </label>
+        <label>
+          <span class={label}>Validité (jours)</span>
+          <input class={field} name="download_ttl_days" type="number" min="1" max="365" value={s.download_ttl_days ?? '7'} />
+        </label>
+      </div>
+      <button type="button" data-gen-secret class="mt-2 text-xs font-medium text-accent hover:underline">Générer un secret aléatoire</button>
+    </section>
+
+    <!-- DÉPLOIEMENT -->
+    <section class="rounded-2xl border border-line bg-surface p-6">
+      <div class="flex items-center justify-between gap-3">
+        <h2 class="font-display text-lg font-semibold">Déploiement</h2>
+        <Fragment set:html={Badge(!!s.rebuild_hook_url)} />
+      </div>
       <p class="mt-1 text-sm text-muted">Le site public est statique : un hook de rebuild régénère le site après modification du catalogue.</p>
       <label class="mt-5 block">
         <span class={label}>URL du build hook (Netlify)</span>
@@ -75,5 +146,16 @@ const brevoSet = !!s.brevo_api_key;
     </div>
   </form>
 
-  <p class="mt-4 max-w-2xl text-xs text-muted">Les clés sont stockées dans une table protégée (accès admin uniquement) et ne sont jamais exposées au site public ni au navigateur.</p>
+  <p class="mt-4 max-w-2xl text-xs text-muted">Toutes les clés sont stockées dans une table protégée (accès admin uniquement) et ne sont jamais exposées au site public ni au navigateur. Les fonctions de paiement/livraison les lisent côté serveur (avec repli sur les variables d'environnement Netlify).</p>
+
+  <script>
+    const gen = document.querySelector('[data-gen-secret]');
+    const target = document.querySelector('[data-download-secret]') as HTMLInputElement | null;
+    gen?.addEventListener('click', () => {
+      const bytes = new Uint8Array(32);
+      crypto.getRandomValues(bytes);
+      const hex = Array.from(bytes).map((b) => b.toString(16).padStart(2, '0')).join('');
+      if (target) { target.value = hex; target.focus(); }
+    });
+  </script>
 </Admin>

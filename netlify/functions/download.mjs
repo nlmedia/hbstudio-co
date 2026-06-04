@@ -1,5 +1,5 @@
-import { createClient } from '@supabase/supabase-js';
 import crypto from 'node:crypto';
+import { getSupabase, loadSettings, pick } from './_lib.mjs';
 
 // Fixed license bundles → storage path in the private "deliverables" bucket.
 const BUNDLES = {
@@ -9,13 +9,6 @@ const BUNDLES = {
 };
 
 export const config = { path: '/api/download' };
-
-function sbClient() {
-  const url = process.env.PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return null;
-  return createClient(url, key, { auth: { persistSession: false } });
-}
 
 /** Resolve the storage path for a purchased item (bundle key or template slug). */
 async function resolvePath(sb, item) {
@@ -31,7 +24,9 @@ function safeEqual(a, b) {
 }
 
 export default async (req) => {
-  const secret = process.env.DOWNLOAD_SECRET;
+  const sb = getSupabase();
+  const settings = await loadSettings(sb, ['download_secret']);
+  const secret = pick(settings, 'download_secret', 'DOWNLOAD_SECRET');
   if (!secret) return new Response('Downloads not configured.', { status: 503 });
 
   const url = new URL(req.url);
@@ -51,7 +46,6 @@ export default async (req) => {
     return new Response('Invalid or tampered download link.', { status: 403 });
   }
 
-  const sb = sbClient();
   if (!sb) return new Response('Downloads not configured.', { status: 503 });
 
   const path = await resolvePath(sb, item);

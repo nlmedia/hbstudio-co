@@ -7,9 +7,14 @@ export type SettingKey =
   | 'sender_email'
   | 'reply_to'
   | 'rebuild_hook_url'
-  | 'auto_email_on_publish';
+  | 'auto_email_on_publish'
+  | 'stripe_secret_key'
+  | 'stripe_webhook_secret'
+  | 'currency'
+  | 'download_secret'
+  | 'download_ttl_days';
 
-export const SECRET_KEYS: SettingKey[] = ['brevo_api_key'];
+export const SECRET_KEYS: SettingKey[] = ['brevo_api_key', 'stripe_secret_key', 'stripe_webhook_secret', 'download_secret'];
 
 export type Settings = Partial<Record<SettingKey, string>>;
 
