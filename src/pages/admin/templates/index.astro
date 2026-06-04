@@ -4,10 +4,13 @@ import Admin from '../../../layouts/Admin.astro';
 
 const supabase = Astro.locals.supabase!;
 const email = Astro.locals.user?.email ?? '';
-const { data: templates } = await supabase
+const q = (Astro.url.searchParams.get('q') ?? '').trim();
+let templatesQuery = supabase
   .from('hb_templates')
   .select('id, slug, title, cms, status, price, sale_price, sale_ends_at, currency, cover, sort_order')
   .order('sort_order', { ascending: true });
+if (q) templatesQuery = templatesQuery.ilike('title', `%${q}%`);
+const { data: templates } = await templatesQuery;
 
 const flash = Astro.url.searchParams.get('created') ? 'Template créé.'
   : Astro.url.searchParams.get('saved') ? 'Modifications enregistrées.'
@@ -25,7 +28,10 @@ const isOnSale = (t: any) =>
 ---
 <Admin title="Templates" active="templates" email={email}>
   <div class="mb-6 flex items-center justify-between gap-4">
-    <p class="text-sm text-muted">{templates?.length ?? 0} templates</p>
+    <p class="text-sm text-muted">
+      {templates?.length ?? 0} template{(templates?.length ?? 0) > 1 ? 's' : ''}
+      {q && <> · résultats pour « {q} » <a href="/admin/templates" class="text-accent hover:underline">réinitialiser</a></>}
+    </p>
     <a href="/admin/templates/new" class="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition hover:bg-accent">+ Nouveau template</a>
   </div>
 

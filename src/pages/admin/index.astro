@@ -2,6 +2,7 @@
 export const prerender = false;
 import Admin from '../../layouts/Admin.astro';
 import { getSettings } from '../../lib/settings';
+import { getAlerts } from '../../lib/alerts';
 
 const supabase = Astro.locals.supabase!;
 const email = Astro.locals.user?.email ?? '';
@@ -35,11 +36,13 @@ for (let i = 11; i >= 0; i--) {
   months.push({ key: monthKey(d), label: d.toLocaleDateString('fr-FR', { month: 'short' }) });
 }
 const monthRev: Record<string, number> = Object.fromEntries(months.map((m) => [m.key, 0]));
+const monthCnt: Record<string, number> = Object.fromEntries(months.map((m) => [m.key, 0]));
 for (const s of sales) {
   const k = monthKey(new Date(s.created_at));
-  if (k in monthRev) monthRev[k] += (s.amount || 0) / 100;
+  if (k in monthRev) { monthRev[k] += (s.amount || 0) / 100; monthCnt[k] += 1; }
 }
 const maxRev = Math.max(1, ...Object.values(monthRev));
+const maxCnt = Math.max(1, ...Object.values(monthCnt));
 const tmKey = months[11].key, pmKey = months[10].key;
 const revThisMonth = monthRev[tmKey] ?? 0;
 const revPrevMonth = monthRev[pmKey] ?? 0;
@@ -61,26 +64,20 @@ const topTemplates = Object.entries(byItem).sort((a, b) => b[1].revenue - a[1].r
 // ---- Active promos
 const activePromos = templates.filter((t) => t.price != null && t.sale_price != null && Number(t.sale_price) < Number(t.price) && (!t.sale_ends_at || new Date(t.sale_ends_at).getTime() > now.getTime()));
 
-// ---- Alerts / action items
-const brevoReady = !!settings.brevo_api_key && !!settings.sender_email;
-const publishedNoDeliverable = published.filter((t) => !t.deliverable);
-const noCover = templates.filter((t) => !t.cover);
-type Alert = { level: 'warn' | 'info'; text: string; href: string };
-const alerts: Alert[] = [];
-if (publishedNoDeliverable.length) alerts.push({ level: 'warn', text: `${publishedNoDeliverable.length} template(s) publié(s) sans fichier livrable — la livraison échouera`, href: '/admin/templates' });
-if (!brevoReady) alerts.push({ level: 'warn', text: 'Brevo non configuré — campagnes et emails automatiques désactivés', href: '/admin/settings' });
-if (drafts.length) alerts.push({ level: 'info', text: `${drafts.length} brouillon(s) à finaliser`, href: '/admin/templates' });
-if (noCover.length) alerts.push({ level: 'info', text: `${noCover.length} template(s) sans image de couverture`, href: '/admin/templates' });
-if (!settings.rebuild_hook_url) alerts.push({ level: 'info', text: 'Hook de rebuild non configuré (mises à jour du site public)', href: '/admin/settings' });
+// ---- Alerts / action items (shared with the topbar bell)
+const alerts = await getAlerts(supabase);
 
 const money = (n: number) => '€' + n.toLocaleString('fr-FR', { maximumFractionDigits: n % 1 ? 2 : 0 });
 const fmt = (d: string | null) => d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '—';
 
+const pct = (n: number, d: number) => d > 0 ? Math.round((n / d) * 100) : 0;
+const subActiveCount = subActive.count ?? 0;
+const subTotalCount = subTotal.count ?? 0;
 const kpis = [
-  { label: 'CA ce mois', value: money(revThisMonth), delta: deltaPct, sub: `mois préc. ${money(revPrevMonth)}`, icon: 'M3 3v18h18M7 14l3-3 3 3 5-5' },
-  { label: 'Ventes ce mois', value: String(salesThisMonth), sub: `${sales.length} au total`, icon: 'M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0' },
-  { label: 'Abonnés actifs', value: String(subActive.count ?? 0), sub: `+${subMonth.count ?? 0} ce mois · ${subTotal.count ?? 0} au total`, icon: 'M16 14a4 4 0 10-8 0M12 7a3 3 0 100-6 3 3 0 000 6zM4 21v-1a4 4 0 014-4h8a4 4 0 014 4v1' },
-  { label: 'Templates publiés', value: `${published.length}/${templates.length}`, sub: `panier moyen ${money(aov)}`, icon: 'M4 5h16M4 12h16M4 19h10' },
+  { label: 'CA ce mois', value: money(revThisMonth), delta: deltaPct, sub: `mois préc. ${money(revPrevMonth)}`, progress: pct(revThisMonth, maxRev), icon: 'M3 3v18h18M7 14l3-3 3 3 5-5' },
+  { label: 'Ventes ce mois', value: String(salesThisMonth), sub: `${sales.length} au total`, progress: pct(salesThisMonth, maxCnt), icon: 'M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0' },
+  { label: 'Abonnés actifs', value: String(subActiveCount), sub: `+${subMonth.count ?? 0} ce mois · ${subTotalCount} au total`, progress: pct(subActiveCount, subTotalCount), icon: 'M16 14a4 4 0 10-8 0M12 7a3 3 0 100-6 3 3 0 000 6zM4 21v-1a4 4 0 014-4h8a4 4 0 014 4v1' },
+  { label: 'Templates publiés', value: `${published.length}/${templates.length}`, sub: `panier moyen ${money(aov)}`, progress: pct(published.length, templates.length), icon: 'M4 5h16M4 12h16M4 19h10' },
 ];
 ---
 <Admin title="Tableau de bord" active="dashboard" email={email}>
@@ -102,7 +99,10 @@ const kpis = [
             </span>
           )}
         </div>
-        <p class="mt-1 text-xs text-muted">{k.sub}</p>
+        <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-2">
+          <div class="h-full rounded-full bg-accent" style={`width:${Math.max(3, Math.min(100, k.progress ?? 0))}%`}></div>
+        </div>
+        <p class="mt-2 text-xs text-muted">{k.sub}</p>
       </div>
     ))}
   </div>
