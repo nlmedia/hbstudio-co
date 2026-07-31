@@ -65,7 +65,13 @@ export default async (req) => {
   }
 
   // Hand off to a short-lived Supabase signed URL (the file streams from storage, not this function).
-  const { data, error } = await sb.storage.from('deliverables').createSignedUrl(path, 120, { download: true });
+  // 300s is not arbitrary: this window only has to cover the actual file transfer, because the real
+  // access control already happened above (HMAC link, its own day-scale expiry, and the signature
+  // check). This URL is never published anywhere -- it only exists for the length of one redirect --
+  // so widening it doesn't weaken security. Themes run tens of MB and only grow, so on a slow mobile
+  // connection 120s can cut a download off mid-transfer with no clear error for a paying customer.
+  // Do not shrink this back down "for security": that protection lives upstream, not here.
+  const { data, error } = await sb.storage.from('deliverables').createSignedUrl(path, 300, { download: true });
   if (error || !data?.signedUrl) {
     logError('download:createSignedUrl', error || `no signed URL for ${path}`);
     return new Response('Could not fetch the file. Please contact support.', { status: 500 });
