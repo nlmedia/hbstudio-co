@@ -254,6 +254,12 @@ create policy hb_settings_admin_all on public.hb_settings
 drop policy if exists hb_audit_admin_read on public.hb_audit_log;
 create policy hb_audit_admin_read on public.hb_audit_log
   for select to authenticated using (public.hb_is_admin());
+-- INSERT only (not "for all"): hb_audit_log is only ever written by INSERT
+-- from application code, never UPDATEd or DELETEd. Granting more than INSERT
+-- would let an admin session alter or erase past audit entries.
+drop policy if exists hb_audit_admin_insert on public.hb_audit_log;
+create policy hb_audit_admin_insert on public.hb_audit_log
+  for insert to authenticated with check (public.hb_is_admin());
 
 drop policy if exists hb_licenses_owner_read on public.hb_licenses;
 create policy hb_licenses_owner_read on public.hb_licenses
@@ -290,3 +296,9 @@ create policy hb_template_versions_admin_all on public.hb_template_versions
 drop policy if exists hb_license_events_admin_read on public.hb_license_events;
 create policy hb_license_events_admin_read on public.hb_license_events
   for select to authenticated using (public.hb_is_admin());
+-- INSERT only (not "for all"): hb_license_events is only ever written by
+-- INSERT from application code, never UPDATEd or DELETEd. Granting more than
+-- INSERT would let an admin session alter or erase past event entries.
+drop policy if exists hb_license_events_admin_insert on public.hb_license_events;
+create policy hb_license_events_admin_insert on public.hb_license_events
+  for insert to authenticated with check (public.hb_is_admin());
