@@ -39,7 +39,7 @@ const bodyParagraphs = (d.body || '').split(/\n\s*\n/).map((p) => p.trim()).filt
               </div>
             )}
             <div class="flex flex-wrap items-center gap-4">
-              <a href="#" data-checkout={entry.id} class="rounded-full bg-paper px-6 py-3 font-medium text-ink transition hover:bg-accent hover:text-white">
+              <a href="#" data-checkout={entry.id} data-tier="single" class="rounded-full bg-paper px-6 py-3 font-medium text-ink transition hover:bg-accent hover:text-white">
                 {d.onSale ? (
                   <>
                     <span data-when-promo>Buy — <span class="text-ink/45 line-through">{d.currency}{d.price}</span> {d.currency}{d.salePrice}</span>
@@ -51,7 +51,7 @@ const bodyParagraphs = (d.body || '').split(/\n\s*\n/).map((p) => p.trim()).filt
               </a>
               {d.demoUrl && <a href={d.demoUrl} target="_blank" rel="noopener" class="rounded-full border border-white/25 px-6 py-3 font-medium transition hover:bg-white/10">Live demo</a>}
             </div>
-            <p class="mt-3 text-sm text-paper/50">One-time payment · single store · lifetime updates</p>
+            <p class="mt-3 text-sm text-paper/50">One-time payment · 1 site · 12 months of updates</p>
           </div>
         )}
       </div>
@@ -118,7 +118,19 @@ const bodyParagraphs = (d.body || '').split(/\n\s*\n/).map((p) => p.trim()).filt
         {soon ? (
           <a href="/contact" class="mt-5 block rounded-full bg-ink px-6 py-3 text-center font-medium text-paper transition hover:bg-accent">Notify me</a>
         ) : (
-          <a href="#" data-checkout={entry.id} class="mt-5 block rounded-full bg-ink px-6 py-3 text-center font-medium text-paper transition hover:bg-accent">Buy {d.title}</a>
+          <>
+            <div class="mt-5 space-y-2">
+              <a href="#" data-checkout={entry.id} data-tier="single" class="block rounded-full bg-ink px-6 py-3 text-center font-medium text-paper transition hover:bg-accent">
+                Single license — 1 site · {d.currency}{d.effectivePrice}
+              </a>
+              {d.extendedPrice != null && (
+                <a href="#" data-checkout={entry.id} data-tier="extended" class="block rounded-full border border-line-strong px-6 py-3 text-center font-medium transition hover:bg-surface-2">
+                  Extended — 5 sites · {d.currency}{d.extendedPrice}
+                </a>
+              )}
+            </div>
+            <p class="mt-3 text-center text-xs text-muted">One-time payment · 12 months of updates included</p>
+          </>
         )}
         {d.docsUrl && <a href={d.docsUrl} target="_blank" rel="noopener" class="mt-2 block text-center text-sm font-medium text-accent-2 hover:underline">Read the documentation →</a>}
       </div>

@@ -107,7 +107,8 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
           e.preventDefault();
           const el = b as HTMLElement;
           if (el.getAttribute('aria-busy') === 'true') return;
-          const item = el.getAttribute('data-checkout');
+          const slug = el.getAttribute('data-checkout');
+          const tier = el.getAttribute('data-tier') || 'single';
           const label = el.textContent;
           el.setAttribute('aria-busy', 'true');
           el.textContent = 'Redirecting…';
@@ -115,7 +116,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
             const r = await fetch('/api/checkout', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ item }),
+              body: JSON.stringify({ slug, tier }),
             });
             const data = await r.json().catch(() => ({}));
             if (data && data.url) { window.location.href = data.url; return; }

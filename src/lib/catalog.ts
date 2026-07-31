@@ -18,6 +18,8 @@ export interface TemplateData {
   onSale: boolean;
   /** effective price to display/charge: salePrice when on sale, else price */
   effectivePrice: number | null;
+  /** Prix du niveau Extended (5 sites), null si le niveau n'est pas proposé */
+  extendedPrice: number | null;
   /** rounded discount percentage, e.g. 30 → "-30%" (0 when not on sale) */
   discountPct: number;
   currency: string;
@@ -57,6 +59,7 @@ function normalize(r: any): TemplateEntry {
       saleEndsAt,
       onSale,
       effectivePrice,
+      extendedPrice: r.extended_price != null ? Number(r.extended_price) : null,
       discountPct,
       currency: r.currency ?? '€',
       status: r.status,
