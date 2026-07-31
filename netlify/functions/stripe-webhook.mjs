@@ -1,42 +1,35 @@
 import Stripe from 'stripe';
 import crypto from 'node:crypto';
 import { getSupabase, loadSettings, pick, logError } from './_lib.mjs';
-
-// Display names for fixed license bundles (templates resolve their name from the DB).
-const BUNDLE_NAMES = {
-  single: 'Single license',
-  extended: 'Extended license',
-  'all-access': 'All-Access bundle',
-};
+import { createLicenseForSale } from './_licensing.mjs';
 
 export const config = { path: '/api/stripe-webhook' };
 
 /** Record a paid order into hb_sales (admin DB). Idempotent on the Stripe session id. */
-async function recordSale(sb, session, item, productName, email) {
+async function recordSale(sb, session, slug, productName, email) {
   if (!sb) return;
   await sb.from('hb_sales').upsert({
     id: session.id,
-    item: productName || item || 'unknown',
+    // hb_sales.item is the DB column name (read by src/pages/admin/index.astro
+    // and src/pages/admin/sales.astro) -- it stays "item", only its source changes.
+    item: productName || slug || 'unknown',
     amount: session.amount_total ?? null,
     currency: session.currency ?? 'eur',
     email: email ?? null,
     status: 'paid',
-    raw: { item, payment_intent: session.payment_intent, customer: session.customer },
+    raw: { slug, payment_intent: session.payment_intent, customer: session.customer },
   }, { onConflict: 'id' });
 }
 
-/** Friendly product name: bundle map, else the template title from the DB. */
-async function productName(sb, item) {
-  if (BUNDLE_NAMES[item]) return BUNDLE_NAMES[item];
-  if (sb) {
-    const { data } = await sb.from('hb_templates').select('title').eq('slug', item).maybeSingle();
-    if (data?.title) return data.title;
-  }
-  return item;
+/** Human-readable product name: the template's title, resolved from its slug. */
+async function productName(sb, slug) {
+  if (!sb) return slug;
+  const { data } = await sb.from('hb_templates').select('title').eq('slug', slug).maybeSingle();
+  return data?.title ?? slug;
 }
 
-function sign(secret, item, email, exp) {
-  return crypto.createHmac('sha256', secret).update(`${item}.${email}.${exp}`).digest('hex');
+function sign(secret, slug, email, exp) {
+  return crypto.createHmac('sha256', secret).update(`${slug}.${email}.${exp}`).digest('hex');
 }
 
 /** Send the download email via Brevo (single email provider for the whole app). */
@@ -93,17 +86,34 @@ export default async (req) => {
 
   if (event.type === 'checkout.session.completed') {
     const s = event.data.object;
-    const item = s.metadata?.item;
+    const slug = s.metadata?.slug;
+    const tier = s.metadata?.tier === 'extended' ? 'extended' : 'single';
     const email = s.customer_details?.email || s.customer_email;
-    const name = item ? await productName(sb, item) : null;
+    const name = slug ? await productName(sb, slug) : null;
     // Record the sale in the admin DB (independent of email delivery).
     // Never fail the webhook on a bookkeeping error — but do surface it in the logs.
-    try { await recordSale(sb, s, item, name, email); } catch (err) { logError('stripe-webhook:recordSale', err); }
-    if (item && email) {
+    try { await recordSale(sb, s, slug, name, email); } catch (err) { logError('stripe-webhook:recordSale', err); }
+
+    let license = null;
+    if (slug && email) {
+      try {
+        license = await createLicenseForSale(sb, {
+          saleId: s.id,
+          slug,
+          tier,
+          email,
+          purchasedAt: new Date().toISOString(),
+        });
+      } catch (err) { logError('stripe-webhook:createLicense', err); }
+    }
+
+    if (slug && email) {
       const exp = Date.now() + ttlDays * 24 * 60 * 60 * 1000;
-      const sigv = sign(dlSecret, item, email, exp);
+      const sigv = sign(dlSecret, slug, email, exp);
       const origin = process.env.URL || 'https://hbstudio-co.netlify.app';
-      const params = new URLSearchParams({ item, email, exp: String(exp), sig: sigv });
+      // download.mjs still reads the query param named "item" -- kept as-is here,
+      // only the value it carries is now the template slug (see report for why).
+      const params = new URLSearchParams({ item: slug, email, exp: String(exp), sig: sigv });
       const link = `${origin}/api/download?${params.toString()}`;
       try { await sendDeliveryEmail(settings, email, name, link, ttlDays); } catch (err) { logError('stripe-webhook:sendDeliveryEmail', err); }
     }
