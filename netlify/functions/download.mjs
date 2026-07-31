@@ -1,20 +1,30 @@
 import crypto from 'node:crypto';
 import { getSupabase, loadSettings, pick, logError } from './_lib.mjs';
 
-// Fixed license bundles → storage path in the private "deliverables" bucket.
-const BUNDLES = {
-  single: 'bundles/atelier.zip',
-  extended: 'bundles/atelier.zip',
-  'all-access': 'bundles/all-access.zip',
-};
-
 export const config = { path: '/api/download' };
 
-/** Resolve the storage path for a purchased item (bundle key or template slug). */
-async function resolvePath(sb, item) {
-  if (BUNDLES[item]) return BUNDLES[item];
-  const { data } = await sb.from('hb_templates').select('deliverable').eq('slug', item).maybeSingle();
-  return data?.deliverable || null;
+/**
+ * Storage path to serve for a template. Serves the latest published version;
+ * falls back to the legacy `deliverable` column when no version has been
+ * published yet, so purchases in flight keep working.
+ */
+async function resolvePath(sb, slug) {
+  const { data: template } = await sb
+    .from('hb_templates')
+    .select('id, deliverable')
+    .eq('slug', slug)
+    .maybeSingle();
+  if (!template) return null;
+
+  const { data: version } = await sb
+    .from('hb_template_versions')
+    .select('package')
+    .eq('template_id', template.id)
+    .order('released_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return version?.package || template.deliverable || null;
 }
 
 function safeEqual(a, b) {
@@ -49,7 +59,10 @@ export default async (req) => {
   if (!sb) return new Response('Downloads not configured.', { status: 503 });
 
   const path = await resolvePath(sb, item);
-  if (!path) return new Response('File not available yet. Please contact support.', { status: 404 });
+  if (!path) {
+    logError('download:resolvePath', `no deliverable found for slug "${item}"`);
+    return new Response('File not available yet. Please contact support.', { status: 404 });
+  }
 
   // Hand off to a short-lived Supabase signed URL (the file streams from storage, not this function).
   const { data, error } = await sb.storage.from('deliverables').createSignedUrl(path, 120, { download: true });
