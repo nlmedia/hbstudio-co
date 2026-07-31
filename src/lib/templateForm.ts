@@ -3,6 +3,7 @@ export function parseTemplateForm(form: FormData) {
   const lines = (k: string) => str(k).split('\n').map((s) => s.trim()).filter(Boolean);
   const price = str('price');
   const salePrice = str('sale_price');
+  const extendedPrice = str('extended_price');
   const saleEnds = str('sale_ends_at'); // ISO string set by the form's client script
   const sort = Number(str('sort_order'));
   return {
@@ -15,6 +16,10 @@ export function parseTemplateForm(form: FormData) {
     price: price === '' ? null : Number(price),
     sale_price: salePrice === '' ? null : Number(salePrice),
     sale_ends_at: saleEnds === '' ? null : saleEnds,
+    extended_price: extendedPrice === '' ? null : Number(extendedPrice),
+    theme_slug: str('theme_slug') || null,
+    requires_wp: str('requires_wp') || null,
+    requires_php: str('requires_php') || null,
     tagline: str('tagline'),
     description: str('description'),
     body: str('body'),
