@@ -1,5 +1,5 @@
 import Stripe from 'stripe';
-import { getSupabase, loadSettings, pick } from './_lib.mjs';
+import { getSupabase, loadSettings, pick, logError } from './_lib.mjs';
 import { resolveAmount, productLabel } from './_pricing.mjs';
 
 export const config = { path: '/api/checkout' };
@@ -60,6 +60,11 @@ export default async (req) => {
     });
     return Response.json({ url: session.url });
   } catch (err) {
-    return Response.json({ error: 'stripe_error', message: String(err?.message || err) }, { status: 500 });
+    logError('checkout', err);
+    // Only card errors are written for the buyer. Every other Stripe type
+    // (invalid_request, authentication, api, connection) puts keys, hostnames
+    // or internal config in its message — those stay in the logs.
+    const message = err instanceof Stripe.errors.StripeCardError ? err.message : undefined;
+    return Response.json({ error: 'stripe_error', ...(message ? { message } : {}) }, { status: 500 });
   }
 };

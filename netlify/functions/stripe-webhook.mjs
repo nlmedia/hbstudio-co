@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 import crypto from 'node:crypto';
-import { getSupabase, loadSettings, pick } from './_lib.mjs';
+import { getSupabase, loadSettings, pick, logError } from './_lib.mjs';
 
 // Display names for fixed license bundles (templates resolve their name from the DB).
 const BUNDLE_NAMES = {
@@ -52,7 +52,7 @@ async function sendDeliveryEmail(settings, to, name, link, ttlDays) {
       <p style="font-size:13px;color:#6b6b73">This link is valid for ${ttlDays} days. Documentation is included in the download.<br>Questions? Just reply to this email.</p>
       <p style="font-size:12px;color:#9a9aa6">— HB Studio Co</p>
     </div>`;
-  await fetch('https://api.brevo.com/v3/smtp/email', {
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
     headers: { 'api-key': apiKey, 'content-type': 'application/json', accept: 'application/json' },
     body: JSON.stringify({
@@ -63,6 +63,8 @@ async function sendDeliveryEmail(settings, to, name, link, ttlDays) {
       htmlContent: html,
     }),
   });
+  // fetch does not throw on 4xx/5xx — without this the delivery email fails silently.
+  if (!res.ok) logError('stripe-webhook:brevo', `${res.status} ${await res.text().catch(() => '')}`);
 }
 
 export default async (req) => {
@@ -85,7 +87,8 @@ export default async (req) => {
   try {
     event = new Stripe(key).webhooks.constructEvent(body, sig, whsec);
   } catch (err) {
-    return new Response(`Webhook signature error: ${err.message}`, { status: 400 });
+    logError('stripe-webhook:signature', err);
+    return new Response('Webhook signature error', { status: 400 });
   }
 
   if (event.type === 'checkout.session.completed') {
@@ -94,14 +97,15 @@ export default async (req) => {
     const email = s.customer_details?.email || s.customer_email;
     const name = item ? await productName(sb, item) : null;
     // Record the sale in the admin DB (independent of email delivery).
-    try { await recordSale(sb, s, item, name, email); } catch { /* logged by Netlify */ }
+    // Never fail the webhook on a bookkeeping error — but do surface it in the logs.
+    try { await recordSale(sb, s, item, name, email); } catch (err) { logError('stripe-webhook:recordSale', err); }
     if (item && email) {
       const exp = Date.now() + ttlDays * 24 * 60 * 60 * 1000;
       const sigv = sign(dlSecret, item, email, exp);
       const origin = process.env.URL || 'https://hbstudio-co.netlify.app';
       const params = new URLSearchParams({ item, email, exp: String(exp), sig: sigv });
       const link = `${origin}/api/download?${params.toString()}`;
-      try { await sendDeliveryEmail(settings, email, name, link, ttlDays); } catch { /* logged by Netlify */ }
+      try { await sendDeliveryEmail(settings, email, name, link, ttlDays); } catch (err) { logError('stripe-webhook:sendDeliveryEmail', err); }
     }
   }
 

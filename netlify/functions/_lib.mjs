@@ -17,6 +17,15 @@ export async function loadSettings(sb, keys) {
   return out;
 }
 
+/**
+ * Log a failure with full detail — server side only (Netlify function logs).
+ * Callers stay responsible for returning a message safe to show to the client:
+ * raw error messages can carry API keys, hostnames or internal config.
+ */
+export function logError(scope, err) {
+  console.error(`[${scope}]`, err);
+}
+
 /** Pick a config value: DB setting first, then env var fallback. */
 export function pick(settings, key, envName) {
   return (settings && settings[key]) || (envName ? process.env[envName] : undefined) || '';

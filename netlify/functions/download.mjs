@@ -1,5 +1,5 @@
 import crypto from 'node:crypto';
-import { getSupabase, loadSettings, pick } from './_lib.mjs';
+import { getSupabase, loadSettings, pick, logError } from './_lib.mjs';
 
 // Fixed license bundles → storage path in the private "deliverables" bucket.
 const BUNDLES = {
@@ -54,6 +54,7 @@ export default async (req) => {
   // Hand off to a short-lived Supabase signed URL (the file streams from storage, not this function).
   const { data, error } = await sb.storage.from('deliverables').createSignedUrl(path, 120, { download: true });
   if (error || !data?.signedUrl) {
+    logError('download:createSignedUrl', error || `no signed URL for ${path}`);
     return new Response('Could not fetch the file. Please contact support.', { status: 500 });
   }
   return Response.redirect(data.signedUrl, 302);
