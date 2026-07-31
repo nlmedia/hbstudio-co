@@ -451,6 +451,7 @@ create index if not exists hb_template_versions_released_idx
 create table if not exists public.hb_license_events (
   id         bigint generated always as identity primary key,
   license_id uuid references public.hb_licenses(id) on delete cascade,
+  key_hash   text,
   event      text not null check (event in ('activate','deactivate','validate','revoke','reassign','extend')),
   domain     text,
   ip         text,
@@ -458,8 +459,22 @@ create table if not exists public.hb_license_events (
   detail     jsonb,
   created_at timestamptz not null default now()
 );
+
+-- key_hash : empreinte SHA-256 hexadécimale de la clé présentée, calculée par la
+-- fonction appelante, JAMAIS la clé elle-même. Renseignée même quand aucune licence
+-- ne correspond — license_id est alors nul, et c'est le seul moyen de compter les
+-- tentatives sur une clé inconnue (§10.2). Ne jamais « simplifier » en stockant la
+-- clé en clair : ce journal est fait pour être lu, exporté et collé dans des tickets.
+comment on column public.hb_license_events.key_hash is
+  'SHA-256 hex digest of the presented key, computed by the caller. Never the key itself.';
+
 create index if not exists hb_license_events_license_idx
   on public.hb_license_events (license_id, created_at desc);
+-- Sans ces deux index, la limitation de débit du §10.2 dégénère en balayage complet.
+create index if not exists hb_license_events_ip_idx
+  on public.hb_license_events (ip, created_at desc);
+create index if not exists hb_license_events_key_hash_idx
+  on public.hb_license_events (key_hash, created_at desc);
 
 -- ============ Row Level Security ============
 alter table public.hb_licenses          enable row level security;
@@ -487,16 +502,11 @@ drop policy if exists hb_activations_admin_all on public.hb_activations;
 create policy hb_activations_admin_all on public.hb_activations
   for all to authenticated using (public.hb_is_admin()) with check (public.hb_is_admin());
 
-drop policy if exists hb_template_versions_owner_read on public.hb_template_versions;
-create policy hb_template_versions_owner_read on public.hb_template_versions
-  for select to authenticated using (
-    public.hb_is_admin()
-    or exists (
-      select 1 from public.hb_licenses l
-      where l.template_id = hb_template_versions.template_id
-        and l.user_id = auth.uid()
-    )
-  );
+-- Aucune politique de lecture client sur hb_template_versions, délibérément : la
+-- colonne `package` est un chemin de stockage privé qui ne doit jamais atteindre le
+-- client (§10.1), et RLS ne sait pas restreindre au niveau d'une colonne. La phase 2
+-- exposera les métadonnées de version via une RPC `security definer` qui omet
+-- `package` et filtre selon les droits (§5.4).
 drop policy if exists hb_template_versions_admin_all on public.hb_template_versions;
 create policy hb_template_versions_admin_all on public.hb_template_versions
   for all to authenticated using (public.hb_is_admin()) with check (public.hb_is_admin());

@@ -128,9 +128,23 @@ Alimente le serveur de mises à jour et l'historique de téléchargement.
 
 ### 4.4 `hb_license_events`
 
-Journal d'audit technique : `license_id` · `event` (`activate` \| `deactivate` \|
-`validate` \| `revoke` \| `reassign` \| `extend`) · `domain` · `ip` · `user_agent` ·
-`detail` jsonb · `created_at`.
+Journal d'audit technique : `license_id` · `key_hash` · `event` (`activate` \|
+`deactivate` \| `validate` \| `revoke` \| `reassign` \| `extend`) · `domain` · `ip` ·
+`user_agent` · `detail` jsonb · `created_at`.
+
+`license_id` est **nullable** : une tentative sur une clé inconnue — précisément le cas
+d'un balayage par force brute — n'a par définition aucune licence à référencer.
+
+`key_hash` contient une **empreinte SHA-256 hexadécimale de la clé présentée, jamais la
+clé elle-même**, calculée par la fonction appelante (§10.2). C'est elle qui permet de
+compter les tentatives sur une clé inconnue. Stocker la clé en clair reviendrait à
+dupliquer le secret d'activation dans une table faite pour être lue, exportée vers un
+outil d'observabilité et collée dans des tickets de support — or corréler deux tentatives
+entre elles est tout ce dont la limitation de débit a besoin.
+
+Index de service : `(license_id, created_at desc)`, `(ip, created_at desc)` et
+`(key_hash, created_at desc)` — sans eux, le comptage du §10.2 dégénère en balayage
+complet à mesure que le journal grossit.
 
 Sert à trois choses : diagnostiquer un client qui dit « ça ne marche plus », détecter un
 partage de clé (une clé, quinze domaines, six pays), et alimenter la limitation de débit
@@ -359,6 +373,12 @@ le fait déjà `download.mjs`.
 Comptage sur `hb_license_events` : maximum **10 tentatives d'activation par clé et par
 heure**, et **30 par IP et par heure**. Au-delà, réponse `429`. Objectif : couper le
 balayage de clés par force brute.
+
+Le comptage « par clé » s'appuie sur `key_hash`, et non sur `license_id` : une clé
+inconnue n'a pas de licence à référencer, et c'est justement celle qu'on veut compter.
+**L'empreinte est calculée par la fonction appelante**, en Node —
+`crypto.createHash('sha256').update(key).digest('hex')` — et non en base : aucune
+extension Postgres n'est requise, et la clé en clair ne quitte jamais la fonction.
 
 ### 10.3 Réponses d'erreur
 
