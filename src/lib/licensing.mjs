@@ -1,5 +1,5 @@
-import { generateLicenseKey, seatsForTier, updatesUntilFrom } from '../../src/lib/license.mjs';
-import { logError } from './_lib.mjs';
+import { generateLicenseKey, seatsForTier, updatesUntilFrom } from './license.mjs';
+import { logError } from '../../netlify/functions/_lib.mjs';
 
 /**
  * Creates the license for a sale. Idempotent: if a license already exists for
