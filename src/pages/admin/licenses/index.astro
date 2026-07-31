@@ -49,11 +49,14 @@ const qsFor = (s: string) => {
         <a href={qsFor(s)} class:list={['rounded-full px-3.5 py-1.5 text-sm font-medium transition', s === status ? 'bg-ink text-paper' : 'text-muted hover:text-ink']}>{lbl}</a>
       ))}
     </div>
-    <form action="/admin/licenses" method="GET" class="relative">
-      <input type="hidden" name="status" value={status} />
-      <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input name="q" type="search" value={q} placeholder="Clé ou e-mail…" class="w-64 rounded-full border border-line bg-surface-2/60 py-2 pl-9 pr-4 text-sm outline-none transition focus:border-accent focus:bg-surface" />
-    </form>
+    <div class="flex items-center gap-3">
+      <form action="/admin/licenses" method="GET" class="relative">
+        <input type="hidden" name="status" value={status} />
+        <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input name="q" type="search" value={q} placeholder="Clé ou e-mail…" class="w-64 rounded-full border border-line bg-surface-2/60 py-2 pl-9 pr-4 text-sm outline-none transition focus:border-accent focus:bg-surface" />
+      </form>
+      <a href="/admin/licenses/new" class="rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition hover:bg-accent">+ Créer une licence</a>
+    </div>
   </div>
 
   <div class="mb-6 grid gap-4 sm:grid-cols-3">

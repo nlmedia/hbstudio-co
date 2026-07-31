@@ -1,0 +1,362 @@
+---
+export const prerender = false;
+import { randomUUID } from 'node:crypto';
+import Admin from '../../../layouts/Admin.astro';
+import { createLicenseForSale } from '../../../lib/licensing.mjs';
+import { buildDownloadLink, sendDeliveryEmail } from '../../../lib/delivery.mjs';
+import { resolveAmount } from '../../../../netlify/functions/_pricing.mjs';
+import { loadSettings, pick } from '../../../../netlify/functions/_lib.mjs';
+
+const supabase = Astro.locals.supabase!;
+const adminEmail = Astro.locals.user?.email ?? '';
+let error = '';
+
+/** A failed write must never happen silently -- log it server-side, mirroring
+ * the pattern already used in admin/licenses/[id].astro. */
+function logAdminError(scope: string, err: unknown) {
+  console.error(`[admin/licenses/new] ${scope}`, err);
+}
+
+const tierLabel: Record<string, string> = { single: 'Single', extended: 'Extended' };
+
+// Only published templates can be sold -- an unpublished one has no committed
+// deliverable and no committed price, so no external sale can legitimately
+// reference it either.
+const { data: templatesRaw } = await supabase
+  .from('hb_templates')
+  .select('id, slug, title, status, price, sale_price, sale_ends_at, extended_price')
+  .eq('status', 'published')
+  .order('title', { ascending: true });
+const templates = templatesRaw ?? [];
+
+// Precomputed per-template, per-tier amounts (cents), reusing the exact same
+// pure pricing function the Stripe checkout uses -- so the pre-filled amount
+// here always matches what a real customer would have paid today, sale price
+// included. Fed to the page's own script as JSON for the live pre-fill.
+const templateOptions = templates.map((t) => ({
+  id: t.id,
+  slug: t.slug,
+  title: t.title,
+  singleCents: resolveAmount(t, 'single'),
+  extendedCents: resolveAmount(t, 'extended'),
+}));
+
+type Result = {
+  license: { id: string; key: string; seats: number; updates_until: string };
+  template: { id: string; title: string; slug: string };
+  tier: string;
+  email: string;
+  amountCents: number;
+  saleId: string;
+  downloadLink: string | null;
+  downloadWarning: string;
+  emailRequested: boolean;
+  emailOutcome: 'sent' | 'not_configured' | 'send_failed' | 'no_link' | 'skipped';
+};
+let result: Result | null = null;
+
+// Preserve what the admin typed if validation fails, so a rejected submission
+// doesn't wipe the form.
+let formValues = { template_id: templates[0]?.id ?? '', tier: 'single', email: '', amount: '', send_email: true };
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const templateId = String(form.get('template_id') ?? '').trim();
+  const tier = form.get('tier') === 'extended' ? 'extended' : 'single';
+  const email = String(form.get('email') ?? '').trim().toLowerCase();
+  const amountRaw = String(form.get('amount') ?? '').trim();
+  const sendEmailRequested = form.get('send_email') === 'on';
+  formValues = { template_id: templateId, tier, email, amount: amountRaw, send_email: sendEmailRequested };
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    error = 'Adresse e-mail invalide.';
+  }
+
+  const amountEuros = Number(amountRaw.replace(',', '.'));
+  if (!error && (amountRaw === '' || !Number.isFinite(amountEuros))) {
+    error = 'Montant invalide.';
+  } else if (!error && amountEuros < 0) {
+    error = 'Le montant encaissé ne peut pas être négatif.';
+  }
+
+  let template: (typeof templates)[number] | null = null;
+  if (!error) {
+    const found = templates.find((t) => t.id === templateId);
+    if (!found) {
+      error = 'Template introuvable ou non publié.';
+    } else {
+      template = found;
+    }
+  }
+
+  if (!error && template && tier === 'extended' && template.extended_price == null) {
+    error = "Ce template ne propose pas de niveau Extended.";
+  }
+
+  if (!error && template) {
+    const amountCents = Math.round(amountEuros * 100);
+    // "hb_sale_manual_..." rather than a bare uuid: recognizable at a glance in
+    // hb_licenses.sale_id or in a support ticket as NOT a Stripe checkout
+    // session id (which always starts "cs_").
+    const saleId = `hb_sale_manual_${randomUUID()}`;
+
+    const { error: saleErr } = await supabase.from('hb_sales').insert({
+      id: saleId,
+      // hb_sales.item is read as a display label elsewhere (admin dashboard,
+      // /admin/sales) -- the template title, exactly like the Stripe path.
+      item: template.title,
+      amount: amountCents,
+      currency: 'eur',
+      email,
+      status: 'paid',
+      raw: { source: 'manual', slug: template.slug, tier, created_by: adminEmail },
+    });
+
+    if (saleErr) {
+      error = `Impossible d'enregistrer la vente : ${saleErr.message}`;
+      logAdminError('hb_sales insert', saleErr);
+    } else {
+      // Step 2 -- THE SAME path a Stripe purchase uses. A manually-created
+      // license must be structurally indistinguishable from a Stripe one.
+      let license: Result['license'] | null = null;
+      try {
+        license = await createLicenseForSale(supabase, {
+          saleId,
+          slug: template.slug,
+          tier,
+          email,
+          purchasedAt: new Date().toISOString(),
+        });
+      } catch (err) {
+        logAdminError('createLicenseForSale', err);
+      }
+
+      if (!license) {
+        error = "La vente a été enregistrée (hb_sales), mais la création de la licence a échoué -- vérifiez les journaux serveur. Aucune licence n'a été émise pour l'instant.";
+      } else {
+        const { error: auditErr } = await supabase.from('hb_audit_log').insert({
+          actor: adminEmail,
+          action: 'license.create_manual',
+          detail: {
+            license_id: license.id,
+            key: license.key,
+            sale_id: saleId,
+            template_id: template.id,
+            slug: template.slug,
+            tier,
+            email,
+            amount_cents: amountCents,
+          },
+        });
+        if (auditErr) logAdminError('hb_audit_log insert', auditErr);
+
+        // Step 4 -- the email, and the degradations that must never block on
+        // (or hide) the license that already exists at this point.
+        const settings = await loadSettings(supabase, [
+          'download_secret', 'download_ttl_days', 'brevo_api_key', 'sender_email', 'sender_name', 'reply_to',
+        ]);
+        const dlSecret = pick(settings, 'download_secret', 'DOWNLOAD_SECRET');
+        const ttlDays = Number(settings.download_ttl_days || 7);
+        const origin = Astro.url.origin;
+
+        let downloadLink: string | null = null;
+        let downloadWarning = '';
+        if (dlSecret) {
+          downloadLink = buildDownloadLink({ secret: dlSecret, slug: template.slug, email, ttlDays, origin });
+        } else {
+          downloadWarning = "Secret de téléchargement non configuré (Réglages -> Livraison) : aucun lien de téléchargement n'a pu être signé pour cette licence.";
+        }
+
+        let emailOutcome: Result['emailOutcome'] = 'skipped';
+        if (sendEmailRequested) {
+          if (!downloadLink) {
+            emailOutcome = 'no_link';
+          } else {
+            try {
+              const sent = await sendDeliveryEmail(
+                settings, email, template.title, downloadLink, ttlDays, license, origin,
+                logAdminError, 'admin/licenses/new:brevo'
+              );
+              emailOutcome = sent.ok ? 'sent' : sent.reason;
+            } catch (err) {
+              logAdminError('sendDeliveryEmail', err);
+              emailOutcome = 'send_failed';
+            }
+          }
+        }
+
+        result = {
+          license, template, tier, email, amountCents, saleId,
+          downloadLink, downloadWarning, emailRequested: sendEmailRequested, emailOutcome,
+        };
+        error = '';
+      }
+    }
+  }
+}
+
+const fmtDate = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+const fmtAmount = (cents: number) => (cents / 100).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+const emailOutcomeMessage: Record<string, string> = {
+  sent: "E-mail envoyé au client avec la clé et le lien de téléchargement.",
+  not_configured: "Brevo n'est pas configuré (Réglages -> Email) : l'e-mail n'a pas été envoyé. Transmettez la clé au client vous-même.",
+  send_failed: "L'envoi de l'e-mail a échoué (voir les journaux serveur). Transmettez la clé au client vous-même.",
+  no_link: "Aucun lien de téléchargement n'a pu être signé (secret de téléchargement manquant) : l'e-mail n'a pas été envoyé. Transmettez la clé au client vous-même.",
+  skipped: "Envoi non demandé -- transmettez la clé au client vous-même.",
+};
+---
+<Admin title="Nouvelle licence" active="licenses" email={adminEmail}>
+  <div class="mb-5">
+    <a href="/admin/licenses" class="text-sm font-medium text-muted hover:text-ink">&larr; Retour aux licences</a>
+  </div>
+
+  {error && <p class="mb-5 rounded-xl bg-[#fbeaea] px-4 py-3 text-sm text-[#b3261e]">{error}</p>}
+
+  {result && (
+    <div class="mb-6 rounded-2xl border border-line bg-surface p-6">
+      <div class="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p class="text-xs uppercase tracking-wide text-muted">Licence créée -- clé de licence</p>
+          <p class="mt-1 font-mono text-2xl font-bold tracking-wide" data-license-key>{result.license.key}</p>
+        </div>
+        <button type="button" data-copy-key class="rounded-full border border-line px-4 py-2 text-sm font-medium transition hover:bg-surface-2">Copier la clé</button>
+      </div>
+
+      <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div><p class="text-xs text-muted">Template</p><p class="mt-1 font-medium">{result.template.title}</p></div>
+        <div><p class="text-xs text-muted">Niveau</p><p class="mt-1 font-medium">{tierLabel[result.tier]} &middot; {result.license.seats} site{result.license.seats > 1 ? 's' : ''}</p></div>
+        <div><p class="text-xs text-muted">Client</p><p class="mt-1 font-medium">{result.email}</p></div>
+        <div><p class="text-xs text-muted">Montant encaissé</p><p class="mt-1 font-medium">{fmtAmount(result.amountCents)} &euro;</p></div>
+        <div><p class="text-xs text-muted">Mises &agrave; jour jusqu'au</p><p class="mt-1 font-medium">{fmtDate(result.license.updates_until)}</p></div>
+        <div><p class="text-xs text-muted">Vente (hb_sales)</p><p class="mt-1 font-mono text-xs">{result.saleId}</p></div>
+      </div>
+
+      <p class={`mt-5 rounded-xl px-4 py-3 text-sm ${result.emailOutcome === 'sent' ? 'bg-[#e6f4ea] text-[#1e7d34]' : 'bg-accent-soft text-accent'}`}>
+        {emailOutcomeMessage[result.emailOutcome]}
+      </p>
+      {result.downloadWarning && (
+        <p class="mt-3 rounded-xl bg-[#fbeaea] px-4 py-3 text-sm text-[#b3261e]">{result.downloadWarning}</p>
+      )}
+      {result.downloadLink && (
+        <p class="mt-3 break-all text-xs text-muted">Lien de t&eacute;l&eacute;chargement : <a href={result.downloadLink} class="text-accent hover:underline">{result.downloadLink}</a></p>
+      )}
+
+      <div class="mt-6 flex flex-wrap gap-3">
+        <a href={`/admin/licenses/${result.license.id}`} class="rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-paper transition hover:bg-accent">Voir la fiche licence</a>
+        <a href="/admin/licenses/new" class="rounded-full border border-line px-4 py-2.5 text-sm font-medium transition hover:bg-surface-2">Cr&eacute;er une autre licence</a>
+      </div>
+    </div>
+  )}
+
+  {!result && (
+    templates.length === 0 ? (
+      <div class="rounded-2xl border border-line bg-surface p-6 text-sm text-muted">
+        Aucun template publi&eacute; pour l'instant. <a href="/admin/templates" class="text-accent hover:underline">Publiez un template</a> avant de pouvoir &eacute;mettre une licence.
+      </div>
+    ) : (
+      <form method="POST" action="/admin/licenses/new" class="max-w-2xl rounded-2xl border border-line bg-surface p-6">
+        <h2 class="font-display text-lg font-semibold">Vente hors Stripe</h2>
+        <p class="mt-1 text-sm text-muted">ThemeForest, facture directe, offre commerciale&hellip; enregistre la vente et &eacute;met la licence exactement comme un paiement Stripe.</p>
+
+        <div class="mt-6 grid gap-5">
+          <label>
+            <span class="mb-1.5 block text-xs font-medium text-ink/70">Template</span>
+            <select id="template_id" name="template_id" required class="w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-accent">
+              {templates.map((t) => (
+                <option value={t.id} selected={t.id === formValues.template_id}>{t.title}</option>
+              ))}
+            </select>
+          </label>
+
+          <div>
+            <span class="mb-1.5 block text-xs font-medium text-ink/70">Niveau</span>
+            <div class="flex flex-wrap items-center gap-4">
+              <label class="flex items-center gap-2 text-sm">
+                <input type="radio" id="tier_single" name="tier" value="single" checked={formValues.tier !== 'extended'} />
+                Single (1 site)
+              </label>
+              <label class="flex items-center gap-2 text-sm">
+                <input type="radio" id="tier_extended" name="tier" value="extended" checked={formValues.tier === 'extended'} />
+                Extended (5 sites)
+              </label>
+            </div>
+            <p id="extended_note" class="mt-1.5 text-xs text-accent" hidden>Ce template ne propose pas de niveau Extended -- aucun <code>extended_price</code> n'est d&eacute;fini.</p>
+          </div>
+
+          <label>
+            <span class="mb-1.5 block text-xs font-medium text-ink/70">E-mail du client</span>
+            <input type="email" name="email" required value={formValues.email} placeholder="client@exemple.com" class="w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-accent" />
+          </label>
+
+          <label>
+            <span class="mb-1.5 block text-xs font-medium text-ink/70">Montant encaiss&eacute; (&euro;)</span>
+            <input id="amount" type="number" name="amount" required min="0" step="0.01" value={formValues.amount} placeholder="0.00" class="w-full max-w-[12rem] rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-accent" />
+            <span class="mt-1 block text-xs text-muted">Pr&eacute;-rempli avec le prix du template, mais librement modifiable -- une vente externe se n&eacute;gocie. 0 accept&eacute; (licence offerte), montant n&eacute;gatif refus&eacute;.</span>
+          </label>
+
+          <label class="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="send_email" checked={formValues.send_email} />
+            Envoyer l'e-mail au client
+          </label>
+        </div>
+
+        <button type="submit" class="mt-6 rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition hover:bg-accent">Cr&eacute;er une licence</button>
+      </form>
+    )
+  )}
+</Admin>
+
+<script type="application/json" id="template-pricing" set:html={JSON.stringify(templateOptions)}></script>
+<script>
+  type PricingRow = { id: string; slug: string; title: string; singleCents: number | null; extendedCents: number | null };
+  const pricing: PricingRow[] = JSON.parse(document.getElementById('template-pricing')?.textContent || '[]');
+
+  const templateSelect = document.getElementById('template_id') as HTMLSelectElement | null;
+  const tierSingle = document.getElementById('tier_single') as HTMLInputElement | null;
+  const tierExtended = document.getElementById('tier_extended') as HTMLInputElement | null;
+  const extendedNote = document.getElementById('extended_note') as HTMLElement | null;
+  const amountInput = document.getElementById('amount') as HTMLInputElement | null;
+
+  function currentTemplate(): PricingRow | undefined {
+    return pricing.find((t) => t.id === templateSelect?.value);
+  }
+
+  function selectedTier(): 'single' | 'extended' {
+    return tierExtended?.checked ? 'extended' : 'single';
+  }
+
+  function updateExtendedAvailability() {
+    const t = currentTemplate();
+    const available = !!t && t.extendedCents != null;
+    if (tierExtended) tierExtended.disabled = !available;
+    if (extendedNote) extendedNote.hidden = available;
+    if (!available && tierExtended?.checked && tierSingle) tierSingle.checked = true;
+  }
+
+  function updateAmount() {
+    const t = currentTemplate();
+    if (!t || !amountInput) return;
+    const cents = selectedTier() === 'extended' ? t.extendedCents : t.singleCents;
+    if (cents != null) amountInput.value = (cents / 100).toFixed(2);
+  }
+
+  templateSelect?.addEventListener('change', () => { updateExtendedAvailability(); updateAmount(); });
+  tierSingle?.addEventListener('change', updateAmount);
+  tierExtended?.addEventListener('change', updateAmount);
+  updateExtendedAvailability();
+  // Only pre-fill on load when the field is genuinely empty (a fresh GET) --
+  // a redisplay after a validation error already carries the admin's own
+  // typed amount server-side (formValues.amount), which must survive.
+  if (amountInput && !amountInput.value) updateAmount();
+
+  document.querySelector('[data-copy-key]')?.addEventListener('click', async (e) => {
+    const key = document.querySelector('[data-license-key]')?.textContent?.trim();
+    if (!key) return;
+    await navigator.clipboard.writeText(key);
+    const btn = e.currentTarget as HTMLButtonElement;
+    const original = btn.textContent;
+    btn.textContent = 'Copié !';
+    setTimeout(() => { btn.textContent = original; }, 1500);
+  });
+</script>

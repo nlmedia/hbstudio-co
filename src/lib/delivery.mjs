@@ -117,11 +117,16 @@ export function renderDeliveryEmailHtml({ name, link, ttlDays, license, origin }
  * `scope` is injected too, defaulting to this module's own tag -- passed
  * explicitly by stripe-webhook.mjs as 'stripe-webhook:brevo' so its log output
  * is byte-for-byte the same as before this file existed.
+ *
+ * @returns {Promise<{ok: boolean, reason: 'sent'|'not_configured'|'send_failed'}>}
+ *   The Stripe webhook caller ignores this (fire-and-forget, same as always);
+ *   the manual-license admin page uses it to tell the admin, on screen,
+ *   whether the customer actually received anything.
  */
 export async function sendDeliveryEmail(settings, to, name, link, ttlDays, license, origin, logError, scope = 'delivery:brevo') {
   const apiKey = settings.brevo_api_key;
   const senderEmail = settings.sender_email;
-  if (!apiKey || !senderEmail) return; // email not configured
+  if (!apiKey || !senderEmail) return { ok: false, reason: 'not_configured' }; // email not configured
   const html = renderDeliveryEmailHtml({ name, link, ttlDays, license, origin });
   const subject = license ? `Votre clé de licence — ${name}` : `Votre ${name} est prêt à télécharger`;
   const res = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -136,5 +141,9 @@ export async function sendDeliveryEmail(settings, to, name, link, ttlDays, licen
     }),
   });
   // fetch does not throw on 4xx/5xx — without this the delivery email fails silently.
-  if (!res.ok) logError(scope, `${res.status} ${await res.text().catch(() => '')}`);
+  if (!res.ok) {
+    logError(scope, `${res.status} ${await res.text().catch(() => '')}`);
+    return { ok: false, reason: 'send_failed' };
+  }
+  return { ok: true, reason: 'sent' };
 }
