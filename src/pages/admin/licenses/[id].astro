@@ -71,9 +71,14 @@ if (Astro.request.method === 'POST') {
     } else if (!updated || updated.length === 0) {
       error = "Cette licence n'est pas révoquée -- rien n'a été modifié.";
     } else {
-      // Not written to hb_license_events: that table's `event` check constraint
-      // only allows activate/deactivate/validate/revoke/reassign/extend, and
-      // "reactivate" is a distinct concept from a site "activate" event.
+      // Written as "reinstate", not "activate": in this table "activate" means a
+      // SITE activation (a domain consuming a seat), and reusing it for a license
+      // coming back from revocation would corrupt the seat-counting reading of the
+      // log. The value was added to the check constraint by
+      // supabase/migrations/20260731_license_event_reinstate.sql -- until that
+      // migration is applied, this insert fails the constraint and only logs (the
+      // reactivation itself has already happened and is unaffected).
+      await writeEvent('reinstate', { actor: adminEmail });
       await writeAudit('license.reactivate', { license_id: id, key: updated[0].key });
       return Astro.redirect(`/admin/licenses/${id}?ok=reactivated`);
     }
@@ -191,6 +196,7 @@ const eventLabel: Record<string, string> = {
   revoke: 'Révocation',
   reassign: 'Réattribution',
   extend: 'Prolongation',
+  reinstate: 'Réactivation',
 };
 ---
 <Admin title={`Licence ${license.key}`} active="licenses" email={adminEmail}>

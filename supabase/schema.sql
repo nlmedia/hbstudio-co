@@ -192,7 +192,7 @@ create index if not exists hb_template_versions_released_idx
 create table if not exists public.hb_license_events (
   id          bigint generated always as identity primary key,
   license_id  uuid references public.hb_licenses(id) on delete cascade,
-  event       text not null check (event in ('activate','deactivate','validate','revoke','reassign','extend')),
+  event       text not null check (event in ('activate','deactivate','validate','revoke','reassign','extend','reinstate')),
   domain      text,
   ip          text,
   user_agent  text,
@@ -200,6 +200,17 @@ create table if not exists public.hb_license_events (
   detail      jsonb,
   created_at  timestamptz not null default now()
 );
+
+-- The inline check above only applies to a database where the table is created
+-- from scratch: `create table if not exists` leaves an existing table (and its
+-- older, narrower check) untouched. Restating it here is what makes re-running
+-- this file bring an existing database up to date -- same statements as
+-- migrations/20260731_license_event_reinstate.sql.
+alter table public.hb_license_events
+  drop constraint if exists hb_license_events_event_check;
+alter table public.hb_license_events
+  add constraint hb_license_events_event_check
+  check (event in ('activate','deactivate','validate','revoke','reassign','extend','reinstate'));
 
 comment on column public.hb_license_events.key_hash is
   'Hex-encoded SHA-256 digest of the presented key, computed by the CALLER -- never the key itself. Populated even when no license matches, the case where license_id is necessarily null; that is what makes rate-limiting possible on an UNKNOWN key (Sec.10.2). Do not "simplify" this into the raw key: this table is meant to be read, exported to observability tooling, and pasted into support tickets, so it must never carry a secret that by itself grants activation rights. A hash still lets two attempts on the same key be correlated, which is all rate-limiting needs.';

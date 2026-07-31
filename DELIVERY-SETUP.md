@@ -25,7 +25,15 @@ Stripe Checkout already works (see `STRIPE-SETUP.md`, `STRIPE_SECRET_KEY` set).
 ## 2. Create the Stripe webhook
 - Stripe Dashboard → **Developers → Webhooks → Add endpoint**
 - Endpoint URL: `https://hbstudio-co.netlify.app/api/stripe-webhook`
-- Event: **`checkout.session.completed`**
+- Events — all four, the endpoint only receives what it subscribes to:
+  - **`checkout.session.completed`** — records the sale, issues the license, sends the email.
+  - **`charge.refunded`** — revokes the license (a *partial* refund is ignored on purpose).
+  - **`charge.dispute.created`** — revokes the license: the money is held by Stripe from
+    the moment a chargeback is opened.
+  - **`charge.dispute.closed`** — the counterpart of the previous one. If the dispute is
+    **won**, the payment is final and the licenses that the chargeback revoked go back to
+    `active`. Missing this one is not visible anywhere: nothing errors, the customer is
+    simply left paying for an access they no longer have.
 - Save, then copy the **Signing secret** (`whsec_…`) → set `STRIPE_WEBHOOK_SECRET` in Netlify.
 
 ## 3. Upload the deliverable files (private — not in the repo)

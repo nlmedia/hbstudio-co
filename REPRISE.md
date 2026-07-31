@@ -95,6 +95,33 @@ where schemaname='public' and tablename in ('hb_audit_log','hb_license_events');
 
 Attendu : une politique `SELECT` **et** une politique `INSERT` sur chacune.
 
+### 🔴 Appliquer la migration `reinstate` — sinon la réactivation après litige gagné n'est pas tracée
+
+`supabase/migrations/20260731_license_event_reinstate.sql` est **écrite et commitée, mais
+jamais appliquée en base**, exactement comme celle ci-dessus.
+
+Elle élargit la contrainte `check` de `hb_license_events.event` à une septième valeur,
+`reinstate`, écrite quand un litige gagné (`charge.dispute.closed` / `status = 'won'`)
+rend au client la licence que l'ouverture du litige avait révoquée — et aussi quand un
+admin réactive une licence à la main depuis `/admin/licenses/[id]`.
+
+Vérifié contre la base réelle le 31/07 : un insert avec `event = 'reinstate'` est
+aujourd'hui **refusé**, code `23514`, contrainte `hb_license_events_event_check`.
+
+Ce que ça coûte tant que ce n'est pas appliqué : la réactivation elle-même fonctionne
+(la licence repasse bien à `active`, le client récupère son accès), seul l'insert de
+l'événement échoue — il est journalisé par `logError`, pas fatal. Autrement dit le
+journal reste muet précisément sur l'opération la plus délicate à expliquer après coup.
+
+Appliquer : Supabase → SQL Editor → coller le fichier → Run. Puis vérifier :
+
+```sql
+select pg_get_constraintdef(oid) from pg_constraint
+where conname = 'hb_license_events_event_check';
+```
+
+Attendu : la liste des valeurs contient `reinstate`.
+
 ### 🔴 Vérifier la phase 1 en conditions réelles
 
 **Aucun test de la session ne couvre le chemin d'un vrai admin authentifié.** Tout a été

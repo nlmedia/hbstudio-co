@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 import { getSupabase, loadSettings, pick, logError } from './_lib.mjs';
-import { createLicenseForSale, revokeLicensesForSale } from '../../src/lib/licensing.mjs';
+import { createLicenseForSale, revokeLicensesForSale, reinstateLicensesForSale } from '../../src/lib/licensing.mjs';
 import { buildDownloadLink, sendDeliveryEmail } from '../../src/lib/delivery.mjs';
 
 export const config = { path: '/api/stripe-webhook' };
@@ -49,6 +49,31 @@ async function productName(sb, slug) {
  */
 export function isFullRefund(charge) {
   return (charge.amount_refunded ?? 0) >= (charge.amount ?? 0);
+}
+
+/**
+ * Whether an event is a chargeback that CLOSED IN THE MERCHANT'S FAVOUR.
+ *
+ * `charge.dispute.closed` fires whatever the outcome, and only one of those
+ * outcomes gives the customer their license back. Per Stripe's Dispute object
+ * (node_modules/stripe/types/Disputes.d.ts, `status`), a closed dispute is
+ * `won`, `lost`, or `warning_closed` -- the last one being an early warning
+ * that never became a real dispute, so no money ever moved and there was never
+ * anything to revoke. Only `won` means the funds stay with the merchant: the
+ * customer paid, the payment is final, and keeping their theme revoked would
+ * be charging them for nothing.
+ *
+ * `lost` deliberately does nothing: the money is gone, the revocation stands.
+ *
+ * Kept pure and exported, like isFullRefund above, so the won/lost/warning
+ * distinction can be verified against hand-built events without a server or a
+ * database.
+ *
+ * @param {{type?: string, data?: {object?: {status?: string}}}} event
+ * @returns {boolean}
+ */
+export function isDisputeWon(event) {
+  return event?.type === 'charge.dispute.closed' && event?.data?.object?.status === 'won';
 }
 
 export default async (req) => {
@@ -142,21 +167,30 @@ export default async (req) => {
     }
   }
 
-  if (event.type === 'charge.refunded' || event.type === 'charge.dispute.created') {
+  // A dispute that closed as `lost` or `warning_closed` is filtered out right
+  // here rather than further down: there is nothing to do for either, and going
+  // through the sale lookup would log a spurious "no sale found" for a dispute
+  // nobody ever expected to act on.
+  const disputeWon = isDisputeWon(event);
+
+  if (event.type === 'charge.refunded' || event.type === 'charge.dispute.created' || disputeWon) {
     // Both the Charge object (charge.refunded) and the Dispute object
-    // (charge.dispute.created) carry the id of the PaymentIntent they belong to
-    // in a top-level `payment_intent` field -- confirmed against Stripe's own type
-    // definitions (node_modules/stripe/types/Charges.d.ts and Disputes.d.ts),
+    // (charge.dispute.created / .closed) carry the id of the PaymentIntent they
+    // belong to in a top-level `payment_intent` field -- confirmed against Stripe's own
+    // type definitions (node_modules/stripe/types/Charges.d.ts and Disputes.d.ts),
     // both typed `string | Stripe.PaymentIntent | null`. It is never expanded
     // here, so in practice it is always the plain id string; the object branch
     // below is only a defensive fallback.
     const obj = event.data.object;
     const paymentIntentId = typeof obj.payment_intent === 'string' ? obj.payment_intent : obj.payment_intent?.id;
+    // Same failure modes on both paths, but a log line saying "revoke" while
+    // reinstating would send whoever reads it looking for the wrong bug.
+    const logTag = disputeWon ? 'stripe-webhook:reinstate' : 'stripe-webhook:revoke';
 
     if (!paymentIntentId) {
-      logError('stripe-webhook:revoke', `${event.type}: event ${event.id} has no payment_intent -- cannot locate the sale to revoke`);
+      logError(logTag, `${event.type}: event ${event.id} has no payment_intent -- cannot locate the sale it applies to`);
     } else if (!sb) {
-      logError('stripe-webhook:revoke', `${event.type}: no DB connection -- cannot look up sale for payment_intent ${paymentIntentId}`);
+      logError(logTag, `${event.type}: no DB connection -- cannot look up sale for payment_intent ${paymentIntentId}`);
     } else {
       // hb_sales has no dedicated payment_intent column; it is only recorded inside
       // the raw jsonb blob (see recordSale above), hence the ->> lookup.
@@ -166,10 +200,10 @@ export default async (req) => {
         .eq('raw->>payment_intent', paymentIntentId);
 
       if (salesErr) {
-        logError('stripe-webhook:revoke', `${event.type}: sale lookup failed for payment_intent ${paymentIntentId}: ${salesErr.message || salesErr}`);
+        logError(logTag, `${event.type}: sale lookup failed for payment_intent ${paymentIntentId}: ${salesErr.message || salesErr}`);
       } else if (!sales || sales.length === 0) {
-        // Refunded money with no sale to tie it to -- a human needs to reconcile this by hand.
-        logError('stripe-webhook:revoke', `${event.type}: no sale found for payment_intent ${paymentIntentId} -- refund/dispute could not be applied to any license`);
+        // Refunded/disputed money with no sale to tie it to -- a human needs to reconcile this by hand.
+        logError(logTag, `${event.type}: no sale found for payment_intent ${paymentIntentId} -- refund/dispute could not be applied to any license`);
       } else if (event.type === 'charge.refunded' && !isFullRefund(obj)) {
         // Only a full refund revokes the license -- a partial goodwill refund must
         // not cost the customer their whole theme. Not an error, but still a
@@ -184,9 +218,22 @@ export default async (req) => {
       } else {
         for (const sale of sales) {
           try {
-            await revokeLicensesForSale(sb, sale.id, event.type);
+            if (disputeWon) {
+              // revokedFor must be the exact string the revocation stored, and
+              // that string is the event type charge.dispute.created ran under
+              // (see the revokeLicensesForSale call just below, whose `reason`
+              // argument is event.type). Anything revoked for another reason --
+              // a refund, an admin decision -- deliberately stays revoked.
+              await reinstateLicensesForSale(sb, sale.id, {
+                revokedFor: 'charge.dispute.created',
+                reason: event.type,
+              });
+            } else {
+              await revokeLicensesForSale(sb, sale.id, event.type);
+            }
           } catch (err) {
-            logError('stripe-webhook:revoke', `${event.type}: revokeLicensesForSale threw for sale ${sale.id}: ${err.message || err}`);
+            const fn = disputeWon ? 'reinstateLicensesForSale' : 'revokeLicensesForSale';
+            logError(logTag, `${event.type}: ${fn} threw for sale ${sale.id}: ${err.message || err}`);
           }
         }
       }
