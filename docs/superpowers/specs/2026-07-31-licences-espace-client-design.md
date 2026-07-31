@@ -177,13 +177,20 @@ canonique d'une boutique Shopify en production.
 | Table | anon | client authentifié | admin |
 |---|---|---|---|
 | `hb_licenses` | — | `select` où `user_id = auth.uid()` | tout |
-| `hb_activations` | — | `select` + `update` (libération) via la licence possédée | tout |
-| `hb_template_versions` | — | `select` des métadonnées des templates publiés | tout |
+| `hb_activations` | — | `select` via la licence possédée ; `update` (libération) ajouté en phase 2 | tout |
+| `hb_template_versions` | — | **aucun accès** — voir ci-dessous | tout |
 | `hb_license_events` | — | — | `select` |
 
 L'API de licences utilise la clé service-role et contourne RLS ; elle n'est jamais
-exposée au navigateur. Le chemin `package` n'est renvoyé à aucun client, sous aucune
-forme (§10.1).
+exposée au navigateur.
+
+**Aucune politique de lecture client sur `hb_template_versions`.** La garantie du §10.1
+est que le chemin de stockage `package` ne parvient jamais au client, sous aucune forme.
+Or RLS ne sait pas restreindre l'accès **au niveau d'une colonne** : toute politique de
+lecture client sur cette table exposerait `package`, y compris resserrée sur `status` et
+`updates_until`. La phase 2, qui affiche l'historique des versions dans `/account`,
+exposera ces métadonnées via une **RPC `security definer` qui omet `package`** et
+applique les droits du §5.4. C'est le seul moyen de tenir les deux exigences à la fois.
 
 ---
 

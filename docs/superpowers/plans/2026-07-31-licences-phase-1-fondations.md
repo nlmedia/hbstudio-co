@@ -31,6 +31,12 @@ node -v   # doit afficher v25.x, pas v16.x
 
 Le SQL s'applique dans **Supabase → SQL Editor** (copier/coller le fichier, Run). Si vous passez par le MCP Supabase, utilisez `execute_sql` et non `apply_migration` : ce dernier découpe mal les blocs `$$`.
 
+### Convention de langue
+
+⚠️ **Tous les commentaires de code, blocs JSDoc et libellés de test s'écrivent en anglais.** C'est la convention du projet, sans exception avant la phase 1 (`netlify/functions/*.mjs`, `src/lib/settings.ts`, `catalog.ts`, `alerts.ts`). Les chaînes destinées à l'utilisateur final restent en français dans l'interface (`/admin`, e-mails) et en anglais sur le site public, comme aujourd'hui.
+
+Les blocs de code de ce plan comportent des commentaires en français pour la lisibilité de la relecture : **les transcrire en anglais** au moment de les écrire. Les commentaires SQL suivent la même règle.
+
 ---
 
 ## Structure des fichiers
@@ -93,7 +99,9 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     environment: 'node',
-    include: ['src/**/*.test.ts', 'netlify/**/*.test.ts'],
+    // Les fichiers de netlify/functions/ sont en .mjs : sans les deux extensions,
+    // un test .mjs ne serait jamais exécuté ET la suite resterait verte.
+    include: ['src/**/*.test.{ts,mjs}', 'netlify/**/*.test.{ts,mjs}'],
   },
 });
 ```
