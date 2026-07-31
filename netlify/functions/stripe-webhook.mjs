@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 import crypto from 'node:crypto';
 import { getSupabase, loadSettings, pick, logError } from './_lib.mjs';
-import { createLicenseForSale } from './_licensing.mjs';
+import { createLicenseForSale, revokeLicensesForSale } from './_licensing.mjs';
 
 export const config = { path: '/api/stripe-webhook' };
 
@@ -210,6 +210,46 @@ export default async (req) => {
       const params = new URLSearchParams({ item: slug, email, exp: String(exp), sig: sigv });
       const link = `${origin}/api/download?${params.toString()}`;
       try { await sendDeliveryEmail(settings, email, name, link, ttlDays, license, origin); } catch (err) { logError('stripe-webhook:sendDeliveryEmail', err); }
+    }
+  }
+
+  if (event.type === 'charge.refunded' || event.type === 'charge.dispute.created') {
+    // Both the Charge object (charge.refunded) and the Dispute object
+    // (charge.dispute.created) carry the id of the PaymentIntent they belong to
+    // in a top-level `payment_intent` field -- confirmed against Stripe's own type
+    // definitions (node_modules/stripe/types/Charges.d.ts and Disputes.d.ts),
+    // both typed `string | Stripe.PaymentIntent | null`. It is never expanded
+    // here, so in practice it is always the plain id string; the object branch
+    // below is only a defensive fallback.
+    const obj = event.data.object;
+    const paymentIntentId = typeof obj.payment_intent === 'string' ? obj.payment_intent : obj.payment_intent?.id;
+
+    if (!paymentIntentId) {
+      logError('stripe-webhook:revoke', `${event.type}: event ${event.id} has no payment_intent -- cannot locate the sale to revoke`);
+    } else if (!sb) {
+      logError('stripe-webhook:revoke', `${event.type}: no DB connection -- cannot look up sale for payment_intent ${paymentIntentId}`);
+    } else {
+      // hb_sales has no dedicated payment_intent column; it is only recorded inside
+      // the raw jsonb blob (see recordSale above), hence the ->> lookup.
+      const { data: sales, error: salesErr } = await sb
+        .from('hb_sales')
+        .select('id')
+        .eq('raw->>payment_intent', paymentIntentId);
+
+      if (salesErr) {
+        logError('stripe-webhook:revoke', `${event.type}: sale lookup failed for payment_intent ${paymentIntentId}: ${salesErr.message || salesErr}`);
+      } else if (!sales || sales.length === 0) {
+        // Refunded money with no sale to tie it to -- a human needs to reconcile this by hand.
+        logError('stripe-webhook:revoke', `${event.type}: no sale found for payment_intent ${paymentIntentId} -- refund/dispute could not be applied to any license`);
+      } else {
+        for (const sale of sales) {
+          try {
+            await revokeLicensesForSale(sb, sale.id, event.type);
+          } catch (err) {
+            logError('stripe-webhook:revoke', `${event.type}: revokeLicensesForSale threw for sale ${sale.id}: ${err.message || err}`);
+          }
+        }
+      }
     }
   }
 

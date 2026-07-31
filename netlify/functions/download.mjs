@@ -33,6 +33,54 @@ function safeEqual(a, b) {
   return ba.length === bb.length && crypto.timingSafeEqual(ba, bb);
 }
 
+/**
+ * Enforces license status for a download. `slug` is the template slug carried
+ * by the `item` query param, `email` is the link's own email param.
+ *
+ * Rule, applied exactly:
+ *  - at least one ACTIVE license for this (slug, email) pair -> allow
+ *  - licenses exist but every one of them is REVOKED             -> deny (403)
+ *  - no license row at all                                        -> allow
+ *
+ * The third case is deliberate, not an oversight: purchases made before this
+ * licensing system existed have no hb_licenses row at all, and refusing them
+ * here would cut off access for customers who already paid legitimately. Do
+ * not "tighten" this to deny-by-default -- that would break those purchases.
+ *
+ * @returns {Promise<Response|null>} a 403 Response to short-circuit the
+ *   download, or null when the download may proceed.
+ */
+async function enforceLicense(sb, slug, email) {
+  const { data: template } = await sb.from('hb_templates').select('id').eq('slug', slug).maybeSingle();
+  if (!template) return null; // unresolved slug: resolvePath() will 404 right after this call
+
+  // hb_licenses is indexed on lower(email) (see migrations/20260731_licenses.sql);
+  // ilike gives a case-insensitive match here since the email itself never
+  // contains the % / _ wildcards ilike would otherwise interpret.
+  const { data: licenses, error } = await sb
+    .from('hb_licenses')
+    .select('status')
+    .eq('template_id', template.id)
+    .ilike('email', email);
+
+  if (error) {
+    // A lookup failure is not the same thing as "no license found": fail open
+    // rather than withhold a download from a customer who already paid,
+    // matching how the rest of this system treats licensing as best-effort
+    // bookkeeping around a purchase that already happened. Still logged loudly
+    // because it is a genuine anomaly, unlike the revoked-license case below.
+    logError('download:enforceLicense', `license lookup failed for slug "${slug}", email "${email}": ${error.message || error}`);
+    return null;
+  }
+  if (!licenses || licenses.length === 0) return null; // no license row: pre-licensing purchase, allow
+  if (licenses.some((l) => l.status === 'active')) return null;
+
+  // Every license for this pair is revoked -- this is the system working as
+  // designed (refund/dispute already revoked it), not a failure. Do not log it
+  // as an error.
+  return new Response('This license has been revoked. Please contact support if you believe this is an error.', { status: 403 });
+}
+
 export default async (req) => {
   const sb = getSupabase();
   const settings = await loadSettings(sb, ['download_secret']);
@@ -57,6 +105,9 @@ export default async (req) => {
   }
 
   if (!sb) return new Response('Downloads not configured.', { status: 503 });
+
+  const licenseDenied = await enforceLicense(sb, item, email);
+  if (licenseDenied) return licenseDenied;
 
   const path = await resolvePath(sb, item);
   if (!path) {
