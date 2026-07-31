@@ -1,6 +1,6 @@
 -- ============================================================================
--- HB Studio Co — admin database schema (portable backup)
--- Re-import on any Supabase project: SQL Editor → paste this → Run.
+-- HB Studio Co -- admin database schema (portable backup)
+-- Re-import on any Supabase project: SQL Editor -> paste this -> Run.
 -- Then run seed.sql for the initial data. Tables are prefixed hb_ and isolated.
 -- ============================================================================
 
@@ -34,7 +34,7 @@ create table if not exists public.hb_templates (
   price numeric,
   sale_price numeric,
   sale_ends_at timestamptz,
-  currency text not null default '€',
+  currency text not null default U&'\20AC',
   status text not null default 'draft' check (status in ('draft','published','coming-soon')),
   featured boolean not null default false,
   sort_order int not null default 100,
@@ -92,7 +92,7 @@ create table if not exists public.hb_campaigns (
   created_at timestamptz not null default now()
 );
 
--- Settings (key/value, admin-only — can hold secrets like the Brevo API key)
+-- Settings (key/value, admin-only -- can hold secrets like the Brevo API key)
 create table if not exists public.hb_settings (
   key text primary key,
   value text,
@@ -118,7 +118,7 @@ create trigger hb_templates_touch before update on public.hb_templates
 for each row execute function public.hb_touch_updated_at();
 
 -- ============================================================================
--- Phase 1 licenses — hb_licenses, hb_activations, hb_template_versions,
+-- Phase 1 licenses -- hb_licenses, hb_activations, hb_template_versions,
 -- hb_license_events. Spec: docs/superpowers/specs/2026-07-31-licences-espace-client-design.md
 -- ============================================================================
 
@@ -159,7 +159,7 @@ create trigger hb_licenses_touch before update on public.hb_licenses
 -- Deliberately NO partial unique index on (license_id, domain): reactivating a
 -- released domain is handled explicitly in phase 3, and a partial index
 -- combined with an upsert forces the WHERE clause to be replicated in the
--- ON CONFLICT — a silent write-time divergence.
+-- ON CONFLICT -- a silent write-time divergence.
 create table if not exists public.hb_activations (
   id             uuid primary key default gen_random_uuid(),
   license_id     uuid not null references public.hb_licenses(id) on delete cascade,
@@ -187,7 +187,7 @@ create table if not exists public.hb_template_versions (
 create index if not exists hb_template_versions_released_idx
   on public.hb_template_versions (template_id, released_at desc);
 
--- License events — TECHNICAL log (API calls). The admin's human actions go
+-- License events -- TECHNICAL log (API calls). The admin's human actions go
 -- into hb_audit_log.
 create table if not exists public.hb_license_events (
   id          bigint generated always as identity primary key,
@@ -202,7 +202,7 @@ create table if not exists public.hb_license_events (
 );
 
 comment on column public.hb_license_events.key_hash is
-  'Hex-encoded SHA-256 digest of the presented key, computed by the CALLER — never the key itself. Populated even when no license matches, the case where license_id is necessarily null; that is what makes rate-limiting possible on an UNKNOWN key (§10.2). Do not "simplify" this into the raw key: this table is meant to be read, exported to observability tooling, and pasted into support tickets, so it must never carry a secret that by itself grants activation rights. A hash still lets two attempts on the same key be correlated, which is all rate-limiting needs.';
+  'Hex-encoded SHA-256 digest of the presented key, computed by the CALLER -- never the key itself. Populated even when no license matches, the case where license_id is necessarily null; that is what makes rate-limiting possible on an UNKNOWN key (Sec.10.2). Do not "simplify" this into the raw key: this table is meant to be read, exported to observability tooling, and pasted into support tickets, so it must never carry a secret that by itself grants activation rights. A hash still lets two attempts on the same key be correlated, which is all rate-limiting needs.';
 
 create index if not exists hb_license_events_license_idx
   on public.hb_license_events (license_id, created_at desc);
@@ -276,13 +276,13 @@ create policy hb_activations_admin_all on public.hb_activations
   for all to authenticated using (public.hb_is_admin()) with check (public.hb_is_admin());
 
 -- No client read policy here, deliberately. The `package` column is a storage
--- path in the private "deliverables" bucket, and spec §10.1 requires that this
+-- path in the private "deliverables" bucket, and spec Sec.10.1 requires that this
 -- path never reach the client in any form. RLS cannot restrict access at the
 -- column level, only the row level, so any client-facing SELECT policy on this
--- table — even one filtered by license status or updates_until — would still
+-- table -- even one filtered by license status or updates_until -- would still
 -- hand back `package` to whoever the row is visible to. Phase 2 will expose
 -- version metadata to clients through a `security definer` RPC that omits
--- `package` and filters by entitlement (§5.4) instead of a table-level policy.
+-- `package` and filters by entitlement (Sec.5.4) instead of a table-level policy.
 drop policy if exists hb_template_versions_admin_all on public.hb_template_versions;
 create policy hb_template_versions_admin_all on public.hb_template_versions
   for all to authenticated using (public.hb_is_admin()) with check (public.hb_is_admin());
