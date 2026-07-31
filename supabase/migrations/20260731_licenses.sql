@@ -86,20 +86,20 @@ create table if not exists public.hb_license_events (
   domain      text,
   ip          text,
   user_agent  text,
-  key_attempt text,
+  key_hash    text,
   detail      jsonb,
   created_at  timestamptz not null default now()
 );
 
-comment on column public.hb_license_events.key_attempt is
-  'The key as presented by the caller, even when it matches no license. Needed to rate-limit attempts against an UNKNOWN key (§10.2), the brute-force case, where license_id is necessarily null because there is no license row to point to.';
+comment on column public.hb_license_events.key_hash is
+  'Hex-encoded SHA-256 digest of the presented key, computed by the CALLER — never the key itself. Populated even when no license matches, the case where license_id is necessarily null; that is what makes rate-limiting possible on an UNKNOWN key (§10.2). Do not "simplify" this into the raw key: this table is meant to be read, exported to observability tooling, and pasted into support tickets, so it must never carry a secret that by itself grants activation rights. A hash still lets two attempts on the same key be correlated, which is all rate-limiting needs.';
 
 create index if not exists hb_license_events_license_idx
   on public.hb_license_events (license_id, created_at desc);
 create index if not exists hb_license_events_ip_idx
   on public.hb_license_events (ip, created_at desc);
-create index if not exists hb_license_events_key_attempt_idx
-  on public.hb_license_events (key_attempt, created_at desc);
+create index if not exists hb_license_events_key_hash_idx
+  on public.hb_license_events (key_hash, created_at desc);
 
 -- ============ Row Level Security ============
 alter table public.hb_licenses          enable row level security;
