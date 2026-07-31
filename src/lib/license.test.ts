@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { generateLicenseKey } from './license.mjs';
+import { generateLicenseKey, seatsForTier, updatesUntilFrom, hasActiveUpdates, canDownloadVersion } from './license.mjs';
 
 describe('generateLicenseKey', () => {
   it('produces the HB-XXXX-XXXX-XXXX-XXXX format', () => {
@@ -34,5 +34,63 @@ describe('generateLicenseKey', () => {
   it('throws instead of looping forever when the random source yields empty arrays', () => {
     const empty = () => new Uint8Array(0);
     expect(() => generateLicenseKey(empty)).toThrow();
+  });
+});
+
+describe('seatsForTier', () => {
+  it('gives 1 seat for single and 5 for extended', () => {
+    expect(seatsForTier('single')).toBe(1);
+    expect(seatsForTier('extended')).toBe(5);
+  });
+
+  it('rejects an unknown tier', () => {
+    expect(() => seatsForTier('all-access')).toThrow('Unknown tier: all-access');
+  });
+});
+
+describe('updatesUntilFrom', () => {
+  it('adds 12 months to the purchase date', () => {
+    expect(updatesUntilFrom('2026-07-31T10:00:00.000Z')).toBe('2027-07-31T10:00:00.000Z');
+  });
+
+  it('handles February 29th without producing an invalid date', () => {
+    expect(updatesUntilFrom('2028-02-29T10:00:00.000Z')).toBe('2029-03-01T10:00:00.000Z');
+  });
+});
+
+describe('hasActiveUpdates', () => {
+  const now = new Date('2026-07-31T00:00:00.000Z');
+
+  it('is true for an active, non-expired license', () => {
+    expect(hasActiveUpdates({ status: 'active', updates_until: '2027-01-01T00:00:00.000Z' }, now)).toBe(true);
+  });
+
+  it('is false once the updates date has passed', () => {
+    expect(hasActiveUpdates({ status: 'active', updates_until: '2026-01-01T00:00:00.000Z' }, now)).toBe(false);
+  });
+
+  it('is false for a revoked license even within the window', () => {
+    expect(hasActiveUpdates({ status: 'revoked', updates_until: '2027-01-01T00:00:00.000Z' }, now)).toBe(false);
+  });
+});
+
+describe('canDownloadVersion', () => {
+  const expired = { status: 'active', updates_until: '2026-01-01T00:00:00.000Z' };
+
+  it('allows a version released during the entitlement period', () => {
+    expect(canDownloadVersion(expired, { released_at: '2025-12-25T00:00:00.000Z' })).toBe(true);
+  });
+
+  it('refuses a version released after entitlement ended', () => {
+    expect(canDownloadVersion(expired, { released_at: '2026-03-01T00:00:00.000Z' })).toBe(false);
+  });
+
+  it('allows a version released exactly at the entitlement deadline', () => {
+    expect(canDownloadVersion(expired, { released_at: '2026-01-01T00:00:00.000Z' })).toBe(true);
+  });
+
+  it('refuses everything for a revoked license', () => {
+    expect(canDownloadVersion({ status: 'revoked', updates_until: '2027-01-01T00:00:00.000Z' },
+      { released_at: '2026-01-01T00:00:00.000Z' })).toBe(false);
   });
 });

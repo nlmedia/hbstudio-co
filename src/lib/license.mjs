@@ -25,3 +25,52 @@ export function generateLicenseKey(randomBytesFn = randomBytes) {
   }
   return 'HB-' + chars.join('').match(/.{4}/g).join('-');
 }
+
+/** @typedef {{ status: string, updates_until: string }} License */
+/** @typedef {{ released_at: string }} TemplateVersion */
+
+/** Number of sites allowed per tier. Locked into the license at purchase time. */
+export const SEATS_BY_TIER = { single: 1, extended: 5 };
+
+/**
+ * @param {string} tier
+ * @returns {number}
+ */
+export function seatsForTier(tier) {
+  const seats = SEATS_BY_TIER[tier];
+  if (!seats) throw new Error(`Unknown tier: ${tier}`);
+  return seats;
+}
+
+/**
+ * End of update entitlement: 12 months after purchase.
+ * @param {string | Date} purchasedAt
+ * @returns {string} ISO 8601
+ */
+export function updatesUntilFrom(purchasedAt) {
+  const d = new Date(purchasedAt);
+  d.setUTCFullYear(d.getUTCFullYear() + 1);
+  return d.toISOString();
+}
+
+/**
+ * Does the license currently entitle its holder to updates?
+ * @param {License} license
+ * @param {Date} [now]
+ * @returns {boolean}
+ */
+export function hasActiveUpdates(license, now = new Date()) {
+  return license.status === 'active' && new Date(license.updates_until) > now;
+}
+
+/**
+ * Is this version downloadable? An expired license keeps access to versions
+ * released DURING its entitlement period, and to nothing more.
+ * @param {License} license
+ * @param {TemplateVersion} version
+ * @returns {boolean}
+ */
+export function canDownloadVersion(license, version) {
+  if (license.status !== 'active') return false;
+  return new Date(version.released_at) <= new Date(license.updates_until);
+}
