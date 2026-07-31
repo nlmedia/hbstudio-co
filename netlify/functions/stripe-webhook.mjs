@@ -96,13 +96,18 @@ export default async (req) => {
 
     let license = null;
     if (slug && email) {
+      // Stripe retries a failed webhook delivery for up to ~3 days, so "now" can
+      // land long after the actual purchase; use the session's own timestamp
+      // (Unix seconds, hence * 1000) so a delayed retry never silently grants the
+      // customer extra, unpaid-for update entitlement.
+      const purchasedAt = s.created ? new Date(s.created * 1000).toISOString() : new Date().toISOString();
       try {
         license = await createLicenseForSale(sb, {
           saleId: s.id,
           slug,
           tier,
           email,
-          purchasedAt: new Date().toISOString(),
+          purchasedAt,
         });
       } catch (err) { logError('stripe-webhook:createLicense', err); }
     }
