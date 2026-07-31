@@ -29,6 +29,15 @@ export PATH="/opt/homebrew/bin:$PATH"
 node -v   # doit afficher v25.x, pas v16.x
 ```
 
+⚠️ **Pour tester les routes `/api/*` en local, exporter `.env` dans l'environnement du serveur** :
+
+```bash
+set -a; . ./.env; set +a
+npm run dev
+```
+
+`astro dev` charge `.env` dans `import.meta.env`, **pas dans `process.env`** — or les fonctions Netlify (`netlify/functions/*.mjs`) lisent `process.env`. Sans cet export, `getSupabase()` renvoie `null` et toutes les routes `/api/*` répondent `503 not_configured` **quelle que soit la requête**, ce qui fait diagnostiquer à tort un problème de clés Stripe. En production, Netlify fournit de vraies variables d'environnement : le piège est purement local.
+
 Le SQL s'applique dans **Supabase → SQL Editor** (copier/coller le fichier, Run). Si vous passez par le MCP Supabase, utilisez `execute_sql` et non `apply_migration` : ce dernier découpe mal les blocs `$$`.
 
 ### Convention de langue
