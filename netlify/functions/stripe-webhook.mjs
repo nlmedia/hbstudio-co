@@ -32,19 +32,58 @@ function sign(secret, slug, email, exp) {
   return crypto.createHmac('sha256', secret).update(`${slug}.${email}.${exp}`).digest('hex');
 }
 
+/**
+ * Formats an ISO date string for a French reader. A malformed or missing value
+ * must never surface as "Invalid Date", "undefined" or "null" in a customer email.
+ */
+function formatFrenchDate(iso) {
+  const d = iso ? new Date(iso) : null;
+  if (!d || Number.isNaN(d.getTime())) return 'date indisponible';
+  return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+
+/** "1 site" / "N sites" — guards against a missing or non-numeric seat count. */
+function seatsLabel(seats) {
+  const n = Number(seats);
+  if (!Number.isFinite(n) || n <= 0) return 'plusieurs sites';
+  return n === 1 ? '1 site' : `${n} sites`;
+}
+
+/**
+ * Pure HTML renderer for the delivery email. Kept free of any network/DB access
+ * so it can be exercised directly (tests, manual proof) without hitting Brevo.
+ * `license` may be null (e.g. a bookkeeping failure must never withhold the
+ * download the customer already paid for) — the key insert simply disappears.
+ */
+export function renderDeliveryEmailHtml({ name, link, ttlDays, license, origin }) {
+  const licenseBlock = license
+    ? `
+      <div style="margin:24px 0;padding:16px 20px;border:1px solid #e4e4e9;border-radius:12px;background:#f7f7f9">
+        <p style="margin:0 0 6px;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:#6b6b73">Votre clé de licence</p>
+        <p style="margin:0 0 12px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:17px;font-weight:600;letter-spacing:.03em;word-break:break-all;color:#0e0e12">${license.key || '—'}</p>
+        <p style="margin:0 0 4px;font-size:13px;color:#3a3a42">Licence valable pour <strong>${seatsLabel(license.seats)}</strong>.</p>
+        <p style="margin:0 0 12px;font-size:13px;color:#3a3a42">Mises à jour incluses jusqu'au <strong>${formatFrenchDate(license.updates_until)}</strong>.</p>
+        <p style="margin:0;font-size:13px"><a href="${origin}/account" style="color:#0e0e12;font-weight:600">Retrouvez votre licence dans votre espace client →</a></p>
+      </div>`
+    : '';
+  return `
+    <div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:auto;color:#0e0e12">
+      <h1 style="font-family:Georgia,serif">Merci pour votre achat 🎉</h1>
+      <p>Votre <strong>${name}</strong> est prêt à être téléchargé.</p>
+      ${licenseBlock}
+      <p><a href="${link}" style="display:inline-block;background:#0e0e12;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:600">Télécharger vos fichiers</a></p>
+      <p style="font-size:13px;color:#6b6b73">Ce lien est valable ${ttlDays} jours. La documentation est incluse dans le téléchargement.<br>Une question ? Répondez simplement à cet e-mail.</p>
+      <p style="font-size:12px;color:#9a9aa6">— HB Studio Co</p>
+    </div>`;
+}
+
 /** Send the download email via Brevo (single email provider for the whole app). */
-async function sendDeliveryEmail(settings, to, name, link, ttlDays) {
+async function sendDeliveryEmail(settings, to, name, link, ttlDays, license, origin) {
   const apiKey = settings.brevo_api_key;
   const senderEmail = settings.sender_email;
   if (!apiKey || !senderEmail) return; // email not configured
-  const html = `
-    <div style="font-family:Inter,Arial,sans-serif;max-width:520px;margin:auto;color:#0e0e12">
-      <h1 style="font-family:Georgia,serif">Thank you for your purchase 🎉</h1>
-      <p>Your <strong>${name}</strong> is ready to download.</p>
-      <p><a href="${link}" style="display:inline-block;background:#0e0e12;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:600">Download your files</a></p>
-      <p style="font-size:13px;color:#6b6b73">This link is valid for ${ttlDays} days. Documentation is included in the download.<br>Questions? Just reply to this email.</p>
-      <p style="font-size:12px;color:#9a9aa6">— HB Studio Co</p>
-    </div>`;
+  const html = renderDeliveryEmailHtml({ name, link, ttlDays, license, origin });
+  const subject = license ? `Votre clé de licence — ${name}` : `Votre ${name} est prêt à télécharger`;
   const res = await fetch('https://api.brevo.com/v3/smtp/email', {
     method: 'POST',
     headers: { 'api-key': apiKey, 'content-type': 'application/json', accept: 'application/json' },
@@ -52,7 +91,7 @@ async function sendDeliveryEmail(settings, to, name, link, ttlDays) {
       sender: { name: settings.sender_name || 'HB Studio Co', email: senderEmail },
       ...(settings.reply_to ? { replyTo: { email: settings.reply_to } } : {}),
       to: [{ email: to }],
-      subject: `Your ${name} download`,
+      subject,
       htmlContent: html,
     }),
   });
@@ -110,6 +149,29 @@ export default async (req) => {
           purchasedAt,
         });
       } catch (err) { logError('stripe-webhook:createLicense', err); }
+
+      // createLicenseForSale can come back null even though a license exists: if
+      // Stripe replays this event and two invocations overlap, both pass its
+      // existence check before either has inserted, then the loser of the race
+      // hits the hb_licenses_sale_uidx unique index and returns null. Re-read once
+      // by sale_id before giving up, so we pick up the winner's row instead of
+      // sending this customer an email without their key.
+      if (!license && sb) {
+        const { data: raced, error: raceErr } = await sb
+          .from('hb_licenses')
+          .select('*')
+          .eq('sale_id', s.id)
+          .maybeSingle();
+        if (raceErr) {
+          logError('stripe-webhook:createLicense', `re-read after null failed for sale ${s.id}: ${raceErr.message || raceErr}`);
+        } else if (raced) {
+          license = raced;
+        } else {
+          // Genuinely no license anywhere -- the customer paid and will get an
+          // email without a key. Must not vanish silently.
+          logError('stripe-webhook:createLicense', `sale ${s.id} paid but no license found after re-read (slug "${slug}")`);
+        }
+      }
     }
 
     if (slug && email) {
@@ -120,7 +182,7 @@ export default async (req) => {
       // only the value it carries is now the template slug (see report for why).
       const params = new URLSearchParams({ item: slug, email, exp: String(exp), sig: sigv });
       const link = `${origin}/api/download?${params.toString()}`;
-      try { await sendDeliveryEmail(settings, email, name, link, ttlDays); } catch (err) { logError('stripe-webhook:sendDeliveryEmail', err); }
+      try { await sendDeliveryEmail(settings, email, name, link, ttlDays, license, origin); } catch (err) { logError('stripe-webhook:sendDeliveryEmail', err); }
     }
   }
 
