@@ -51,4 +51,33 @@ describe('resolveAmount', () => {
   it('refuses a missing template', () => {
     expect(resolveAmount(null, 'single', now)).toBeNull();
   });
+
+  it('refuses a zero single price', () => {
+    expect(resolveAmount({ ...base, price: 0 }, 'single', now)).toBeNull();
+  });
+
+  it('refuses a negative single price', () => {
+    expect(resolveAmount({ ...base, price: -10 }, 'single', now)).toBeNull();
+  });
+
+  it('refuses a zero extended price', () => {
+    expect(resolveAmount({ ...base, extended_price: 0 }, 'extended', now)).toBeNull();
+  });
+
+  it('refuses a negative extended price', () => {
+    expect(resolveAmount({ ...base, extended_price: -1 }, 'extended', now)).toBeNull();
+  });
+
+  it('refuses a non-numeric single price', () => {
+    expect(resolveAmount({ ...base, price: 'gratuit' }, 'single', now)).toBeNull();
+  });
+
+  it('refuses a sale that brings the amount down to zero', () => {
+    const t = { ...base, sale_price: 0, sale_ends_at: '2026-08-31T00:00:00.000Z' };
+    expect(resolveAmount(t, 'single', now)).toBeNull();
+  });
+
+  it('still accepts a sub-1-euro price', () => {
+    expect(resolveAmount({ ...base, price: 0.5 }, 'single', now)).toBe(50);
+  });
 });
