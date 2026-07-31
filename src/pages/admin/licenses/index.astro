@@ -1,0 +1,123 @@
+---
+export const prerender = false;
+import Admin from '../../../layouts/Admin.astro';
+
+const supabase = Astro.locals.supabase!;
+const email = Astro.locals.user?.email ?? '';
+
+// Status filter: all / active / revoked
+const status = Astro.url.searchParams.get('status') ?? 'all';
+const q = (Astro.url.searchParams.get('q') ?? '').trim();
+
+// Stats are computed independently of the current filters, so the three
+// counters always reflect the whole table, not just the visible rows.
+const { data: allLicenses } = await supabase.from('hb_licenses').select('id, status, updates_until');
+const now = Date.now();
+const total = allLicenses?.length ?? 0;
+const updatesExpiredCount = (allLicenses ?? []).filter(
+  (l) => l.status === 'active' && new Date(l.updates_until).getTime() < now
+).length;
+const revokedCount = (allLicenses ?? []).filter((l) => l.status === 'revoked').length;
+
+let listQuery = supabase
+  .from('hb_licenses')
+  .select('id, key, tier, seats, email, status, updates_until, created_at, hb_templates(title)')
+  .order('created_at', { ascending: false })
+  .limit(500);
+if (status === 'active') listQuery = listQuery.eq('status', 'active');
+if (status === 'revoked') listQuery = listQuery.eq('status', 'revoked');
+if (q) {
+  const safeQ = q.replace(/[%,]/g, '');
+  listQuery = listQuery.or(`key.ilike.%${safeQ}%,email.ilike.%${safeQ}%`);
+}
+const { data: licenses } = await listQuery;
+
+const statuses = [['all', 'Toutes'], ['active', 'Actives'], ['revoked', 'Révoquées']] as const;
+const tierLabel: Record<string, string> = { single: 'Single', extended: 'Extended' };
+const fmtDate = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+const qsFor = (s: string) => {
+  const p = new URLSearchParams();
+  p.set('status', s);
+  if (q) p.set('q', q);
+  return `/admin/licenses?${p.toString()}`;
+};
+---
+<Admin title="Licences" active="licenses" email={email}>
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div class="flex items-center gap-1.5 rounded-full border border-line bg-surface p-1">
+      {statuses.map(([s, lbl]) => (
+        <a href={qsFor(s)} class:list={['rounded-full px-3.5 py-1.5 text-sm font-medium transition', s === status ? 'bg-ink text-paper' : 'text-muted hover:text-ink']}>{lbl}</a>
+      ))}
+    </div>
+    <form action="/admin/licenses" method="GET" class="relative">
+      <input type="hidden" name="status" value={status} />
+      <svg class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input name="q" type="search" value={q} placeholder="Clé ou e-mail…" class="w-64 rounded-full border border-line bg-surface-2/60 py-2 pl-9 pr-4 text-sm outline-none transition focus:border-accent focus:bg-surface" />
+    </form>
+  </div>
+
+  <div class="mb-6 grid gap-4 sm:grid-cols-3">
+    <div class="rounded-2xl border border-line bg-surface p-5"><p class="text-sm text-muted">Licences</p><p class="mt-1 font-display text-3xl font-bold">{total}</p></div>
+    <div class="rounded-2xl border border-line bg-surface p-5"><p class="text-sm text-muted">Mises à jour échues</p><p class="mt-1 font-display text-3xl font-bold">{updatesExpiredCount}</p></div>
+    <div class="rounded-2xl border border-line bg-surface p-5"><p class="text-sm text-muted">Révoquées</p><p class="mt-1 font-display text-3xl font-bold">{revokedCount}</p></div>
+  </div>
+
+  <div class="overflow-hidden rounded-2xl border border-line bg-surface">
+    <table class="w-full text-sm">
+      <thead class="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
+        <tr>
+          <th class="px-5 py-3 font-medium">Clé</th>
+          <th class="px-5 py-3 font-medium">Template</th>
+          <th class="px-5 py-3 font-medium">Niveau</th>
+          <th class="px-5 py-3 font-medium">Client</th>
+          <th class="px-5 py-3 font-medium">Mises à jour</th>
+          <th class="px-5 py-3 font-medium">Statut</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-line">
+        {(licenses ?? []).map((l: any) => {
+          const updatesExpired = new Date(l.updates_until).getTime() < now;
+          return (
+            <tr class="cursor-pointer hover:bg-surface-2/50" data-href={`/admin/licenses/${l.id}`}>
+              <td class="px-5 py-3 font-mono text-xs">{l.key}</td>
+              <td class="px-5 py-3 font-medium">{l.hb_templates?.title ?? '—'}</td>
+              <td class="px-5 py-3 text-muted">{tierLabel[l.tier] ?? l.tier} · {l.seats} site{l.seats > 1 ? 's' : ''}</td>
+              <td class="px-5 py-3 text-muted">{l.email}</td>
+              <td class="px-5 py-3">
+                {updatesExpired
+                  ? <span class="rounded-full bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent">Échues depuis {fmtDate(l.updates_until)}</span>
+                  : <span class="rounded-full bg-[#e6f4ea] px-2.5 py-1 text-xs font-medium text-[#1e7d34]">Jusqu'au {fmtDate(l.updates_until)}</span>}
+              </td>
+              <td class="px-5 py-3">
+                <span class:list={['rounded-full px-2.5 py-1 text-xs font-medium', l.status === 'revoked' ? 'bg-[#fbeaea] text-[#b3261e]' : 'bg-[#e6f4ea] text-[#1e7d34]']}>
+                  {l.status === 'revoked' ? 'Révoquée' : 'Active'}
+                </span>
+              </td>
+            </tr>
+          );
+        })}
+        {(!licenses || licenses.length === 0) && (
+          <tr><td colspan="6" class="px-5 py-12 text-center text-muted">
+            {q || status !== 'all' ? <>Aucune licence ne correspond à cette recherche.</> : <>
+              Aucune licence pour le moment.<br />
+              <span class="text-xs">Les licences s'afficheront ici automatiquement à chaque vente d'un template.</span>
+            </>}
+          </td></tr>
+        )}
+      </tbody>
+    </table>
+  </div>
+
+  <p class="mt-4 text-xs text-muted">Une licence « active » aux mises à jour échues reste valable pour l'usage du template : seul le droit de télécharger de nouvelles versions expire.</p>
+</Admin>
+
+<script>
+  // Progressive enhancement: whole row navigates to the license detail page,
+  // without turning every row into an <a> (which would break table semantics).
+  document.querySelectorAll<HTMLElement>('tr[data-href]').forEach((row) => {
+    row.addEventListener('click', () => {
+      const href = row.dataset.href;
+      if (href) window.location.href = href;
+    });
+  });
+</script>
