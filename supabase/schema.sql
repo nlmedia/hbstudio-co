@@ -190,17 +190,26 @@ create index if not exists hb_template_versions_released_idx
 -- License events — TECHNICAL log (API calls). The admin's human actions go
 -- into hb_audit_log.
 create table if not exists public.hb_license_events (
-  id         bigint generated always as identity primary key,
-  license_id uuid references public.hb_licenses(id) on delete cascade,
-  event      text not null check (event in ('activate','deactivate','validate','revoke','reassign','extend')),
-  domain     text,
-  ip         text,
-  user_agent text,
-  detail     jsonb,
-  created_at timestamptz not null default now()
+  id          bigint generated always as identity primary key,
+  license_id  uuid references public.hb_licenses(id) on delete cascade,
+  event       text not null check (event in ('activate','deactivate','validate','revoke','reassign','extend')),
+  domain      text,
+  ip          text,
+  user_agent  text,
+  key_attempt text,
+  detail      jsonb,
+  created_at  timestamptz not null default now()
 );
+
+comment on column public.hb_license_events.key_attempt is
+  'The key as presented by the caller, even when it matches no license. Needed to rate-limit attempts against an UNKNOWN key (§10.2), the brute-force case, where license_id is necessarily null because there is no license row to point to.';
+
 create index if not exists hb_license_events_license_idx
   on public.hb_license_events (license_id, created_at desc);
+create index if not exists hb_license_events_ip_idx
+  on public.hb_license_events (ip, created_at desc);
+create index if not exists hb_license_events_key_attempt_idx
+  on public.hb_license_events (key_attempt, created_at desc);
 
 -- ============ Row Level Security ============
 alter table public.hb_admins      enable row level security;
