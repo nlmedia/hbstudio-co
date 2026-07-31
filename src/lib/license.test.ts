@@ -46,6 +46,18 @@ describe('seatsForTier', () => {
   it('rejects an unknown tier', () => {
     expect(() => seatsForTier('all-access')).toThrow('Unknown tier: all-access');
   });
+
+  it('rejects tier names inherited from the prototype chain, not just own keys', () => {
+    expect(() => seatsForTier('constructor')).toThrow(/^Unknown tier:/);
+    expect(() => seatsForTier('toString')).toThrow(/^Unknown tier:/);
+    expect(() => seatsForTier('__proto__')).toThrow(/^Unknown tier:/);
+  });
+
+  it('rejects non-string tiers', () => {
+    expect(() => seatsForTier(undefined)).toThrow(/^Unknown tier:/);
+    expect(() => seatsForTier(null)).toThrow(/^Unknown tier:/);
+    expect(() => seatsForTier({})).toThrow(/^Unknown tier:/);
+  });
 });
 
 describe('updatesUntilFrom', () => {
@@ -55,6 +67,15 @@ describe('updatesUntilFrom', () => {
 
   it('handles February 29th without producing an invalid date', () => {
     expect(updatesUntilFrom('2028-02-29T10:00:00.000Z')).toBe('2029-03-01T10:00:00.000Z');
+  });
+
+  it('rejects a null or undefined purchase date instead of silently defaulting to the epoch', () => {
+    expect(() => updatesUntilFrom(null)).toThrow(/^updatesUntilFrom:/);
+    expect(() => updatesUntilFrom(undefined)).toThrow(/^updatesUntilFrom:/);
+  });
+
+  it('rejects a purchase date that does not parse', () => {
+    expect(() => updatesUntilFrom('not a date')).toThrow(/^updatesUntilFrom:/);
   });
 });
 
@@ -71,6 +92,10 @@ describe('hasActiveUpdates', () => {
 
   it('is false for a revoked license even within the window', () => {
     expect(hasActiveUpdates({ status: 'revoked', updates_until: '2027-01-01T00:00:00.000Z' }, now)).toBe(false);
+  });
+
+  it('is false at the exact instant updates_until is reached (strict comparison)', () => {
+    expect(hasActiveUpdates({ status: 'active', updates_until: now.toISOString() }, now)).toBe(false);
   });
 });
 
@@ -91,6 +116,29 @@ describe('canDownloadVersion', () => {
 
   it('refuses everything for a revoked license', () => {
     expect(canDownloadVersion({ status: 'revoked', updates_until: '2027-01-01T00:00:00.000Z' },
+      { released_at: '2026-01-01T00:00:00.000Z' })).toBe(false);
+  });
+
+  it('refuses a null released_at instead of treating it as the epoch', () => {
+    expect(canDownloadVersion(expired, { released_at: null })).toBe(false);
+  });
+
+  it('refuses an undefined released_at', () => {
+    expect(canDownloadVersion(expired, { released_at: undefined })).toBe(false);
+  });
+
+  it('refuses a released_at that does not parse as a date', () => {
+    expect(canDownloadVersion(expired, { released_at: 'not a date' })).toBe(false);
+  });
+
+  it('refuses a version record with no released_at field at all', () => {
+    expect(canDownloadVersion(expired, {})).toBe(false);
+  });
+
+  it('refuses when the license itself has an invalid updates_until', () => {
+    expect(canDownloadVersion({ status: 'active', updates_until: null },
+      { released_at: '2026-01-01T00:00:00.000Z' })).toBe(false);
+    expect(canDownloadVersion({ status: 'active', updates_until: 'not a date' },
       { released_at: '2026-01-01T00:00:00.000Z' })).toBe(false);
   });
 });

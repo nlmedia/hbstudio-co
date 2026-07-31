@@ -33,13 +33,31 @@ export function generateLicenseKey(randomBytesFn = randomBytes) {
 export const SEATS_BY_TIER = { single: 1, extended: 5 };
 
 /**
+ * True only for values that produce a real, non-epoch-by-default calendar date.
+ * `new Date(null)` silently resolves to the 1970 epoch instead of failing, so
+ * null/undefined must be rejected explicitly before ever reaching `new Date`.
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+function isValidDateInput(value) {
+  if (value === null || value === undefined) return false;
+  return !Number.isNaN(new Date(value).getTime());
+}
+
+/**
  * @param {string} tier
  * @returns {number}
  */
 export function seatsForTier(tier) {
-  const seats = SEATS_BY_TIER[tier];
-  if (!seats) throw new Error(`Unknown tier: ${tier}`);
-  return seats;
+  // Object.hasOwn (not `tier in SEATS_BY_TIER` or `SEATS_BY_TIER[tier]`) so that
+  // inherited Object.prototype keys like 'constructor' or 'toString' can never
+  // be mistaken for a real tier — this table is fed by unauthenticated request
+  // bodies (netlify/functions/create-checkout.mjs), so prototype-chain lookups
+  // are an exploitable gap, not a theoretical one.
+  if (typeof tier !== 'string' || !Object.hasOwn(SEATS_BY_TIER, tier)) {
+    throw new Error(`Unknown tier: ${tier}`);
+  }
+  return SEATS_BY_TIER[tier];
 }
 
 /**
@@ -48,6 +66,9 @@ export function seatsForTier(tier) {
  * @returns {string} ISO 8601
  */
 export function updatesUntilFrom(purchasedAt) {
+  if (!isValidDateInput(purchasedAt)) {
+    throw new Error(`updatesUntilFrom: invalid purchase date: ${purchasedAt}`);
+  }
   const d = new Date(purchasedAt);
   d.setUTCFullYear(d.getUTCFullYear() + 1);
   return d.toISOString();
@@ -66,11 +87,20 @@ export function hasActiveUpdates(license, now = new Date()) {
 /**
  * Is this version downloadable? An expired license keeps access to versions
  * released DURING its entitlement period, and to nothing more.
+ *
+ * This decides a commercial entitlement, so a malformed record must be
+ * refused, never granted by default: a null/undefined/unparsable
+ * `released_at` (e.g. a `hb_template_versions` row missing the field) or
+ * `updates_until` returns false rather than being coerced to the 1970 epoch
+ * by `new Date(null)`.
  * @param {License} license
  * @param {TemplateVersion} version
  * @returns {boolean}
  */
 export function canDownloadVersion(license, version) {
   if (license.status !== 'active') return false;
+  if (!isValidDateInput(license.updates_until) || !isValidDateInput(version.released_at)) {
+    return false;
+  }
   return new Date(version.released_at) <= new Date(license.updates_until);
 }
