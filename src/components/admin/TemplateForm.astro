@@ -21,20 +21,20 @@ const label = 'block text-xs font-medium text-ink/70 mb-1.5';
         {[['draft','Brouillon'],['published','Publié'],['coming-soon','Bientôt']].map(([o, lbl]) => <option value={o} selected={(t.status??'draft')===o}>{lbl}</option>)}
       </select>
     </label>
-    <label><span class={label}>Prix (€, vide = aucun)</span><input class={field} name="price" type="number" step="1" value={t.price ?? ''} /></label>
-    <label><span class={label}>Prix Extended — 5 sites (€, vide = niveau indisponible)</span><input class={field} name="extended_price" type="number" step="1" value={t.extended_price ?? ''} /></label>
-    <label><span class={label}>Ordre de tri</span><input class={field} name="sort_order" type="number" value={t.sort_order ?? 100} /></label>
+    <label><span class={label}>Prix (€, vide = aucun)</span><input class={field} name="price" type="number" min="1" step="1" value={t.price ?? ''} /></label>
+    <label><span class={label}>Prix Extended — 5 sites (€, vide = niveau indisponible)</span><input class={field} name="extended_price" type="number" min="1" step="1" value={t.extended_price ?? ''} /></label>
   </div>
-  <div class="grid gap-4 sm:grid-cols-3">
+  <div class="grid gap-4 sm:grid-cols-4">
     <label><span class={label}>Slug du thème WordPress (dossier)</span><input class={field} name="theme_slug" value={t.theme_slug ?? ''} placeholder="ex. hb-atelier" /></label>
     <label><span class={label}>WordPress minimum</span><input class={field} name="requires_wp" value={t.requires_wp ?? ''} placeholder="ex. 6.4" /></label>
     <label><span class={label}>PHP minimum</span><input class={field} name="requires_php" value={t.requires_php ?? ''} placeholder="ex. 8.1" /></label>
+    <label><span class={label}>Ordre de tri</span><input class={field} name="sort_order" type="number" value={t.sort_order ?? 100} /></label>
   </div>
   <label class="flex items-center gap-2 text-sm"><input type="checkbox" name="featured" checked={!!t.featured} /> Mis en avant sur l'accueil</label>
 
   <fieldset class="grid gap-4 rounded-2xl border border-line p-4 sm:grid-cols-2">
     <legend class="px-2 text-xs font-semibold uppercase tracking-wide text-muted">Promotion (optionnel)</legend>
-    <label><span class={label}>Prix promo (€, vide = pas de promo)</span><input class={field} name="sale_price" type="number" step="1" value={t.sale_price ?? ''} placeholder="ex. 129" /></label>
+    <label><span class={label}>Prix promo (€, vide = pas de promo)</span><input class={field} name="sale_price" type="number" min="1" step="1" value={t.sale_price ?? ''} placeholder="ex. 129" /></label>
     <label>
       <span class={label}>Fin de la promo (vide = sans limite)</span>
       <input class={field} type="datetime-local" data-sale-ends-local />
