@@ -1,0 +1,370 @@
+---
+export const prerender = false;
+import Admin from '../../../layouts/Admin.astro';
+import { updatesUntilFrom } from '../../../lib/license.mjs';
+
+const supabase = Astro.locals.supabase!;
+const adminEmail = Astro.locals.user?.email ?? '';
+const id = Astro.params.id!;
+let error = '';
+
+const fmtDate = (d: string) => new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+const fmtDateTime = (d: string) => new Date(d).toLocaleString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+const tierLabel: Record<string, string> = { single: 'Single', extended: 'Extended' };
+
+/**
+ * A failed admin write must never happen silently -- log it server-side
+ * (Netlify/Astro function logs) even though the page still shows the human
+ * `error` message above.
+ */
+function logAdminError(scope: string, err: unknown) {
+  console.error(`[admin/licenses/${id}] ${scope}`, err);
+}
+
+/** Human-facing trail: who did what, from the admin UI. */
+async function writeAudit(action: string, detail: Record<string, unknown>) {
+  const { error: e } = await supabase.from('hb_audit_log').insert({ actor: adminEmail, action, detail });
+  if (e) logAdminError(`hb_audit_log insert (${action})`, e);
+}
+
+/** Technical trail: shared with the license-server API log (activate/validate/...). */
+async function writeEvent(event: string, detail: Record<string, unknown>) {
+  const { error: e } = await supabase.from('hb_license_events').insert({ license_id: id, event, detail });
+  if (e) logAdminError(`hb_license_events insert (${event})`, e);
+}
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const action = form.get('_action');
+
+  if (action === 'revoke') {
+    // .eq('status', 'active') makes this idempotent: a double-submit or a
+    // stale tab can never revoke twice / double-write the trail.
+    const { data: updated, error: e } = await supabase
+      .from('hb_licenses')
+      .update({ status: 'revoked' })
+      .eq('id', id)
+      .eq('status', 'active')
+      .select('id, key');
+    if (e) {
+      error = `La révocation a échoué : ${e.message}`;
+      logAdminError('revoke', e);
+    } else if (!updated || updated.length === 0) {
+      error = "Cette licence n'est plus active (déjà révoquée ?) -- rien n'a été modifié.";
+    } else {
+      await writeEvent('revoke', { actor: adminEmail });
+      await writeAudit('license.revoke', { license_id: id, key: updated[0].key });
+      return Astro.redirect(`/admin/licenses/${id}?ok=revoked`);
+    }
+  }
+
+  if (action === 'reactivate') {
+    const { data: updated, error: e } = await supabase
+      .from('hb_licenses')
+      .update({ status: 'active' })
+      .eq('id', id)
+      .eq('status', 'revoked')
+      .select('id, key');
+    if (e) {
+      error = `La réactivation a échoué : ${e.message}`;
+      logAdminError('reactivate', e);
+    } else if (!updated || updated.length === 0) {
+      error = "Cette licence n'est pas révoquée -- rien n'a été modifié.";
+    } else {
+      // Not written to hb_license_events: that table's `event` check constraint
+      // only allows activate/deactivate/validate/revoke/reassign/extend, and
+      // "reactivate" is a distinct concept from a site "activate" event.
+      await writeAudit('license.reactivate', { license_id: id, key: updated[0].key });
+      return Astro.redirect(`/admin/licenses/${id}?ok=reactivated`);
+    }
+  }
+
+  if (action === 'extend') {
+    const { data: current, error: readErr } = await supabase
+      .from('hb_licenses')
+      .select('id, key, updates_until')
+      .eq('id', id)
+      .maybeSingle();
+    if (readErr || !current) {
+      error = `Impossible de lire la licence : ${readErr?.message ?? 'introuvable'}`;
+      logAdminError('extend:read', readErr);
+    } else {
+      // The trap: extending a license whose updates already lapsed must give
+      // 12 FULL months starting today, not 12 months tacked onto a date that
+      // already passed (which would hand back only the unused remainder).
+      // So the 12-month addition always starts from whichever is LATER:
+      // today, or the current expiry.
+      const now = new Date();
+      const base = new Date(current.updates_until) > now ? current.updates_until : now.toISOString();
+      const newUntil = updatesUntilFrom(base);
+      const { error: e } = await supabase.from('hb_licenses').update({ updates_until: newUntil }).eq('id', id);
+      if (e) {
+        error = `La prolongation a échoué : ${e.message}`;
+        logAdminError('extend:write', e);
+      } else {
+        await writeEvent('extend', { actor: adminEmail, previous_updates_until: current.updates_until, new_updates_until: newUntil });
+        await writeAudit('license.extend', {
+          license_id: id,
+          key: current.key,
+          previous_updates_until: current.updates_until,
+          new_updates_until: newUntil,
+        });
+        return Astro.redirect(`/admin/licenses/${id}?ok=extended&until=${encodeURIComponent(newUntil)}`);
+      }
+    }
+  }
+
+  if (action === 'reassign') {
+    const newEmail = String(form.get('new_email') ?? '').trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+      error = 'Adresse e-mail invalide.';
+    } else {
+      const { data: current } = await supabase.from('hb_licenses').select('email, key').eq('id', id).maybeSingle();
+      // Detach user_id so the new holder can re-claim the license on their
+      // first login (phase 2's hb_claim_licenses matches by lower(email)).
+      const { data: updated, error: e } = await supabase
+        .from('hb_licenses')
+        .update({ email: newEmail, user_id: null })
+        .eq('id', id)
+        .select('id');
+      if (e) {
+        error = `La réattribution a échoué : ${e.message}`;
+        logAdminError('reassign', e);
+      } else if (!updated || updated.length === 0) {
+        error = 'Licence introuvable -- rien n\'a été modifié.';
+      } else {
+        await writeEvent('reassign', { actor: adminEmail, previous_email: current?.email, new_email: newEmail });
+        await writeAudit('license.reassign', {
+          license_id: id,
+          key: current?.key,
+          previous_email: current?.email,
+          new_email: newEmail,
+        });
+        return Astro.redirect(`/admin/licenses/${id}?ok=reassigned`);
+      }
+    }
+  }
+}
+
+const { data: license } = await supabase
+  .from('hb_licenses')
+  .select('*, hb_templates(title, slug, cms)')
+  .eq('id', id)
+  .maybeSingle();
+if (!license) return Astro.redirect('/admin/licenses');
+
+const { data: activations } = await supabase
+  .from('hb_activations')
+  .select('*')
+  .eq('license_id', id)
+  .order('activated_at', { ascending: false });
+
+const { data: events } = await supabase
+  .from('hb_license_events')
+  .select('*')
+  .eq('license_id', id)
+  .order('created_at', { ascending: false })
+  .limit(20);
+
+const seatsConsumed = (activations ?? []).filter((a) => a.deactivated_at == null && a.is_dev === false).length;
+const now = Date.now();
+const updatesExpired = new Date(license.updates_until).getTime() < now;
+const isShopify = license.hb_templates?.cms === 'shopify';
+
+// Flash message derived from the redirect after a successful action.
+const okParam = Astro.url.searchParams.get('ok');
+const flashMap: Record<string, string> = {
+  revoked: 'Licence révoquée.',
+  reactivated: 'Licence réactivée.',
+  reassigned: 'Licence réattribuée au nouvel e-mail.',
+};
+let flash = okParam && flashMap[okParam] ? flashMap[okParam] : '';
+if (okParam === 'extended') {
+  const until = Astro.url.searchParams.get('until');
+  flash = until ? `Licence prolongée de 12 mois -- mises à jour jusqu'au ${fmtDate(until)}.` : 'Licence prolongée de 12 mois.';
+}
+
+const eventLabel: Record<string, string> = {
+  activate: 'Activation',
+  deactivate: 'Désactivation',
+  validate: 'Validation',
+  revoke: 'Révocation',
+  reassign: 'Réattribution',
+  extend: 'Prolongation',
+};
+---
+<Admin title={`Licence ${license.key}`} active="licenses" email={adminEmail}>
+  {flash && <p class="mb-5 rounded-xl bg-[#e6f4ea] px-4 py-3 text-sm text-[#1e7d34]">{flash}</p>}
+  {error && <p class="mb-5 rounded-xl bg-[#fbeaea] px-4 py-3 text-sm text-[#b3261e]">{error}</p>}
+
+  <div class="mb-5">
+    <a href="/admin/licenses" class="text-sm font-medium text-muted hover:text-ink">← Retour aux licences</a>
+  </div>
+
+  <!-- Key + summary -->
+  <div class="mb-6 rounded-2xl border border-line bg-surface p-6">
+    <div class="flex flex-wrap items-start justify-between gap-4">
+      <div>
+        <p class="text-xs uppercase tracking-wide text-muted">Clé de licence</p>
+        <p class="mt-1 font-mono text-2xl font-bold tracking-wide">{license.key}</p>
+      </div>
+      <span class:list={['rounded-full px-3 py-1 text-xs font-medium', license.status === 'revoked' ? 'bg-[#fbeaea] text-[#b3261e]' : 'bg-[#e6f4ea] text-[#1e7d34]']}>
+        {license.status === 'revoked' ? 'Révoquée' : 'Active'}
+      </span>
+    </div>
+
+    <div class="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div>
+        <p class="text-xs text-muted">Template</p>
+        <p class="mt-1 font-medium">{license.hb_templates?.title ?? '—'}</p>
+      </div>
+      <div>
+        <p class="text-xs text-muted">Niveau</p>
+        <p class="mt-1 font-medium">{tierLabel[license.tier] ?? license.tier}</p>
+      </div>
+      <div>
+        <p class="text-xs text-muted">Sièges consommés</p>
+        <p class="mt-1 font-medium">{seatsConsumed} / {license.seats}</p>
+      </div>
+      <div>
+        <p class="text-xs text-muted">Client</p>
+        <p class="mt-1 font-medium">{license.email}</p>
+      </div>
+      <div>
+        <p class="text-xs text-muted">Achetée le</p>
+        <p class="mt-1 font-medium">{fmtDate(license.created_at)}</p>
+      </div>
+      <div>
+        <p class="text-xs text-muted">Mises à jour</p>
+        <p class="mt-1">
+          {updatesExpired
+            ? <span class="rounded-full bg-accent-soft px-2.5 py-1 text-xs font-medium text-accent">Échues depuis {fmtDate(license.updates_until)}</span>
+            : <span class="rounded-full bg-[#e6f4ea] px-2.5 py-1 text-xs font-medium text-[#1e7d34]">Jusqu'au {fmtDate(license.updates_until)}</span>}
+        </p>
+      </div>
+    </div>
+
+    <p class="mt-5 text-xs text-muted">
+      Une licence reste valable à vie pour l'usage du template, même quand les mises à jour sont échues : seul le droit de télécharger de nouvelles versions expire. Le statut ci-dessus ne connaît que « Active » et « Révoquée ».
+    </p>
+  </div>
+
+  <!-- Actions -->
+  <div class="mb-6 rounded-2xl border border-line bg-surface p-6">
+    <h2 class="font-display text-lg font-semibold">Actions</h2>
+    <div class="mt-4 flex flex-wrap items-center gap-3">
+      {license.status === 'active' && (
+        <form method="POST" action={`/admin/licenses/${id}`} onsubmit="return confirm('Révoquer cette licence ?\n\nLe client perd immédiatement le droit d\'utiliser le template : le thème se désactivera à la prochaine vérification en ligne. Cette action reste réversible via « Réactiver ».')">
+          <input type="hidden" name="_action" value="revoke" />
+          <button class="rounded-full bg-[#b3261e] px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90">Révoquer</button>
+        </form>
+      )}
+      {license.status === 'revoked' && (
+        <form method="POST" action={`/admin/licenses/${id}`}>
+          <input type="hidden" name="_action" value="reactivate" />
+          <button class="rounded-full bg-ink px-4 py-2.5 text-sm font-medium text-paper transition hover:opacity-90">Réactiver</button>
+        </form>
+      )}
+      <form method="POST" action={`/admin/licenses/${id}`}>
+        <input type="hidden" name="_action" value="extend" />
+        <button class="rounded-full border border-line px-4 py-2.5 text-sm font-medium transition hover:bg-surface-2">Prolonger de 12 mois</button>
+      </form>
+    </div>
+
+    <div class="mt-6 border-t border-line pt-5">
+      <form method="POST" action={`/admin/licenses/${id}`} class="flex flex-wrap items-end gap-3" onsubmit="return confirm('Réattribuer cette licence à un autre e-mail ?\n\nLe compte client actuel (le cas échéant) sera détaché ; le nouveau titulaire pourra revendiquer la licence à sa prochaine connexion.')">
+        <input type="hidden" name="_action" value="reassign" />
+        <div>
+          <label class="mb-1 block text-xs font-medium text-ink/70" for="new_email">Réattribuer à un autre e-mail</label>
+          <input id="new_email" name="new_email" type="email" required placeholder="client@exemple.com" class="w-64 rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-accent" />
+        </div>
+        <button type="submit" class="rounded-full border border-line px-4 py-2.5 text-sm font-medium transition hover:bg-surface-2">Réattribuer</button>
+      </form>
+      <p class="mt-2 text-xs text-muted">Corrige une faute de frappe à l'encaissement. Remet aussi le compte client à zéro (`user_id`) : la licence redevient revendicable par le nouveau titulaire.</p>
+    </div>
+  </div>
+
+  <!-- Activations -->
+  <div class="mb-6 overflow-hidden rounded-2xl border border-line bg-surface">
+    <div class="border-b border-line px-6 py-4">
+      <h2 class="font-display text-lg font-semibold">Sites activés</h2>
+      <p class="text-xs text-muted">Un siège est consommé quand un site est actif et n'est pas marqué « dev ».</p>
+    </div>
+    <table class="w-full text-sm">
+      <thead class="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
+        <tr>
+          <th class="px-6 py-3 font-medium">Domaine</th>
+          <th class="px-6 py-3 font-medium">Plateforme</th>
+          <th class="px-6 py-3 font-medium">Dev</th>
+          <th class="px-6 py-3 font-medium">Dernière vue</th>
+          <th class="px-6 py-3 font-medium">État</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-line">
+        {(activations ?? []).map((a: any) => (
+          <tr>
+            <td class="px-6 py-3 font-medium">{a.domain}</td>
+            <td class="px-6 py-3 text-muted">{a.platform ?? '—'}</td>
+            <td class="px-6 py-3 text-muted">{a.is_dev ? 'Oui' : '—'}</td>
+            <td class="px-6 py-3 text-muted">{a.last_seen_at ? fmtDateTime(a.last_seen_at) : '—'}</td>
+            <td class="px-6 py-3">
+              {a.deactivated_at
+                ? <span class="rounded-full bg-surface-2 px-2.5 py-1 text-xs font-medium text-muted">Libéré le {fmtDate(a.deactivated_at)}</span>
+                : <span class="rounded-full bg-[#e6f4ea] px-2.5 py-1 text-xs font-medium text-[#1e7d34]">Actif</span>}
+            </td>
+          </tr>
+        ))}
+        {(!activations || activations.length === 0) && (
+          <tr>
+            <td colspan="5" class="px-6 py-12 text-center text-muted">
+              {isShopify ? (
+                <>
+                  Aucun site activé -- et il n'y en aura jamais pour un template Shopify.<br />
+                  <span class="text-xs">Les templates Shopify ne s'activent pas par clé de licence : le client les installe directement dans le thème de sa boutique.</span>
+                </>
+              ) : (
+                <>
+                  Aucun site activé pour l'instant.<br />
+                  <span class="text-xs">L'activation par clé de licence arrive en phase 3. Dès qu'un site WooCommerce s'enregistrera avec cette clé, il apparaîtra ici.</span>
+                </>
+              )}
+            </td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Technical log -->
+  <div class="overflow-hidden rounded-2xl border border-line bg-surface">
+    <div class="border-b border-line px-6 py-4">
+      <h2 class="font-display text-lg font-semibold">Journal technique</h2>
+      <p class="text-xs text-muted">Les 20 derniers événements enregistrés pour cette licence.</p>
+    </div>
+    <table class="w-full text-sm">
+      <thead class="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
+        <tr>
+          <th class="px-6 py-3 font-medium">Événement</th>
+          <th class="px-6 py-3 font-medium">Domaine</th>
+          <th class="px-6 py-3 font-medium">Détail</th>
+          <th class="px-6 py-3 font-medium">Date</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-line">
+        {(events ?? []).map((ev: any) => (
+          <tr>
+            <td class="px-6 py-3 font-medium">{eventLabel[ev.event] ?? ev.event}</td>
+            <td class="px-6 py-3 text-muted">{ev.domain ?? '—'}</td>
+            <td class="px-6 py-3 font-mono text-xs text-muted">{ev.detail ? JSON.stringify(ev.detail) : '—'}</td>
+            <td class="px-6 py-3 text-muted">{fmtDateTime(ev.created_at)}</td>
+          </tr>
+        ))}
+        {(!events || events.length === 0) && (
+          <tr>
+            <td colspan="4" class="px-6 py-12 text-center text-muted">Aucun événement enregistré pour le moment.</td>
+          </tr>
+        )}
+      </tbody>
+    </table>
+  </div>
+</Admin>
