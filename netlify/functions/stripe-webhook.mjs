@@ -33,6 +33,29 @@ function sign(secret, slug, email, exp) {
 }
 
 /**
+ * Whether a Stripe Charge has been refunded IN FULL, not just partially.
+ *
+ * `charge.refunded` fires on any refund, partial included, so this decides
+ * whether it should revoke the license. `amount` (the charge's original
+ * amount) and `amount_refunded` (cumulative amount refunded so far, can be
+ * less than `amount` for a partial refund) are both confirmed top-level
+ * fields on the Charge object in node_modules/stripe/types/Charges.d.ts
+ * (lines 25 and 35) -- both integers in the smallest currency unit, so a
+ * direct comparison is exact, no float rounding involved. `>=` rather than
+ * `===` only as a defensive guard against an over-refund Stripe should never
+ * actually send.
+ *
+ * Kept pure and exported so the partial/total distinction can be verified
+ * against hand-built Charge objects without a server or a database.
+ *
+ * @param {{amount: number, amount_refunded: number}} charge
+ * @returns {boolean}
+ */
+export function isFullRefund(charge) {
+  return (charge.amount_refunded ?? 0) >= (charge.amount ?? 0);
+}
+
+/**
  * Formats an ISO date string for a French reader. A malformed or missing value
  * must never surface as "Invalid Date", "undefined" or "null" in a customer email.
  */
@@ -241,6 +264,17 @@ export default async (req) => {
       } else if (!sales || sales.length === 0) {
         // Refunded money with no sale to tie it to -- a human needs to reconcile this by hand.
         logError('stripe-webhook:revoke', `${event.type}: no sale found for payment_intent ${paymentIntentId} -- refund/dispute could not be applied to any license`);
+      } else if (event.type === 'charge.refunded' && !isFullRefund(obj)) {
+        // Only a full refund revokes the license -- a partial goodwill refund must
+        // not cost the customer their whole theme. Not an error, but still a
+        // commercial event worth a trace: logged with both amounts and every sale
+        // it would have applied to, same as the other logError calls in this block.
+        for (const sale of sales) {
+          logError(
+            'stripe-webhook:revoke',
+            `charge.refunded: partial refund for sale ${sale.id} (payment_intent ${paymentIntentId}) -- amount_refunded=${obj.amount_refunded} of amount=${obj.amount} -- license NOT revoked`
+          );
+        }
       } else {
         for (const sale of sales) {
           try {
