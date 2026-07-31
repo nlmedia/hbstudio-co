@@ -118,16 +118,14 @@ drop policy if exists hb_activations_admin_all on public.hb_activations;
 create policy hb_activations_admin_all on public.hb_activations
   for all to authenticated using (public.hb_is_admin()) with check (public.hb_is_admin());
 
-drop policy if exists hb_template_versions_owner_read on public.hb_template_versions;
-create policy hb_template_versions_owner_read on public.hb_template_versions
-  for select to authenticated using (
-    public.hb_is_admin()
-    or exists (
-      select 1 from public.hb_licenses l
-      where l.template_id = hb_template_versions.template_id
-        and l.user_id = auth.uid()
-    )
-  );
+-- No client read policy here, deliberately. The `package` column is a storage
+-- path in the private "deliverables" bucket, and spec §10.1 requires that this
+-- path never reach the client in any form. RLS cannot restrict access at the
+-- column level, only the row level, so any client-facing SELECT policy on this
+-- table — even one filtered by license status or updates_until — would still
+-- hand back `package` to whoever the row is visible to. Phase 2 will expose
+-- version metadata to clients through a `security definer` RPC that omits
+-- `package` and filters by entitlement (§5.4) instead of a table-level policy.
 drop policy if exists hb_template_versions_admin_all on public.hb_template_versions;
 create policy hb_template_versions_admin_all on public.hb_template_versions
   for all to authenticated using (public.hb_is_admin()) with check (public.hb_is_admin());
