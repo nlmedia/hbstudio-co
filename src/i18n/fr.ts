@@ -173,6 +173,20 @@ export const fr: Dictionary = {
       body:
         'HB Studio Co est un petit studio indépendant. Nous construisons des thèmes premium, orientés conversion, pour les plateformes sur lesquelles les marchands vendent vraiment — puis nous les documentons sérieusement, parce qu’un thème que personne n’arrive à configurer n’est pas un thème fini.',
     },
+    story: {
+      eyebrow: 'Derrière le studio',
+      heading: 'Une créatrice, une exigence.',
+      lead:
+        'HB Studio Co, c’est le studio de Célia Garnier : indépendant, volontairement petit, et comptable devant les gens qui installent ce qu’il livre.',
+      paras: [
+        'La plupart des thèmes sont dessinés une fois, puis livrés. Les nôtres sont dessinés, construits, puis démontés et refaits autour de ce qu’un marchand manipule vraiment — la fiche produit, le panier, les trente secondes où quelqu’un décide. Le seul design qui mérite d’être vendu est celui qui a survécu au contact d’un vrai catalogue.',
+        'C’est aussi pour cela que le catalogue est court. Un studio qui sort quatre thèmes par mois ne conçoit plus, il assemble. Nous préférons livrer un thème que nous recommanderons encore dans trois ans.',
+        'Le reste tient à la discipline. Un thème est mis en vente quand la documentation est écrite, quand la démo peut être reconstruite à partir de cette seule documentation, et quand les scores de performance disent la même chose que les captures d’écran. Pas avant.',
+      ],
+      portraitCaption: 'Célia Garnier',
+      portraitRole: 'Fondatrice & créatrice',
+      portraitAlt: 'Célia Garnier, fondatrice de HB Studio Co',
+    },
     whatWeDo: {
       heading: 'Ce que nous faisons',
       body:

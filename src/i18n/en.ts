@@ -193,6 +193,24 @@ export const en = {
       body:
         'HB Studio Co is a small independent studio. We build premium, conversion-focused themes for the platforms merchants actually sell on — then we document them properly, because a theme nobody can configure is not finished.',
     },
+    // The founder is a real person. Nothing here states a verifiable fact
+    // about her life, career or history — only the studio's method and
+    // standards, which are ours to describe and hers to amend. Her photo,
+    // her own words and any biography go in the marked slots on the page.
+    story: {
+      eyebrow: 'Behind the studio',
+      heading: 'One designer, one standard.',
+      lead:
+        'HB Studio Co is Célia Garnier’s studio: independent, deliberately small, and answerable to the people who install what it ships.',
+      paras: [
+        'Most themes are drawn once and shipped. Ours are drawn, then built, then taken apart and rebuilt around the parts a merchant actually touches — the product page, the cart, the thirty seconds where someone decides. Design that has survived contact with a real catalogue is the only design worth selling.',
+        'That is also why the catalogue is short. A studio releasing four themes a month is not designing, it is assembling. We would rather ship one theme we still recommend three years from now.',
+        'The rest is discipline. A theme goes on sale when the documentation is written, when the demo can be rebuilt from that documentation alone, and when the performance scores agree with the screenshots. Not before.',
+      ],
+      portraitCaption: 'Célia Garnier',
+      portraitRole: 'Founder & designer',
+      portraitAlt: 'Célia Garnier, founder of HB Studio Co',
+    },
     whatWeDo: {
       heading: 'What we do',
       body:
