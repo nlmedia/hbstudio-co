@@ -1,0 +1,292 @@
+---
+/**
+ * Hero visual: a storefront assembling itself.
+ *
+ * This replaces the tilted screenshot mockup that used to sit here. A cropped,
+ * auto-scrolling photograph of a theme read as a stock image and, worse, it put
+ * the theme's own headline in competition with ours.
+ *
+ * What is drawn instead is the product itself, abstracted: sections dropping
+ * into place, a product grid, the cart drawer sliding open, and the
+ * performance score counting up. Those are the four things the copy claims, so
+ * the visual argues the same case the words do.
+ *
+ * No image, no JavaScript, no library — pure CSS on ~40 elements. The page
+ * sells speed, so its hero is not allowed to cost anything.
+ *
+ * Accessibility: entirely decorative and hidden from assistive tech. Every
+ * element's resting style IS the finished state, and each keyframe runs from
+ * hidden to that state with `backwards` fill. So when the global
+ * prefers-reduced-motion rule kills animations, the storefront simply appears
+ * fully assembled instead of vanishing — which is the failure mode you get if
+ * you build the assembled state inside the keyframes.
+ */
+---
+<div class="composer" aria-hidden="true">
+  <div class="composer__frame">
+    <!-- browser chrome -->
+    <div class="composer__bar">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="url"></span>
+    </div>
+
+    <div class="composer__canvas">
+      <!-- site nav -->
+      <div class="blk nav">
+        <span class="mark"></span>
+        <span class="navline w-10"></span>
+        <span class="navline w-8"></span>
+        <span class="navline w-12"></span>
+        <span class="cart"></span>
+      </div>
+
+      <!-- hero band -->
+      <div class="blk hero">
+        <span class="ln ln-1"></span>
+        <span class="ln ln-2"></span>
+        <span class="btn"></span>
+      </div>
+
+      <!-- product grid -->
+      <div class="grid">
+        <div class="card c1"><span class="tag"></span></div>
+        <div class="card c2"><span class="tag"></span></div>
+        <div class="card c3"><span class="tag"></span></div>
+      </div>
+
+      <!-- footer band -->
+      <div class="blk foot"></div>
+
+      <!-- Scrim, timed to the drawer: a real cart drawer dims the page behind
+           it, and without that the drawer reads as a panel welded to the
+           layout rather than something that opened over it. -->
+      <span class="scrim"></span>
+
+      <!-- cart drawer, opening and closing on a slow loop -->
+      <aside class="drawer">
+        <span class="drawer__head"></span>
+        <span class="drawer__row"></span>
+        <span class="drawer__row short"></span>
+        <span class="drawer__cta"></span>
+      </aside>
+    </div>
+  </div>
+
+  <!-- performance badge -->
+  <div class="score">
+    <svg viewBox="0 0 44 44" class="score__ring">
+      <circle cx="22" cy="22" r="19" class="score__track" />
+      <circle cx="22" cy="22" r="19" class="score__value" />
+    </svg>
+    <span class="score__num">100</span>
+  </div>
+</div>
+
+<style>
+  /* ---- shell ---------------------------------------------------------- */
+  .composer {
+    position: relative;
+    width: 100%;
+    max-width: 34rem;
+    margin-inline: auto;
+  }
+
+  .composer__frame {
+    position: relative;
+    border: 1px solid var(--color-hair);
+    border-radius: var(--radius);
+    background: var(--color-panel);
+    overflow: hidden;
+    box-shadow: 0 40px 90px -40px rgb(0 0 0 / 0.6);
+    animation: frame-in 0.9s var(--ease) backwards;
+  }
+
+  .composer__bar {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--color-hair);
+  }
+  .dot { width: 7px; height: 7px; border-radius: 999px; background: var(--color-hair-strong); }
+  .url {
+    margin-left: 10px;
+    height: 14px;
+    flex: 1;
+    max-width: 190px;
+    border-radius: 999px;
+    background: var(--color-panel-2);
+  }
+
+  .composer__canvas {
+    position: relative;
+    padding: 14px;
+    display: grid;
+    gap: 10px;
+    /* Fixed ratio so the hero column never reflows as blocks animate in. */
+    aspect-ratio: 4 / 3.1;
+    grid-template-rows: auto auto 1fr auto;
+  }
+
+  /* ---- blocks --------------------------------------------------------- */
+  .blk {
+    border-radius: calc(var(--radius) / 2);
+    background: var(--color-panel-2);
+    animation: block-in 0.7s var(--ease) backwards;
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 12px;
+    animation-delay: 0.35s;
+  }
+  .mark { width: 16px; height: 16px; border-radius: 5px; background: var(--color-signal); }
+  .navline { height: 5px; border-radius: 999px; background: var(--color-hair-strong); }
+  .w-8 { width: 22px; } .w-10 { width: 30px; } .w-12 { width: 38px; }
+  .cart { margin-left: auto; width: 16px; height: 16px; border-radius: 5px; background: var(--color-hair-strong); }
+
+  .hero {
+    display: grid;
+    gap: 9px;
+    padding: 20px 16px 22px;
+    animation-delay: 0.5s;
+  }
+  .ln { height: 11px; border-radius: 999px; background: var(--color-hair-strong); }
+  .ln-1 { width: 78%; }
+  .ln-2 { width: 52%; }
+  .btn {
+    margin-top: 5px;
+    width: 88px;
+    height: 22px;
+    border-radius: 999px;
+    background: var(--color-signal);
+    animation: block-in 0.6s var(--ease) 0.95s backwards;
+  }
+
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .card {
+    position: relative;
+    border-radius: calc(var(--radius) / 2);
+    background: var(--color-panel-2);
+    animation: card-in 0.65s var(--ease) backwards, card-sweep 6s var(--ease) infinite;
+    min-height: 74px;
+  }
+  .c1 { animation-delay: 1.05s, 3.4s; }
+  .c2 { animation-delay: 1.2s,  3.7s; }
+  .c3 { animation-delay: 1.35s, 4.0s; }
+  .tag {
+    position: absolute;
+    left: 8px; bottom: 8px;
+    width: 46%;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--color-hair-strong);
+  }
+
+  .foot { height: 26px; animation-delay: 1.5s; }
+
+  /* ---- cart drawer ----------------------------------------------------- */
+  .scrim {
+    position: absolute;
+    inset: 0;
+    background: rgb(0 0 0 / 0.45);
+    pointer-events: none;
+    animation: scrim 7s var(--ease) 2.2s infinite backwards;
+  }
+
+  .drawer {
+    position: absolute;
+    top: 14px; right: 14px; bottom: 14px;
+    width: 38%;
+    display: grid;
+    align-content: start;
+    gap: 9px;
+    padding: 13px;
+    border-radius: calc(var(--radius) / 2);
+    border: 1px solid var(--color-hair);
+    background: var(--color-panel);
+    box-shadow: -24px 0 50px -20px rgb(0 0 0 / 0.55);
+    /* Slides in, holds while the eye reads it, slides back out. This is the
+       only element that loops after the build-in, which keeps the visual alive
+       without the jarring reset of looping the whole assembly. */
+    animation: drawer 7s var(--ease) 2.2s infinite backwards;
+  }
+  .drawer__head { height: 8px; width: 54%; border-radius: 999px; background: var(--color-hair-strong); }
+  .drawer__row { margin-top: 5px; height: 26px; border-radius: 7px; background: var(--color-panel-2); }
+  .drawer__row.short { width: 76%; }
+  /* Neutral, not vermilion. The storefront's own CTA above is already
+     vermilion; a second one here made the frame read as two competing
+     buttons instead of a page with a drawer over it. */
+  .drawer__cta { margin-top: 6px; height: 20px; border-radius: 999px; background: var(--color-fg); }
+
+  /* ---- performance badge ---------------------------------------------- */
+  .score {
+    position: absolute;
+    left: -14px;
+    bottom: -18px;
+    display: grid;
+    place-items: center;
+    width: 76px;
+    height: 76px;
+    border-radius: 999px;
+    border: 1px solid var(--color-hair);
+    background: var(--color-panel);
+    box-shadow: 0 20px 40px -18px rgb(0 0 0 / 0.6);
+    animation: block-in 0.7s var(--ease) 1.7s backwards;
+  }
+  .score__ring { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+  .score__ring circle { fill: none; stroke-width: 2.5; }
+  .score__track { stroke: var(--color-hair); }
+  .score__value {
+    stroke: var(--color-signal);
+    stroke-linecap: round;
+    /* 2πr for r=19 ≈ 119.4 */
+    stroke-dasharray: 119.4;
+    stroke-dashoffset: 0;
+    animation: score-fill 1.4s var(--ease) 1.9s backwards;
+  }
+  .score__num {
+    font-family: var(--font-mono);
+    font-size: 17px;
+    color: var(--color-fg);
+  }
+
+  /* ---- keyframes ------------------------------------------------------- */
+  @keyframes frame-in {
+    from { opacity: 0; transform: translateY(26px) scale(0.97); }
+  }
+  @keyframes block-in {
+    from { opacity: 0; transform: translateY(14px); }
+  }
+  @keyframes card-in {
+    from { opacity: 0; transform: translateY(18px) scale(0.94); }
+  }
+  /* A quiet highlight passing along the row, so the grid keeps breathing. */
+  @keyframes card-sweep {
+    0%, 100% { background: var(--color-panel-2); }
+    12%      { background: color-mix(in oklab, var(--color-signal) 22%, var(--color-panel-2)); }
+  }
+  @keyframes drawer {
+    0%        { opacity: 0; transform: translateX(130%); }
+    12%, 46%  { opacity: 1; transform: translateX(0); }
+    62%, 100% { opacity: 0; transform: translateX(130%); }
+  }
+  @keyframes scrim {
+    0%, 100%  { opacity: 0; }
+    12%, 46%  { opacity: 1; }
+    62%       { opacity: 0; }
+  }
+  @keyframes score-fill {
+    from { stroke-dashoffset: 119.4; }
+  }
+
+  /* The global reduced-motion rule already sets `animation: none`, which lands
+     every element on its resting style — the finished storefront. The drawer is
+     the one exception: its resting style is mid-loop, so it is pinned open. */
+  @media (prefers-reduced-motion: reduce) {
+    .drawer { opacity: 1; transform: none; }
+    .scrim { opacity: 1; }
+  }
+</style>

@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import TemplateCard from '../components/TemplateCard.astro';
 import DeviceMockup from '../components/DeviceMockup.astro';
+import HeroComposer from '../components/HeroComposer.astro';
 import CmsLogo from '../components/CmsLogo.astro';
 import { CMS, CMS_ORDER } from '../data/cms';
 import { getTemplates } from '../lib/catalog';
@@ -84,10 +85,11 @@ const sectionNo = (n: number) => String(n).padStart(2, '0');
           </dl>
         </div>
 
-        <!-- The product, framed. Its own auto-scroll runs inside the mockup,
-             so the theme is showing itself rather than being described. -->
+        <!-- A storefront assembling itself: sections, product grid, cart
+             drawer, performance score. It argues the same four claims the copy
+             makes, and costs no image request. -->
         <div data-reveal-scale style="transition-delay:300ms" class="hidden lg:block">
-          <DeviceMockup desktop="/templates/atelier/home-full.jpg" mobile="/templates/atelier/home-mobile.jpg" />
+          <HeroComposer />
         </div>
       </div>
     </div>
