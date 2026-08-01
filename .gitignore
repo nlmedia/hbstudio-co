@@ -16,3 +16,8 @@ npm-debug.log*
 .idea/
 # netlify
 .netlify/
+
+# Copies de conflit iCloud : « Fichier 2.ts », « Fichier 3.astro »…
+# Elles reapparaissent seules et deux d'entre elles ont deja ete commitees
+# par accident, dont un composant complet en double.
+* [0-9].*

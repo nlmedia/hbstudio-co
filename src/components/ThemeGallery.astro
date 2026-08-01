@@ -22,8 +22,13 @@ const shots = images.map((src, i) => ({ src, i, caption: getCaption(src) }));
 const pad = (n: number) => String(n + 1).padStart(2, '0');
 ---
 {shots.length > 0 && (
-<section class="on-dark relative overflow-hidden border-y border-hair">
-  <div class="absolute inset-0 z-0" aria-hidden="true">
+<!-- No `overflow-hidden` on this section, deliberately: an ancestor with
+     `overflow: hidden` silently kills `position: sticky` on its descendants,
+     and the pinned viewer below depends on it. The glow is clipped by its own
+     wrapper instead, which achieves the same thing without becoming a
+     scroll container for the whole section. -->
+<section class="on-dark relative border-y border-hair">
+  <div class="absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
     <div class="glow -left-40 top-20 h-[34rem] w-[34rem]" style="background:rgba(240,58,23,0.16)"></div>
   </div>
 
@@ -41,7 +46,9 @@ const pad = (n: number) => String(n + 1).padStart(2, '0');
          sticky viewer. Enhancement, never a requirement. -->
     <div class="gallery mt-14 grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16" data-gallery>
       <!-- sticky viewer (JS only) -->
-      <div class="viewer lg:sticky lg:top-32 lg:self-start">
+      <!-- top-36 clears the fixed header (132px) with a little air; at top-32
+           the frame's chrome slid under the floating pill. -->
+      <div class="viewer lg:sticky lg:top-36 lg:self-start">
         <figure class="overflow-hidden rounded-[var(--radius)] border border-hair bg-panel shadow-[0_40px_90px_-40px_rgba(0,0,0,0.7)]">
           <div class="flex items-center gap-1.5 border-b border-hair px-4 py-3">
             <span class="h-2 w-2 rounded-full bg-hair-strong"></span>
