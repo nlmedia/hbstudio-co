@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isFullRefund, isDisputeWon } from './stripe-webhook.mjs';
+import { isFullRefund, isDisputeWon } from '../../netlify/functions/stripe-webhook.mjs';
 
 describe('isFullRefund', () => {
   it('is true when the whole charge was refunded', () => {

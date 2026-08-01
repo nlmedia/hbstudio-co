@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { resolveAmount } from './_pricing.mjs';
+import { resolveAmount } from '../../netlify/functions/_pricing.mjs';
 
 const now = new Date('2026-07-31T00:00:00.000Z');
 const base = {
