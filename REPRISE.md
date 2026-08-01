@@ -75,18 +75,34 @@ d'environnement : le piège est purement local.
 
 ## 2. CE QUI RESTE À FAIRE
 
-### 🔴 Appliquer la migration RLS — sinon le journal d'audit ne fonctionne pas en production
+### ✅ Migrations appliquées le 2026-08-01
 
-`supabase/migrations/20260731_admin_journal_policies.sql` est **écrite et commitée, mais
-jamais appliquée en base.**
+Les trois migrations en attente ont été appliquées sur le projet `hbstudio` et vérifiées :
 
-Le problème qu'elle corrige : `hb_audit_log` et `hb_license_events` n'ont qu'une politique
-de **lecture**. En développement, le contournement de `src/middleware.ts` utilise la clé
-service-role qui ignore RLS — donc **tous les tests passent**. En production, un admin
-authentifié verra ses licences modifiées mais **les deux journaux resteront vides**, sans
-erreur visible.
+| Migration | Vérification |
+|---|---|
+| `20260731_admin_journal_policies.sql` | `pg_policies` renvoie bien `INSERT` **et** `SELECT` sur `hb_audit_log` et `hb_license_events` |
+| `20260731_license_event_reinstate.sql` | un insert avec `event = 'reinstate'` est désormais **accepté** (il était refusé, code `23514`) |
+| `20260801_template_translations.sql` | les six colonnes `_fr` existent sur `hb_templates` |
 
-Appliquer : Supabase → SQL Editor → coller le fichier → Run. Puis vérifier :
+Le détail de ce que corrigeait chacune est conservé ci-dessous, parce qu'il explique
+*pourquoi* elles existent — utile le jour où il faudra rejouer la base à neuf.
+
+<details>
+<summary>Détail historique des trois migrations</summary>
+
+**Politiques d'écriture sur les journaux.**
+`supabase/migrations/20260731_admin_journal_policies.sql`
+
+Le problème qu'elle corrigeait : `hb_audit_log` et `hb_license_events` n'avaient qu'une
+politique de **lecture**. En développement, le contournement de `src/middleware.ts` utilise
+la clé service-role qui ignore RLS — donc **tous les tests passaient**. En production, un
+admin authentifié aurait vu ses licences modifiées mais **les deux journaux seraient
+restés vides**, sans erreur visible. C'est le meilleur exemple de ce que le contournement
+de développement masque.
+
+Pour la rejouer sur une base neuve : Supabase → SQL Editor → coller le fichier → Run.
+Vérification :
 
 ```sql
 select tablename, policyname, cmd from pg_policies
@@ -95,12 +111,9 @@ where schemaname='public' and tablename in ('hb_audit_log','hb_license_events');
 
 Attendu : une politique `SELECT` **et** une politique `INSERT` sur chacune.
 
-### 🔴 Appliquer la migration `reinstate` — sinon la réactivation après litige gagné n'est pas tracée
+**Valeur `reinstate` du journal.**
 
-`supabase/migrations/20260731_license_event_reinstate.sql` est **écrite et commitée, mais
-jamais appliquée en base**, exactement comme celle ci-dessus.
-
-Elle élargit la contrainte `check` de `hb_license_events.event` à une septième valeur,
+`supabase/migrations/20260731_license_event_reinstate.sql` élargit la contrainte `check` de `hb_license_events.event` à une septième valeur,
 `reinstate`, écrite quand un litige gagné (`charge.dispute.closed` / `status = 'won'`)
 rend au client la licence que l'ouverture du litige avait révoquée — et aussi quand un
 admin réactive une licence à la main depuis `/admin/licenses/[id]`.
@@ -121,6 +134,8 @@ where conname = 'hb_license_events_event_check';
 ```
 
 Attendu : la liste des valeurs contient `reinstate`.
+
+</details>
 
 ### 🔴 Vérifier la phase 1 en conditions réelles
 
