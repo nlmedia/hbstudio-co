@@ -7,6 +7,9 @@ import tailwindcss from '@tailwindcss/vite';
 // Static by default (marketing pages prerendered); /admin routes opt into
 // on-demand server rendering via `export const prerender = false`.
 export default defineConfig({
+  // Astro does not read PORT on its own. Honouring it lets the preview harness
+  // assign a free port instead of colliding with another session's server.
+  server: { port: Number(process.env.PORT) || 4321 },
   site: 'https://hbstudio-co.netlify.app',
   output: 'static',
   adapter: netlify(),

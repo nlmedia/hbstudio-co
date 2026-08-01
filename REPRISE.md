@@ -364,3 +364,44 @@ dans le dossier du projet. Il contient déjà les clés du nouveau projet Supaba
 - **Phase 3** — API d'activation, allocation atomique des sièges en Postgres, client PHP
   WordPress.
 - **Phase 4** — serveur de mises à jour WordPress et publication des versions.
+
+---
+
+## Refonte design « Encre et signal » (branche `design/encre-et-signal`)
+
+Site public repensé en studio de création. **L'administration n'a pas été
+touchée** — aucun fichier sous `admin/` ne figure dans la branche.
+
+### Deux palettes qui ne se croisent jamais
+
+`src/styles/global.css` déclare deux jeux de jetons dans le même `@theme` :
+
+| Portée | Jetons | Thème |
+|---|---|---|
+| Site public | `bg` `panel` `panel-2` `fg` `fg-muted` `hair` `hair-strong` `signal` `signal-dim` `on-signal` `signal-wash` | sombre par défaut, clair en variation |
+| `/admin` uniquement | `ink` `paper` `surface` `surface-2` `muted` `line` `line-strong` `accent` `accent-2` `accent-3` `accent-soft` | clair, inchangé |
+
+⚠️ **Les noms `surface` et `line` appartiennent à l'admin.** Les réutiliser côté
+public assombrit les cartes de l'admin en laissant leur texte sombre : illisible.
+Le public utilise `panel` et `hair`. C'est la raison d'être de ces deux noms.
+
+### Règles tenues
+
+- **Un signal par vue.** Le vermillon marque une seule chose. La marque HB de
+  l'en-tête est l'exception : c'est l'identité, pas un signal.
+- **Texte sur vermillon = encre, jamais blanc.** Blanc sur `#f03a17` donne 3,5:1
+  et échoue au niveau AA ; encre donne 4,3:1 et passe.
+- **Deux rayons.** 2px pour toute surface (carte, badge, champ de saisie),
+  999px pour les boutons et rien d'autre.
+- **Une seule famille typographique** (Geist), hiérarchie par échelle et graisse.
+- Sur-titres plafonnés à 4 par page, en index numéroté mono, jamais en vermillon.
+
+### Reste à faire
+
+- **Photo de Célia** : déposer le fichier dans `public/studio/celia.jpg` puis
+  renseigner la constante `PORTRAIT` en tête de `src/pages/about.astro`. Sans
+  elle le cadre affiche un monogramme, ce qui est un parti pris assumé.
+- Aucun fait biographique sur Célia n'a été inventé : le texte de
+  `about.story` porte la méthode et l'exigence du studio, à amender par elle.
+- Les avis clients de `en.ts` / `fr.ts` restent des exemples, pas de vrais
+  clients (l'avertissement est dans le fichier).

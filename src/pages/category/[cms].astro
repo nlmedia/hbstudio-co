@@ -17,22 +17,21 @@ const t = useTranslations(locale);
 const all = (await getTemplates(locale)).filter((entry) => entry.data.cms === cms);
 ---
 <Base title={t.category.meta.title(c.label)} description={c.blurb}>
-  <section class="relative overflow-hidden border-b border-line">
-    <div class="orb -right-32 -top-40 h-[34rem] w-[34rem]" style={`background:${c.accent}22`}></div>
+  <section class="relative overflow-hidden border-b border-hair">
     <div class="relative mx-auto max-w-6xl px-5 pb-14 pt-16">
       <nav class="flex flex-wrap gap-2">
-        <a href="/templates" class="rounded-full border border-line px-4 py-2 text-sm font-medium text-ink/65 transition hover:border-line-strong hover:text-ink">{t.common.all}</a>
+        <a href="/templates" class="rounded-full border border-hair px-4 py-2 text-sm font-medium text-fg/65 transition hover:border-hair-strong hover:text-fg">{t.common.all}</a>
         {CMS_ORDER.map((k) => (
-          <a href={`/category/${k}`} class:list={['rounded-full px-4 py-2 text-sm font-medium transition', k === cms ? 'bg-ink text-paper' : 'border border-line text-ink/65 hover:border-line-strong hover:text-ink']}>{CMS[k].label}</a>
+          <a href={`/category/${k}`} class:list={['rounded-full px-4 py-2 text-sm font-medium transition', k === cms ? 'bg-fg text-bg' : 'border border-hair text-fg/65 hover:border-hair-strong hover:text-fg']}>{CMS[k].label}</a>
         ))}
       </nav>
       <div data-reveal class="mt-9 flex items-center gap-4">
-        <span class="grid h-14 w-14 place-items-center rounded-2xl border border-line bg-paper shadow-sm" style={c.key === 'other' ? `color:${c.accent}` : undefined}>
+        <span class="grid h-14 w-14 place-items-center border border-hair bg-bg" style={c.key === 'other' ? `color:${c.accent}` : undefined}>
           <CmsLogo cms={c.key} class="h-8 w-8" />
         </span>
         <div>
-          <h1 class="font-display text-4xl font-bold sm:text-5xl">{c.label}</h1>
-          <p class="mt-1 text-muted">{c.blurb}</p>
+          <h1 class="font-display text-4xl font-medium sm:text-5xl">{c.label}</h1>
+          <p class="mt-1.5 text-fg-muted">{c.blurb}</p>
         </div>
       </div>
     </div>
@@ -44,10 +43,10 @@ const all = (await getTemplates(locale)).filter((entry) => entry.data.cms === cm
         {all.map((entry) => <TemplateCard entry={entry} />)}
       </div>
     ) : (
-      <div data-reveal-scale class="rounded-3xl border border-dashed border-line-strong bg-surface p-14 text-center">
-        <h2 class="font-display text-2xl font-semibold">{t.category.comingHeading(c.label)}</h2>
-        <p class="mx-auto mt-2 max-w-md text-muted">{t.category.comingBody(c.label)}</p>
-        <a href="/contact" class="mt-7 inline-block rounded-full bg-ink px-6 py-3 font-medium text-paper transition hover:bg-accent">{t.common.notifyMe}</a>
+      <div data-reveal-scale class="rounded-[var(--radius)] border border-dashed border-hair-strong bg-panel p-14 text-center">
+        <h2 class="font-display text-2xl font-medium">{t.category.comingHeading(c.label)}</h2>
+        <p class="mx-auto mt-3 max-w-md leading-relaxed text-fg-muted">{t.category.comingBody(c.label)}</p>
+        <a href="/contact" class="mt-8 inline-block rounded-full bg-fg px-6 py-3 font-medium text-bg transition active:scale-[0.98]">{t.common.notifyMe}</a>
       </div>
     )}
   </section>
