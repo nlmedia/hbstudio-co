@@ -18,7 +18,6 @@ const all = (await getTemplates(locale)).filter((entry) => entry.data.cms === cm
 ---
 <Base title={t.category.meta.title(c.label)} description={c.blurb}>
   <section class="relative overflow-hidden border-b border-hair">
-    <div class="orb -right-32 -top-40 h-[34rem] w-[34rem]" style={`background:${c.accent}22`}></div>
     <div class="relative mx-auto max-w-6xl px-5 pb-14 pt-16">
       <nav class="flex flex-wrap gap-2">
         <a href="/templates" class="rounded-full border border-hair px-4 py-2 text-sm font-medium text-fg/65 transition hover:border-hair-strong hover:text-fg">{t.common.all}</a>
