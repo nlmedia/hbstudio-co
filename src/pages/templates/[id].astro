@@ -2,8 +2,10 @@
 import Base from '../../layouts/Base.astro';
 import DeviceMockup from '../../components/DeviceMockup.astro';
 import Countdown from '../../components/Countdown.astro';
+import ThemeGallery from '../../components/ThemeGallery.astro';
 import { CMS } from '../../data/cms';
 import { getTemplates } from '../../lib/catalog';
+import { getSpecGroups, t as specText } from '../../data/themeSpecs';
 import { useTranslations, getLocaleFromPath } from '../../i18n';
 
 export async function getStaticPaths() {
@@ -18,210 +20,310 @@ const soon = d.status === 'coming-soon';
 const bodyParagraphs = (d.body || '').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
 const locale = getLocaleFromPath(Astro.url.pathname);
 const t = useTranslations(locale);
+
+const specGroups = getSpecGroups(entry.id, d.cms);
+const demoIsLocal = !!d.demoUrl && d.demoUrl.startsWith('/demo/');
+const storeUrl = `${d.title.toLowerCase()}.myshopify.com`;
 ---
 <Base title={t.templateDetail.meta.title(d.title, c.label)} description={d.tagline} image={d.cover ?? '/brand/og.jpg'}>
-  <!-- ── HERO ────────────────────────────────────────────────────────────
-       On the page ground, not on an inverted slab. The theme screenshots are
-       themselves light; setting them on a pale hero washed the product out,
-       which is the one thing this page cannot afford to do. -->
-  <section class="border-b border-hair">
-    <div class="mx-auto grid max-w-6xl gap-12 px-5 py-16 lg:grid-cols-2 lg:items-center">
-      <div>
-        <a href={`/category/${d.cms}`} class="inline-flex items-center gap-2 border border-hair px-3 py-1 font-mono text-xs transition hover:border-hair-strong">
-          <span class="h-1.5 w-1.5" style={`background:${c.accent}`}></span>{c.label}
-        </a>
-        <h1 class="mt-6 font-display text-5xl font-medium leading-tight">{d.title}</h1>
-        <p class="mt-4 text-lg leading-relaxed text-fg/80">{d.tagline}</p>
-        <p class="mt-5 max-w-md leading-relaxed text-fg-muted">{d.description}</p>
-        {soon ? (
-          <div class="mt-9">
-            <a href="/contact" class="inline-block rounded-full bg-fg px-6 py-3 font-medium text-bg transition active:scale-[0.98]">{t.templateDetail.notifyLaunch}</a>
-          </div>
-        ) : (
-          <div class="mt-9" data-promo-scope>
-            {d.onSale && d.saleEndsAt && (
-              <div data-when-promo class="mb-5">
-                <Countdown deadline={d.saleEndsAt} />
-              </div>
-            )}
-            <div class="flex flex-wrap items-center gap-3">
-              <a href="#" data-checkout={entry.id} data-tier="single" class="rounded-full bg-fg px-6 py-3 font-medium text-bg transition active:scale-[0.98]">
-                {d.onSale ? (
-                  <>
-                    <span data-when-promo>{t.templateDetail.buyPrefix}<span class="text-bg/45 line-through">{d.currency}{d.price}</span> {d.currency}{d.salePrice}</span>
-                    <span data-when-ended class="hidden">{t.templateDetail.buyPrefix}{d.currency}{d.price}</span>
-                  </>
-                ) : (
-                  <>{t.templateDetail.buyPrefix}{d.currency}{d.price}</>
-                )}
-              </a>
-              {d.demoUrl && <a href={d.demoUrl} target="_blank" rel="noopener" class="rounded-full border border-hair-strong px-6 py-3 font-medium transition hover:border-fg active:scale-[0.98]">{t.common.liveDemo}</a>}
-            </div>
-            <p class="mt-4 font-mono text-xs text-fg-muted">{t.templateDetail.oneTimeSingleSite}</p>
-          </div>
-        )}
-      </div>
-      <div>
-        {d.preview ? (
-          <DeviceMockup desktop={d.preview} mobile={d.previewMobile} url={`${d.title.toLowerCase()}.myshopify.com`} />
-        ) : d.cover ? (
-          <img src={d.cover} alt={d.title} class="w-full rounded-[var(--radius)] border border-hair" />
-        ) : (
-          <div class="flex aspect-[16/11] items-center justify-center rounded-[var(--radius)] border border-hair bg-panel">
-            <span class="font-display text-4xl font-medium text-fg/15">{d.title}</span>
-          </div>
-        )}
-      </div>
+  <!-- ══ HERO ═══════════════════════════════════════════════════════════
+       Dark slab, product on the right. Everything a buyer needs to decide
+       is above the fold: what it is, what it costs, what the licence
+       covers, and a way to try it before paying. -->
+  <section class="on-dark relative -mt-[132px] overflow-hidden pt-[132px]">
+    <div class="absolute inset-0 z-0" aria-hidden="true">
+      <div class="glow -right-40 -top-32 h-[42rem] w-[42rem]" style="background:rgba(240,58,23,0.22)"></div>
+      <div class="glow -left-40 top-64 h-[30rem] w-[30rem]" style="background:rgba(60,90,220,0.16)"></div>
     </div>
-  </section>
 
-  <!-- FEATURES + BODY -->
-  <section class="mx-auto grid max-w-6xl gap-12 px-5 py-16 lg:grid-cols-3">
-    <div class="lg:col-span-2">
-      <div class="space-y-4 text-lg leading-relaxed text-fg/75">
-        {bodyParagraphs.map((p) => <p>{p}</p>)}
-      </div>
-      {d.features.length > 0 && (
-        <>
-          <h2 class="mt-10 font-display text-2xl font-medium">{t.templateDetail.whatsInside}</h2>
-          <ul class="mt-5 grid gap-3 sm:grid-cols-2">
-            {d.features.map((f: string) => (
-              <li class="flex gap-3 text-sm text-fg/80">
-                <span class="mt-0.5 text-fg-muted">✓</span>{f}
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
-    </div>
-    <aside class="lg:col-span-1">
-      <div class="sticky top-24 rounded-[var(--radius)] border border-hair bg-panel p-6" data-promo-scope>
-        <div class="flex items-baseline justify-between gap-2">
-          <span class="text-sm text-fg-muted">{t.templateDetail.priceLabel}</span>
-          {d.price != null ? (
-            d.onSale ? (
-              <span class="text-right">
-                <span data-when-promo class="flex items-baseline justify-end gap-2">
-                  <span class="text-sm font-medium text-fg-muted line-through">{d.currency}{d.price}</span>
-                  <span class="font-display text-2xl font-medium text-signal">{d.currency}{d.salePrice}</span>
-                  <span class="rounded-[var(--radius)] bg-signal px-1.5 py-0.5 text-xs font-bold text-on-signal">−{d.discountPct}%</span>
-                </span>
-                <span data-when-ended class="hidden font-display text-2xl font-medium">{d.currency}{d.price}</span>
-              </span>
-            ) : (
-              <span class="font-display text-2xl font-medium">{d.currency}{d.price}</span>
-            )
-          ) : <span class="font-display text-2xl font-medium">—</span>}
-        </div>
-        {!soon && d.onSale && d.saleEndsAt && (
-          <div data-when-promo class="mt-4 rounded-[var(--radius)] border border-hair bg-signal-wash p-3">
-            <Countdown deadline={d.saleEndsAt} compact />
-          </div>
-        )}
-        <div class="mt-4 space-y-2 border-t border-hair pt-4 text-sm text-fg/70">
-          {d.tags.map((t: string) => <span class="mr-1.5 inline-block rounded-full bg-panel-2 px-2.5 py-1 text-xs">{t}</span>)}
-        </div>
-        {soon ? (
-          <a href="/contact" class="mt-5 block rounded-full bg-fg px-6 py-3 text-center font-medium text-bg transition active:scale-[0.98]">{t.common.notifyMe}</a>
-        ) : (
-          <>
-            <div class="mt-5 space-y-2">
-              <a href="#" data-checkout={entry.id} data-tier="single" class="block rounded-full bg-fg px-6 py-3 text-center font-medium text-bg transition active:scale-[0.98]">
-                {t.templateDetail.singleLicensePrefix}{d.currency}{d.effectivePrice}
-              </a>
-              {d.extendedPrice != null && (
-                <a href="#" data-checkout={entry.id} data-tier="extended" class="block rounded-full border border-hair-strong px-6 py-3 text-center font-medium transition hover:bg-panel-2">
-                  {t.templateDetail.extendedLicensePrefix}{d.currency}{d.extendedPrice}
+    <div class="relative z-10 mx-auto max-w-7xl px-5 pb-24 pt-10">
+      <nav class="flex items-center gap-2 font-mono text-xs text-fg-muted" aria-label="fil d'ariane">
+        <a href="/templates" class="transition hover:text-fg">{t.nav.templates}</a>
+        <span aria-hidden="true">/</span>
+        <a href={`/category/${d.cms}`} class="transition hover:text-fg">{c.label}</a>
+      </nav>
+
+      <div class="mt-10 grid items-center gap-14 lg:grid-cols-[1fr_1fr]">
+        <div>
+          <h1 data-reveal class="font-display text-[clamp(2.6rem,5.2vw,4.4rem)] font-medium">{d.title}</h1>
+          <p data-reveal style="transition-delay:100ms" class="mt-5 max-w-xl text-xl leading-relaxed">{d.tagline}</p>
+          <p data-reveal style="transition-delay:180ms" class="mt-5 max-w-xl leading-relaxed text-fg-muted">{d.description}</p>
+
+          {soon ? (
+            <div data-reveal style="transition-delay:260ms" class="mt-10">
+              <a href="/contact" class="inline-block rounded-full bg-signal px-7 py-3.5 font-medium text-on-signal transition active:scale-[0.97]">{t.templateDetail.notifyLaunch}</a>
+            </div>
+          ) : (
+            <div data-reveal style="transition-delay:260ms" class="mt-10" data-promo-scope>
+              {d.onSale && d.saleEndsAt && (
+                <div data-when-promo class="mb-6 max-w-sm">
+                  <Countdown deadline={d.saleEndsAt} />
+                </div>
+              )}
+
+              <div class="flex flex-wrap items-end gap-x-6 gap-y-3">
+                {d.price != null && (
+                  d.onSale ? (
+                    <span>
+                      <span data-when-promo class="flex items-baseline gap-3">
+                        <span class="font-display text-5xl font-medium text-signal">{d.currency}{d.salePrice}</span>
+                        <span class="text-lg text-fg-muted line-through">{d.currency}{d.price}</span>
+                        <span class="rounded-full bg-signal px-2.5 py-1 text-xs font-bold text-on-signal">−{d.discountPct}%</span>
+                      </span>
+                      <span data-when-ended class="hidden font-display text-5xl font-medium">{d.currency}{d.price}</span>
+                    </span>
+                  ) : (
+                    <span class="font-display text-5xl font-medium">{d.currency}{d.price}</span>
+                  )
+                )}
+                <span class="font-mono text-xs text-fg-muted">{t.templateDetail.oneTimeSingleSite}</span>
+              </div>
+
+              <div class="mt-8 flex flex-wrap items-center gap-3" data-hero-cta>
+                <a href="#" data-checkout={entry.id} data-tier="single" class="group inline-flex items-center gap-2.5 rounded-full bg-signal px-7 py-3.5 font-medium text-on-signal transition active:scale-[0.97]">
+                  {t.templateDetail.buyPrefix}{d.currency}{d.effectivePrice}
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="transition duration-300 group-hover:rotate-45"><path d="M7 17 17 7M9 7h8v8"/></svg>
                 </a>
+                {d.demoUrl && <a href={d.demoUrl} target="_blank" rel="noopener" class="rounded-full border border-hair-strong px-7 py-3.5 font-medium transition hover:bg-panel-2 active:scale-[0.97]">{t.common.liveDemo}</a>}
+              </div>
+
+              {d.tags.length > 0 && (
+                <ul class="mt-9 flex flex-wrap gap-2">
+                  {d.tags.map((tag: string) => (
+                    <li class="rounded-full border border-hair px-3 py-1 font-mono text-xs text-fg-muted">{tag}</li>
+                  ))}
+                </ul>
               )}
             </div>
-            <p class="mt-3 text-center text-xs text-fg-muted">{t.templateDetail.oneTimeIncluded}</p>
-          </>
-        )}
-        {d.docsUrl && <a href={d.docsUrl} target="_blank" rel="noopener" class="mt-2 block text-center text-sm font-medium text-fg-muted transition hover:text-fg">{t.templateDetail.readDocs}</a>}
+          )}
+        </div>
+
+        <div data-reveal-scale style="transition-delay:200ms">
+          {d.preview ? (
+            <DeviceMockup desktop={d.preview} mobile={d.previewMobile} url={storeUrl} />
+          ) : d.cover ? (
+            <img src={d.cover} alt={d.title} class="w-full rounded-[var(--radius)] border border-hair" />
+          ) : null}
+        </div>
       </div>
-    </aside>
+    </div>
   </section>
 
-  <!-- INTERACTIVE DEMO (self-hosted) — falls back to a static gallery -->
-  {d.demoUrl && d.demoUrl.startsWith('/demo/') ? (
-    <section class="border-y border-hair bg-panel">
-      <div class="mx-auto max-w-6xl px-5 py-16">
-        <div class="flex items-end justify-between gap-4">
-          <div>
-            <p data-reveal class="font-mono text-xs uppercase tracking-[0.18em] text-fg-muted">{t.templateDetail.interactiveDemo}</p>
-            <h2 data-reveal style="transition-delay:80ms" class="mt-2 font-display text-2xl font-medium sm:text-3xl">{t.templateDetail.exploreLivePrefix}{d.title}{t.templateDetail.exploreLiveSuffix}</h2>
-          </div>
-          <a href={d.demoUrl} target="_blank" rel="noopener" class="hidden items-center gap-2 rounded-full border border-hair-strong px-5 py-2.5 text-sm font-medium transition hover:bg-panel-2 sm:inline-flex">
-            {t.templateDetail.openNewTab}
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M9 7h8v8"/></svg>
-          </a>
+  <!-- ══ INTERACTIVE DEMO ═══════════════════════════════════════════════
+       Kept ahead of the screenshots on purpose: a storefront you can click
+       through outsells any gallery, so the gallery is what you scroll to
+       after you have already been convinced. -->
+  {demoIsLocal && (
+    <section class="mx-auto max-w-7xl px-5 py-24">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p data-reveal class="font-mono text-xs uppercase tracking-[0.18em] text-fg-muted"><span class="text-signal">01</span> / {t.templateDetail.interactiveDemo}</p>
+          <h2 data-reveal style="transition-delay:80ms" class="mt-4 font-display text-4xl font-medium sm:text-5xl">{t.templateDetail.exploreLivePrefix}{d.title}{t.templateDetail.exploreLiveSuffix}</h2>
         </div>
-        <div data-reveal-scale class="mt-6 overflow-hidden rounded-[var(--radius)] border border-hair bg-panel ">
-          <div class="flex items-center gap-1.5 border-b border-hair px-4 py-3">
-            <span class="h-2.5 w-2.5 rounded-full bg-[#ff5f57]"></span>
-            <span class="h-2.5 w-2.5 rounded-full bg-[#febc2e]"></span>
-            <span class="h-2.5 w-2.5 rounded-full bg-[#28c840]"></span>
-            <span class="ml-3 truncate rounded-[var(--radius)] bg-panel-2 px-3 py-1 text-xs text-fg-muted">{d.title.toLowerCase()}.myshopify.com</span>
-            <a href={d.demoUrl} target="_blank" rel="noopener" class="ml-auto text-xs font-medium text-fg-muted sm:hidden">{t.templateDetail.openArrow}</a>
-          </div>
-          <iframe src={d.demoUrl} title={`${d.title} live demo`} loading="lazy" class="h-[78vh] w-full bg-white"></iframe>
+        <a href={d.demoUrl} target="_blank" rel="noopener" class="hidden items-center gap-2 rounded-full border border-hair-strong px-5 py-2.5 text-sm font-medium transition hover:bg-panel-2 sm:inline-flex">
+          {t.templateDetail.openNewTab}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M9 7h8v8"/></svg>
+        </a>
+      </div>
+      <div data-reveal-scale class="mt-10 overflow-hidden rounded-[var(--radius)] border border-hair bg-panel">
+        <div class="flex items-center gap-1.5 border-b border-hair px-4 py-3">
+          <span class="h-2 w-2 rounded-full bg-hair-strong"></span>
+          <span class="h-2 w-2 rounded-full bg-hair-strong"></span>
+          <span class="h-2 w-2 rounded-full bg-hair-strong"></span>
+          <span class="ml-3 truncate rounded-full bg-panel-2 px-3 py-1 font-mono text-[11px] text-fg-muted">{storeUrl}</span>
+          <a href={d.demoUrl} target="_blank" rel="noopener" class="ml-auto font-mono text-[11px] text-fg-muted sm:hidden">{t.templateDetail.openArrow}</a>
         </div>
-        <p class="mt-3 text-center text-xs text-fg-muted">{t.templateDetail.demoNote}</p>
+        <iframe src={d.demoUrl} title={`${d.title} live demo`} loading="lazy" class="h-[80vh] w-full bg-white"></iframe>
+      </div>
+      <p class="mt-4 text-center font-mono text-xs text-fg-muted">{t.templateDetail.demoNote}</p>
+    </section>
+  )}
+
+  <!-- ══ GALLERY ════════════════════════════════════════════════════════ -->
+  <ThemeGallery
+    images={d.gallery}
+    title={d.title}
+    locale={locale}
+    url={storeUrl}
+    labels={{
+      heading: t.templateDetail.gallery.heading,
+      intro: t.templateDetail.gallery.intro,
+      zoomHint: t.templateDetail.gallery.zoomHint,
+      closeLabel: t.templateDetail.gallery.closeLabel,
+      openLabel: t.templateDetail.gallery.openLabel,
+    }}
+  />
+
+  <!-- ══ NARRATIVE + FEATURES ═══════════════════════════════════════════ -->
+  <section class="mx-auto max-w-7xl px-5 py-24">
+    <div class="grid gap-14 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
+      <div class="lg:sticky lg:top-32 lg:self-start">
+        <p data-reveal class="font-mono text-xs uppercase tracking-[0.18em] text-fg-muted"><span class="text-signal">02</span> / {t.templateDetail.whatsInside}</p>
+        <div class="mt-8 space-y-5 text-lg leading-relaxed text-fg-muted">
+          {bodyParagraphs.map((p, i) => <p data-reveal style={`transition-delay:${i * 80}ms`}>{p}</p>)}
+        </div>
+      </div>
+
+      {d.features.length > 0 && (
+        <ul class="border-t border-hair">
+          {d.features.map((f: string, i: number) => (
+            <li data-reveal style={`transition-delay:${Math.min(i, 6) * 60}ms`} class="flex gap-5 border-b border-hair py-6">
+              <span class="mt-1 font-mono text-xs text-signal">{String(i + 1).padStart(2, '0')}</span>
+              <span class="leading-relaxed">{f}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  </section>
+
+  <!-- ══ SPECIFICATIONS ═════════════════════════════════════════════════ -->
+  {specGroups.length > 0 && (
+    <section class="on-dark border-y border-hair">
+      <div class="mx-auto max-w-7xl px-5 py-24">
+        <div class="max-w-2xl">
+          <p data-reveal class="font-mono text-xs uppercase tracking-[0.18em] text-fg-muted"><span class="text-signal">03</span> / {t.templateDetail.specs.heading}</p>
+          <h2 data-reveal style="transition-delay:80ms" class="mt-4 font-display text-4xl font-medium sm:text-5xl">{t.templateDetail.specs.intro}</h2>
+          <p data-reveal style="transition-delay:160ms" class="mt-5 font-mono text-xs text-fg-muted">{t.templateDetail.specs.note}</p>
+        </div>
+
+        <div class="mt-14 grid gap-10 lg:grid-cols-2">
+          {specGroups.map((group, gi) => (
+            <div data-reveal style={`transition-delay:${gi * 70}ms`} class="rounded-[var(--radius)] border border-hair bg-panel p-7">
+              <h3 class="font-mono text-xs uppercase tracking-[0.18em] text-fg-muted">{specText(group.title, locale)}</h3>
+              <dl class="mt-6 divide-y divide-hair">
+                {group.rows.map((row) => (
+                  <div class="grid gap-1 py-4 sm:grid-cols-[0.8fr_1.2fr] sm:gap-6">
+                    <dt class="text-sm text-fg-muted">{specText(row.label, locale)}</dt>
+                    <dd>
+                      <span class="font-medium">{specText(row.value, locale)}</span>
+                      {row.note && <span class="mt-1 block text-sm leading-relaxed text-fg-muted">{specText(row.note, locale)}</span>}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
-  ) : d.gallery.length > 0 ? (
-    <section class="overflow-hidden border-y border-hair bg-panel">
-      <div class="mx-auto max-w-6xl px-5 py-16">
-        <h2 data-reveal class="font-display text-2xl font-medium">{t.templateDetail.closerLook}</h2>
-        <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:items-start">
-          <div class="flex flex-col gap-5">
-            {d.gallery.filter((_: string, i: number) => i % 2 === 0).map((src: string, i: number) => (
-              <img src={src} alt={t.templateDetail.screenshotAlt(d.title, i * 2 + 1)} loading="lazy" data-reveal class="w-full rounded-[var(--radius)] border border-hair bg-panel" />
-            ))}
-          </div>
-          <div data-gallery-parallax class="flex flex-col gap-5 sm:will-change-transform">
-            {d.gallery.filter((_: string, i: number) => i % 2 === 1).map((src: string, i: number) => (
-              <img src={src} alt={t.templateDetail.screenshotAlt(d.title, i * 2 + 2)} loading="lazy" data-reveal class="w-full rounded-[var(--radius)] border border-hair bg-panel" />
-            ))}
-          </div>
+  )}
+
+  <!-- ══ IN THE DOWNLOAD ════════════════════════════════════════════════ -->
+  <section class="mx-auto max-w-7xl px-5 py-24">
+    <p data-reveal class="font-mono text-xs uppercase tracking-[0.18em] text-fg-muted"><span class="text-signal">04</span> / {t.templateDetail.included.heading}</p>
+    <div class="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {t.templateDetail.included.items.map((item, i) => (
+        <div data-reveal style={`transition-delay:${i * 70}ms`} class="rounded-[var(--radius)] border border-hair bg-panel p-7 transition duration-300 hover:-translate-y-1 hover:border-signal/40">
+          <h3 class="font-display text-lg font-medium">{item.title}</h3>
+          <p class="mt-2.5 text-sm leading-relaxed text-fg-muted">{item.body}</p>
         </div>
+      ))}
+    </div>
+    {d.docsUrl && (
+      <a href={d.docsUrl} target="_blank" rel="noopener" class="link-underline mt-10 inline-block text-sm font-medium">{t.templateDetail.readDocs}</a>
+    )}
+  </section>
+
+  <!-- ══ LICENCES ═══════════════════════════════════════════════════════ -->
+  {!soon && d.price != null && (
+    <section class="on-dark relative overflow-hidden border-t border-hair">
+      <div class="absolute inset-0 z-0" aria-hidden="true">
+        <div class="glow left-1/3 -top-40 h-[34rem] w-[34rem]" style="background:rgba(240,58,23,0.20)"></div>
+      </div>
+      <div class="relative z-10 mx-auto max-w-5xl px-5 py-24" data-promo-scope data-licences>
+        <div class="text-center">
+          <p data-reveal class="font-mono text-xs uppercase tracking-[0.18em] text-fg-muted"><span class="text-signal">05</span> / {t.templateDetail.licence.heading}</p>
+          <h2 data-reveal style="transition-delay:80ms" class="mt-4 font-display text-4xl font-medium sm:text-5xl">{t.templateDetail.licence.intro}</h2>
+        </div>
+
+        <div class="mt-14 grid gap-5 md:grid-cols-2">
+          <!-- Single -->
+          <div data-reveal class="flex flex-col rounded-[var(--radius)] border border-hair bg-panel p-8">
+            <h3 class="font-display text-2xl font-medium">{t.templateDetail.licence.singleName}</h3>
+            <p class="mt-1.5 font-mono text-xs text-fg-muted">{t.templateDetail.licence.singleScope}</p>
+            <p class="mt-7 font-display text-4xl font-medium">{d.currency}{d.effectivePrice}</p>
+            <ul class="mt-7 flex-1 space-y-3 border-t border-hair pt-7 text-sm leading-relaxed text-fg-muted">
+              {t.templateDetail.licence.rows.map((r) => (
+                <li class="flex gap-3"><span class="mt-0.5 text-signal">✓</span>{r}</li>
+              ))}
+            </ul>
+            <a href="#" data-checkout={entry.id} data-tier="single" class="mt-8 block rounded-full bg-signal px-6 py-3.5 text-center font-medium text-on-signal transition active:scale-[0.97]">
+              {t.templateDetail.licence.chooseSingle}
+            </a>
+          </div>
+
+          <!-- Extended -->
+          {d.extendedPrice != null ? (
+            <div data-reveal style="transition-delay:100ms" class="flex flex-col rounded-[var(--radius)] border border-hair bg-panel p-8">
+              <h3 class="font-display text-2xl font-medium">{t.templateDetail.licence.extendedName}</h3>
+              <p class="mt-1.5 font-mono text-xs text-fg-muted">{t.templateDetail.licence.extendedScope}</p>
+              <p class="mt-7 font-display text-4xl font-medium">{d.currency}{d.extendedPrice}</p>
+              <ul class="mt-7 flex-1 space-y-3 border-t border-hair pt-7 text-sm leading-relaxed text-fg-muted">
+                {t.templateDetail.licence.rows.map((r) => (
+                  <li class="flex gap-3"><span class="mt-0.5 text-signal">✓</span>{r}</li>
+                ))}
+                <li class="flex gap-3 text-fg"><span class="mt-0.5 text-signal">✓</span>{t.templateDetail.licence.extendedOnly}</li>
+              </ul>
+              <a href="#" data-checkout={entry.id} data-tier="extended" class="mt-8 block rounded-full border border-hair-strong px-6 py-3.5 text-center font-medium transition hover:bg-panel-2 active:scale-[0.97]">
+                {t.templateDetail.licence.chooseExtended}
+              </a>
+            </div>
+          ) : null}
+        </div>
+
+        <p class="mt-8 text-center font-mono text-xs text-fg-muted">{t.templateDetail.licence.vatNote}</p>
       </div>
     </section>
-  ) : null}
+  )}
 
-  <script>
-    // Parallax on the right gallery column: starts offset downward, drifts up to
-    // finish flush with the left column at the bottom. Desktop only, motion-safe.
-    (function () {
-      const col = document.querySelector('[data-gallery-parallax]') as HTMLElement | null;
-      if (!col) return;
-      const mqDesktop = window.matchMedia('(min-width: 640px)');
-      const mqMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-      const OFFSET = 110; // px stagger between the two columns
-      let raf = 0;
-
-      const apply = () => {
-        raf = 0;
-        if (!mqDesktop.matches || mqMotion.matches) { col.style.transform = ''; return; }
-        const section = col.closest('section');
-        if (!section) return;
-        const rect = section.getBoundingClientRect();
-        const vh = window.innerHeight || document.documentElement.clientHeight;
-        // progress 0 → 1 as the section travels through the viewport
-        const p = Math.min(1, Math.max(0, (vh - rect.top) / (rect.height + vh)));
-        col.style.transform = `translate3d(0, ${((1 - p) * OFFSET).toFixed(1)}px, 0)`;
-      };
-      const onScroll = () => { if (!raf) raf = requestAnimationFrame(apply); };
-
-      apply();
-      window.addEventListener('scroll', onScroll, { passive: true });
-      window.addEventListener('resize', onScroll, { passive: true });
-      mqDesktop.addEventListener('change', apply);
-    })();
-  </script>
-
-  <section class="mx-auto max-w-6xl px-5 py-12 text-center">
+  <section class="mx-auto max-w-7xl px-5 py-14">
     <a href="/templates" class="link-underline text-sm font-medium">{t.templateDetail.backToAll}</a>
   </section>
+
+  <!-- ══ STICKY BUY BAR ═════════════════════════════════════════════════
+       Appears once the hero's buy button has scrolled away, so the price and
+       the action stay reachable through a long page without ever sitting on
+       top of the button they duplicate. -->
+  {!soon && d.price != null && (
+    <div data-buybar class="pointer-events-none fixed inset-x-0 bottom-0 z-40 translate-y-full opacity-0 transition duration-300 [&.is-shown]:pointer-events-auto [&.is-shown]:translate-y-0 [&.is-shown]:opacity-100">
+      <div class="on-dark mx-auto mb-4 flex max-w-3xl items-center gap-4 rounded-full border border-hair px-5 py-3 shadow-[0_18px_50px_-20px_rgba(0,0,0,0.7)] backdrop-blur-xl" data-promo-scope>
+        <span class="min-w-0 flex-1 truncate">
+          <span class="font-display font-medium">{d.title}</span>
+          <span class="ml-2 font-mono text-xs text-fg-muted">{t.templateDetail.stickyBuyFrom} {d.currency}{d.effectivePrice}</span>
+        </span>
+        {d.demoUrl && <a href={d.demoUrl} target="_blank" rel="noopener" class="hidden shrink-0 rounded-full border border-hair-strong px-5 py-2.5 text-sm font-medium transition hover:bg-panel-2 sm:block">{t.common.liveDemo}</a>}
+        <a href="#" data-checkout={entry.id} data-tier="single" class="shrink-0 rounded-full bg-signal px-5 py-2.5 text-sm font-medium text-on-signal transition active:scale-[0.97]">
+          {t.templateDetail.buyPrefix}{d.currency}{d.effectivePrice}
+        </a>
+      </div>
+    </div>
+  )}
+
+  <script>
+    // Sticky buy bar. It stands in for a buy button that is off screen, so it
+    // hides whenever a real one is visible: while the hero CTA is in view, and
+    // again once the licence cards are. Observing those two elements rather
+    // than a scroll offset means it behaves the same on a phone and on a tall
+    // desktop screen — and it never covers the buttons it duplicates, which is
+    // what a fixed bar does if you only watch the top of the page.
+    (function () {
+      const bar = document.querySelector('[data-buybar]');
+      const heroCta = document.querySelector('[data-hero-cta]');
+      if (!bar || !heroCta) return;
+      const licences = document.querySelector('[data-licences]');
+
+      let heroVisible = true;
+      let licencesVisible = false;
+      const sync = () => bar.classList.toggle('is-shown', !heroVisible && !licencesVisible);
+
+      new IntersectionObserver(([e]) => { heroVisible = e.isIntersecting; sync(); }, { threshold: 0 })
+        .observe(heroCta);
+
+      if (licences) {
+        new IntersectionObserver(([e]) => { licencesVisible = e.isIntersecting; sync(); }, { threshold: 0 })
+          .observe(licences);
+      }
+    })();
+  </script>
 </Base>

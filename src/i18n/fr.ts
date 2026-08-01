@@ -259,6 +259,48 @@ export const fr: Dictionary = {
     demoNote: 'La vraie boutique, pas des captures — parcourez-la entièrement. (Le panier et le paiement sont désactivés dans la démo.)',
     closerLook: 'Regardez de plus près',
     backToAll: '← Tous les thèmes',
+
+    // ---- fiche produit : galerie, caractéristiques, licences ----
+    gallery: {
+      heading: 'Écrans',
+      intro: 'Chaque écran, en grand.',
+      zoomHint: 'Cliquez pour agrandir',
+      closeLabel: 'Fermer',
+      openLabel: (n: number) => `Agrandir la capture ${n}`,
+    },
+    specs: {
+      heading: 'Caractéristiques',
+      intro: 'Ce que vous achetez, précisément.',
+      note: 'Compté dans la démo que vous venez de parcourir — ce ne sont pas des estimations.',
+    },
+    included: {
+      heading: 'Dans le téléchargement',
+      items: [
+        { title: 'Le thème', body: 'Une archive ZIP prête pour Shopify, à téléverser depuis votre admin en une étape.' },
+        { title: 'La documentation illustrée', body: 'En français et en anglais, y compris comment reproduire la démo exactement telle que vous l’avez vue.' },
+        { title: '12 mois de mises à jour', body: 'Tous les correctifs et améliorations publiés dans l’année suivant l’achat, sans supplément.' },
+        { title: 'Le support en direct', body: 'Vous écrivez au studio qui l’a fabriqué. Pas de file de tickets, pas de revendeur entre les deux.' },
+      ],
+    },
+    licence: {
+      heading: 'Licences',
+      intro: 'Un paiement. Aucun abonnement, jamais.',
+      singleName: 'Simple',
+      singleScope: '1 boutique',
+      extendedName: 'Étendue',
+      extendedScope: 'Jusqu’à 5 boutiques',
+      rows: [
+        'Le thème complet et ses mises à jour pendant 12 mois',
+        'La documentation illustrée, en français et en anglais',
+        'Utilisation sur une boutique à vous ou gérée pour un client',
+        'Le support en direct du studio',
+      ],
+      extendedOnly: 'Cinq activations au lieu d’une — pour les agences et les marchands multi-boutiques.',
+      chooseSingle: 'Choisir la licence simple',
+      chooseExtended: 'Choisir la licence étendue',
+      vatNote: 'Prix hors TVA le cas échéant. Livraison immédiate par e-mail.',
+    },
+    stickyBuyFrom: 'à partir de',
     screenshotAlt: (templateTitle: string, n: number) => `Thème Shopify ${templateTitle} — capture ${n}`,
   },
 

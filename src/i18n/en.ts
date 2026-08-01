@@ -288,6 +288,48 @@ export const en = {
     demoNote: 'The real thing, not screenshots — browse the whole storefront. (Cart and checkout are switched off in the demo.)',
     closerLook: 'A closer look',
     backToAll: '← All themes',
+
+    // ---- product page: gallery, specs, licence ----
+    gallery: {
+      heading: 'Screens',
+      intro: 'Every screen, at full size.',
+      zoomHint: 'Click to enlarge',
+      closeLabel: 'Close',
+      openLabel: (n: number) => `Enlarge screenshot ${n}`,
+    },
+    specs: {
+      heading: 'Specifications',
+      intro: 'What you are actually buying.',
+      note: 'Counted in the demo you can browse above — not estimates.',
+    },
+    included: {
+      heading: 'In the download',
+      items: [
+        { title: 'The theme', body: 'A Shopify-ready ZIP, uploaded from your admin in one step.' },
+        { title: 'Illustrated documentation', body: 'English and French, including how to rebuild the demo exactly as you saw it.' },
+        { title: '12 months of updates', body: 'Every fix and improvement released in the year after purchase, at no extra cost.' },
+        { title: 'Direct support', body: 'You write to the studio that built it. No ticket queue, no reseller in between.' },
+      ],
+    },
+    licence: {
+      heading: 'Licences',
+      intro: 'One payment. No subscription, ever.',
+      singleName: 'Single',
+      singleScope: '1 store',
+      extendedName: 'Extended',
+      extendedScope: 'Up to 5 stores',
+      rows: [
+        'Full theme and future updates for 12 months',
+        'Illustrated documentation, English and French',
+        'Use on a store you own or run for a client',
+        'Direct support from the studio',
+      ],
+      extendedOnly: 'Five activations instead of one — for agencies and multi-store merchants.',
+      chooseSingle: 'Choose Single',
+      chooseExtended: 'Choose Extended',
+      vatNote: 'Prices exclude VAT where applicable. Instant delivery by email.',
+    },
+    stickyBuyFrom: 'from',
     screenshotAlt: (templateTitle: string, n: number) => `${templateTitle} Shopify theme — screenshot ${n}`,
   },
 

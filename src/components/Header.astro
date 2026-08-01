@@ -53,8 +53,11 @@ const altLabel = altLocale === 'fr' ? 'Français' : 'English';
   <!-- floating pill -->
   <div class="pointer-events-auto mx-auto mt-2 flex max-w-4xl items-center gap-2 px-4 sm:px-5">
     <nav class="on-dark flex w-full items-center gap-1 rounded-full border border-hair p-1.5 shadow-[0_18px_50px_-20px_rgba(0,0,0,0.55)] backdrop-blur-xl">
-      <a href={localizePath('/', locale)} class="group grid h-10 w-10 shrink-0 place-items-center rounded-full bg-signal font-display text-sm font-bold text-on-signal" aria-label={t.nav.homeAriaLabel}>
-        HB
+      <!-- Logotype, so the two weights and the two colours are deliberate:
+           "HB" carries the mark, "Studio" reads as the word. -->
+      <a href={localizePath('/', locale)} class="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full bg-signal pl-4 pr-5 font-display text-sm transition active:scale-[0.97]" aria-label={t.nav.homeAriaLabel}>
+        <span class="font-bold tracking-tight text-on-signal">HB</span>
+        <span class="font-medium tracking-tight text-white">Studio</span>
       </a>
 
       <div class="hidden flex-1 items-center justify-center gap-1 md:flex">
