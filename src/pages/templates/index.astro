@@ -12,9 +12,9 @@ const all = await getTemplates(locale);
 <Base title={t.templatesIndex.meta.title} description={t.templatesIndex.meta.description}>
   <section class="relative overflow-hidden">
     <div class="relative mx-auto max-w-6xl px-5 pb-16 pt-20">
-      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-signal-dim">{t.templatesIndex.eyebrow}</p>
-      <h1 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-5xl font-bold sm:text-6xl">{t.templatesIndex.heading}</h1>
-      <p data-reveal style="transition-delay:160ms" class="mt-4 max-w-xl text-fg-muted">{t.templatesIndex.subtitle}</p>
+      <p data-reveal class="font-mono text-xs uppercase tracking-[0.18em] text-fg-muted">{t.templatesIndex.eyebrow}</p>
+      <h1 data-reveal style="transition-delay:80ms" class="mt-5 font-display text-5xl font-semibold sm:text-6xl">{t.templatesIndex.heading}</h1>
+      <p data-reveal style="transition-delay:160ms" class="mt-5 max-w-xl leading-relaxed text-fg-muted">{t.templatesIndex.subtitle}</p>
 
       <nav data-reveal style="transition-delay:240ms" class="mt-9 flex flex-wrap gap-2">
         <a href="/templates" class="rounded-full bg-fg px-4 py-2 text-sm font-medium text-bg">{t.common.all}</a>
