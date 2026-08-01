@@ -405,3 +405,17 @@ Le public utilise `panel` et `hair`. C'est la raison d'être de ces deux noms.
   `about.story` porte la méthode et l'exigence du studio, à amender par elle.
 - Les avis clients de `en.ts` / `fr.ts` restent des exemples, pas de vrais
   clients (l'avertissement est dans le fichier).
+
+### Fiche produit : d'où viennent les caractéristiques techniques
+
+`src/data/themeSpecs.ts` — fichier typé, pas une colonne de base. Deux blocs :
+`PLATFORM_SPECS` (vrai de tout thème de la plateforme) et `THEME_SPECS` (par
+thème). Quand un deuxième thème arrivera, déplacer `THEME_SPECS` dans
+`hb_templates` et garder les faits plateforme dans le fichier.
+
+⚠️ **Règle de sincérité.** Chaque ligne est une affirmation faite à un acheteur
+avant qu'il paie. Chaque valeur porte sa preuve en commentaire. Deux choses
+délibérément NON affirmées, parce que la vérification les a démenties :
+« sans jQuery » (la démo le charge) et tout score Lighthouse ou Core Web
+Vitals (jamais mesuré sur une installation propre). Les nombres (8 gabarits
+produit, 8 collections, 5 pages) ont été comptés dans `public/demo/atelier`.

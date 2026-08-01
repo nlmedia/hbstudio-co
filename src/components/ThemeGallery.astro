@@ -1,0 +1,244 @@
+---
+import { getCaption } from '../data/themeSpecs';
+import type { Locale } from '../i18n/locales';
+
+interface Props {
+  images: string[];
+  title: string;
+  locale: Locale;
+  /** Shown in the fake address bar of the frame. */
+  url?: string;
+  labels: {
+    heading: string;
+    intro: string;
+    zoomHint: string;
+    closeLabel: string;
+    openLabel: (n: number) => string;
+  };
+}
+const { images, title, locale, url, labels } = Astro.props;
+const fr = locale === 'fr';
+const shots = images.map((src, i) => ({ src, i, caption: getCaption(src) }));
+const pad = (n: number) => String(n + 1).padStart(2, '0');
+---
+{shots.length > 0 && (
+<section class="on-dark relative overflow-hidden border-y border-hair">
+  <div class="absolute inset-0 z-0" aria-hidden="true">
+    <div class="glow -left-40 top-20 h-[34rem] w-[34rem]" style="background:rgba(240,58,23,0.16)"></div>
+  </div>
+
+  <div class="relative z-10 mx-auto max-w-7xl px-5 py-24">
+    <div class="max-w-2xl">
+      <p data-reveal class="font-mono text-xs uppercase tracking-[0.18em] text-fg-muted">
+        <span class="text-signal">{pad(shots.length - 1)}</span> / {labels.heading}
+      </p>
+      <h2 data-reveal style="transition-delay:80ms" class="mt-4 font-display text-4xl font-medium sm:text-5xl">{labels.intro}</h2>
+    </div>
+
+    <!-- `gallery` is the no-JS layout: every screenshot stacked with its
+         caption, which is a perfectly good gallery on its own. The script
+         adds `is-pinned`, which hides the stacked images and reveals the
+         sticky viewer. Enhancement, never a requirement. -->
+    <div class="gallery mt-14 grid gap-12 lg:grid-cols-[1.15fr_0.85fr] lg:gap-16" data-gallery>
+      <!-- sticky viewer (JS only) -->
+      <div class="viewer lg:sticky lg:top-32 lg:self-start">
+        <figure class="overflow-hidden rounded-[var(--radius)] border border-hair bg-panel shadow-[0_40px_90px_-40px_rgba(0,0,0,0.7)]">
+          <div class="flex items-center gap-1.5 border-b border-hair px-4 py-3">
+            <span class="h-2 w-2 rounded-full bg-hair-strong"></span>
+            <span class="h-2 w-2 rounded-full bg-hair-strong"></span>
+            <span class="h-2 w-2 rounded-full bg-hair-strong"></span>
+            {url && <span class="ml-3 truncate rounded-full bg-panel-2 px-3 py-1 font-mono text-[11px] text-fg-muted">{url}</span>}
+            <span class="ml-auto font-mono text-[11px] text-fg-muted" data-viewer-counter>01 / {pad(shots.length - 1)}</span>
+          </div>
+          <button type="button" class="block w-full cursor-zoom-in" data-viewer-open aria-label={labels.openLabel(1)}>
+            <img data-viewer-img src={shots[0].src} alt="" class="block w-full transition-opacity duration-300" />
+          </button>
+        </figure>
+        <p class="mt-3 text-center font-mono text-[11px] text-fg-muted">{labels.zoomHint}</p>
+      </div>
+
+      <!-- captions; each one drives the viewer as it passes the reading line -->
+      <ol class="shots">
+        {shots.map(({ src, i, caption }) => (
+          <li
+            class="shot border-t border-hair py-10 first:border-t-0 first:pt-0 lg:min-h-[62vh] lg:flex lg:flex-col lg:justify-center"
+            data-shot
+            data-src={src}
+            data-index={i}
+          >
+            <p class="font-mono text-xs text-fg-muted"><span class="text-signal">{pad(i)}</span> / {pad(shots.length - 1)}</p>
+            <h3 class="mt-4 font-display text-2xl font-medium sm:text-3xl">
+              {caption ? (fr ? caption.title.fr : caption.title.en) : title}
+            </h3>
+            {caption && (
+              <p class="mt-3 max-w-md leading-relaxed text-fg-muted">{fr ? caption.body.fr : caption.body.en}</p>
+            )}
+            <!-- The stacked image: the whole gallery when there is no JS,
+                 hidden once the pinned viewer takes over. -->
+            <button type="button" class="shot__img mt-6 block w-full cursor-zoom-in overflow-hidden rounded-[var(--radius)] border border-hair" data-lightbox={src} aria-label={labels.openLabel(i + 1)}>
+              <img src={src} alt="" loading="lazy" class="block w-full" />
+            </button>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+
+  <!-- Native <dialog>: the browser gives focus trapping, ESC-to-close and
+       inertness on the rest of the page for free. Re-implementing those by
+       hand is how lightboxes end up unusable with a keyboard. -->
+  <dialog class="lightbox" data-lightbox-dialog aria-label={labels.heading}>
+    <form method="dialog" class="lightbox__close">
+      <button aria-label={labels.closeLabel}>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </form>
+    <img data-lightbox-img src="" alt="" />
+  </dialog>
+</section>
+)}
+
+<style>
+  /* No-JS resting state: viewer hidden, every screenshot stacked. */
+  .viewer { display: none; }
+  .gallery.is-pinned .viewer { display: block; }
+  .gallery.is-pinned .shot__img { display: none; }
+
+  /* The stacked list needs no min-height until it is driving a pinned
+     viewer, otherwise the no-JS page is mostly empty space. */
+  .gallery:not(.is-pinned) .shot { min-height: 0; }
+
+  .shot { opacity: 0.42; transition: opacity 0.45s var(--ease); }
+  .shot.is-active,
+  .gallery:not(.is-pinned) .shot { opacity: 1; }
+
+  .lightbox {
+    width: min(96vw, 1500px);
+    max-width: none;
+    padding: 0;
+    border: 1px solid var(--color-hair);
+    border-radius: var(--radius);
+    background: var(--color-panel);
+    color: var(--color-fg);
+    overflow: visible;
+  }
+  .lightbox::backdrop { background: rgb(0 0 0 / 0.82); backdrop-filter: blur(6px); }
+  .lightbox img { display: block; width: 100%; height: auto; border-radius: var(--radius); }
+  .lightbox__close { position: absolute; top: -14px; right: -14px; margin: 0; }
+  .lightbox__close button {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    border: 1px solid var(--color-hair);
+    background: var(--color-panel-2);
+    color: var(--color-fg);
+    cursor: pointer;
+  }
+  @media (max-width: 640px) {
+    .lightbox__close { top: 8px; right: 8px; }
+  }
+</style>
+
+<script>
+  // Progressive enhancement for the theme gallery: a pinned viewer that
+  // follows the captions, plus a lightbox. Written as plain DOM work with no
+  // dependency, and it exits cleanly on any page that has no gallery.
+  (function () {
+    const root = document.querySelector('[data-gallery]');
+    const dialog = document.querySelector('[data-lightbox-dialog]');
+    const dialogImg = document.querySelector('[data-lightbox-img]');
+
+    function openLightbox(src) {
+      if (!dialog || !dialogImg || !src) return;
+      dialogImg.setAttribute('src', src);
+      dialog.showModal();
+    }
+
+    // Clicking the backdrop closes. The dialog element itself fills only the
+    // image area, so a click landing on the dialog but outside its content
+    // box is a backdrop click.
+    if (dialog) {
+      dialog.addEventListener('click', (e) => {
+        const box = dialog.getBoundingClientRect();
+        const inside =
+          e.clientX >= box.left && e.clientX <= box.right &&
+          e.clientY >= box.top && e.clientY <= box.bottom;
+        if (!inside) dialog.close();
+      });
+      dialog.addEventListener('close', () => dialogImg && dialogImg.setAttribute('src', ''));
+    }
+
+    document.querySelectorAll('[data-lightbox]').forEach((el) => {
+      el.addEventListener('click', () => openLightbox(el.getAttribute('data-lightbox')));
+    });
+
+    if (!root) return;
+    const shots = Array.from(root.querySelectorAll('[data-shot]'));
+    const img = root.querySelector('[data-viewer-img]');
+    const counter = root.querySelector('[data-viewer-counter]');
+    const openBtn = root.querySelector('[data-viewer-open]');
+    if (shots.length === 0 || !img) return;
+
+    let current = -1;
+    const total = String(shots.length).padStart(2, '0');
+
+    function show(i) {
+      if (i === current) return;
+      const src = shots[i].getAttribute('data-src');
+      if (!src) return;
+      current = i;
+      // Cross-fade rather than a hard swap: the viewer is large, and an
+      // instant replacement at this size reads as a glitch.
+      img.style.opacity = '0';
+      const next = new Image();
+      next.onload = () => { img.setAttribute('src', src); img.style.opacity = '1'; };
+      next.onerror = () => { img.setAttribute('src', src); img.style.opacity = '1'; };
+      next.src = src;
+      if (counter) counter.textContent = String(i + 1).padStart(2, '0') + ' / ' + total;
+      shots.forEach((s, n) => s.classList.toggle('is-active', n === i));
+      if (openBtn) openBtn.setAttribute('data-active-src', src);
+    }
+
+    // The pinned layout only makes sense where the two columns actually sit
+    // side by side; on a narrow screen the stacked gallery is the better
+    // reading order, so the enhancement is bound to the same breakpoint the
+    // layout uses.
+    const wide = window.matchMedia('(min-width: 1024px)');
+    let io = null;
+
+    function enable() {
+      root.classList.add('is-pinned');
+      show(0);
+      io = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((e) => {
+            if (e.isIntersecting) show(shots.indexOf(e.target));
+          });
+        },
+        // A narrow band across the middle of the viewport acts as a reading
+        // line: whichever caption crosses it owns the viewer.
+        { rootMargin: '-45% 0px -45% 0px', threshold: 0 },
+      );
+      shots.forEach((s) => io.observe(s));
+    }
+
+    function disable() {
+      root.classList.remove('is-pinned');
+      if (io) { io.disconnect(); io = null; }
+      shots.forEach((s) => s.classList.remove('is-active'));
+      current = -1;
+    }
+
+    const sync = () => (wide.matches ? enable() : disable());
+    sync();
+    wide.addEventListener('change', () => { disable(); sync(); });
+
+    if (openBtn) {
+      openBtn.addEventListener('click', () =>
+        openLightbox(openBtn.getAttribute('data-active-src') || shots[0].getAttribute('data-src')),
+      );
+    }
+  })();
+</script>
