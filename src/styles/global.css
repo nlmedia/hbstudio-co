@@ -11,10 +11,13 @@
    of them is wrong.
 
    Two radii, and only two:
-     --radius        2px   every surface, card, input, image frame
-     --radius-pill   999px every interactive control
-   A pill inside a square layout is deliberate here, not an accident. Nothing
-   in between: no 8px, no 12px, no 16px.
+     2px    every surface: card, panel, badge, image frame, text input,
+            textarea and select
+     999px  buttons and button-shaped links, and nothing else
+   Pills inside a square layout are deliberate, not an accident: the only
+   round things on the page are the things you press. Inputs stay square
+   because a pill textarea is not a shape, it is a mistake. Nothing in
+   between these two values — no 8px, no 12px, no 16px.
 
    Colour is semantic, never literal. `--color-bg` flips between themes; the
    Tailwind utilities read the variable, so a single override switches the
