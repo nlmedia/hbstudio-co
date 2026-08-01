@@ -52,12 +52,37 @@ create table if not exists public.hb_templates (
   theme_slug text, -- WordPress theme folder name (licenses phase 1)
   requires_wp text,
   requires_php text,
+  -- French counterparts of the fields above (i18n phase). Plain nullable
+  -- columns, not a translations table: two languages today, a trivial
+  -- field-by-field fallback to English (src/lib/catalog.ts), and a separate
+  -- table would cost more than it returns until a third language exists.
+  title_fr text,
+  tagline_fr text,
+  description_fr text,
+  body_fr text,
+  features_fr jsonb,
+  tags_fr jsonb,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 
 comment on column public.hb_templates.theme_slug is
   'WordPress theme folder name. WordPress identifies a theme by this exact name: without an exact match, the update never shows up for the client.';
+
+comment on column public.hb_templates.title_fr is
+  'French title. Null or empty falls back to title (see src/lib/catalog.ts).';
+comment on column public.hb_templates.tagline_fr is
+  'French tagline. Null or empty falls back to tagline.';
+comment on column public.hb_templates.description_fr is
+  'French short description. Null or empty falls back to description.';
+comment on column public.hb_templates.body_fr is
+  'French long-form body. Null or empty falls back to body.';
+comment on column public.hb_templates.features_fr is
+  'French features list. Null or empty array falls back to features -- a
+   partially-filled features_fr would silently drop the rest of the list, so
+   the fallback is all-or-nothing per field, not per item.';
+comment on column public.hb_templates.tags_fr is
+  'French tags list. Null or empty array falls back to tags.';
 
 -- Newsletter subscribers
 create table if not exists public.hb_subscribers (

@@ -23,6 +23,15 @@ export function parseTemplateForm(form: FormData) {
     tagline: str('tagline'),
     description: str('description'),
     body: str('body'),
+    // French counterparts. Stored as null/[] when left blank -- catalog.ts
+    // treats an empty string or empty array as "not translated" and falls
+    // back to the English field, so this is what "leave it empty" means.
+    title_fr: str('title_fr') || null,
+    tagline_fr: str('tagline_fr') || null,
+    description_fr: str('description_fr') || null,
+    body_fr: str('body_fr') || null,
+    features_fr: lines('features_fr'),
+    tags_fr: lines('tags_fr'),
     cover: str('cover') || null,
     preview: str('preview') || null,
     preview_mobile: str('preview_mobile') || null,

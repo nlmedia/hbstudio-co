@@ -7,7 +7,7 @@ import { getTemplates } from '../../lib/catalog';
 import { useTranslations, getLocaleFromPath } from '../../i18n';
 
 export async function getStaticPaths() {
-  const all = await getTemplates();
+  const all = await getTemplates('en');
   return all.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
 }
 

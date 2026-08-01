@@ -12,9 +12,9 @@ export async function getStaticPaths() {
 
 const { cms } = Astro.params;
 const c = CMS[cms as keyof typeof CMS];
-const all = (await getTemplates()).filter((t) => t.data.cms === cms);
 const locale = getLocaleFromPath(Astro.url.pathname);
 const t = useTranslations(locale);
+const all = (await getTemplates(locale)).filter((entry) => entry.data.cms === cms);
 ---
 <Base title={t.category.meta.title(c.label)} description={c.blurb}>
   <section class="relative overflow-hidden border-b border-line">

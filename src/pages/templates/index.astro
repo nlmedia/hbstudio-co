@@ -5,9 +5,9 @@ import { CMS, CMS_ORDER } from '../../data/cms';
 import { getTemplates } from '../../lib/catalog';
 import { useTranslations, getLocaleFromPath } from '../../i18n';
 
-const all = await getTemplates();
 const locale = getLocaleFromPath(Astro.url.pathname);
 const t = useTranslations(locale);
+const all = await getTemplates(locale);
 ---
 <Base title={t.templatesIndex.meta.title} description={t.templatesIndex.meta.description}>
   <section class="relative overflow-hidden">

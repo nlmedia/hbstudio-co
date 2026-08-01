@@ -47,6 +47,23 @@ const label = 'block text-xs font-medium text-ink/70 mb-1.5';
   <label><span class={label}>Description courte</span><textarea class={field} name="description" rows="3">{t.description ?? ''}</textarea></label>
   <label><span class={label}>Contenu (paragraphes, ligne vide entre chaque)</span><textarea class={field} name="body" rows="4">{t.body ?? ''}</textarea></label>
 
+  <fieldset class="grid gap-4 rounded-2xl border-2 border-accent/30 bg-accent/5 p-4">
+    <legend class="px-2 text-xs font-semibold uppercase tracking-wide text-accent">Français</legend>
+    <p class="text-xs text-muted">
+      Un champ laissé vide affiche automatiquement la version anglaise à sa place sur <code>/fr/</code> — inutile de tout traduire d'un coup, la fiche reste complète entre-temps.
+    </p>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <label><span class={label}>Titre (FR)</span><input class={field} name="title_fr" value={t.title_fr ?? ''} /></label>
+      <label><span class={label}>Accroche (FR)</span><input class={field} name="tagline_fr" value={t.tagline_fr ?? ''} /></label>
+    </div>
+    <label><span class={label}>Description courte (FR)</span><textarea class={field} name="description_fr" rows="3">{t.description_fr ?? ''}</textarea></label>
+    <label><span class={label}>Contenu (FR — paragraphes, ligne vide entre chaque)</span><textarea class={field} name="body_fr" rows="4">{t.body_fr ?? ''}</textarea></label>
+    <div class="grid gap-4 sm:grid-cols-2">
+      <label><span class={label}>Caractéristiques (FR — une/ligne)</span><textarea class={field} name="features_fr" rows="4">{arr(t.features_fr)}</textarea></label>
+      <label><span class={label}>Tags (FR — un/ligne)</span><textarea class={field} name="tags_fr" rows="4">{arr(t.tags_fr)}</textarea></label>
+    </div>
+  </fieldset>
+
   <fieldset class="grid gap-4 rounded-2xl border border-line p-4">
     <legend class="px-2 text-xs font-semibold uppercase tracking-wide text-muted">Images</legend>
     {[['cover','Couverture (carte)'],['preview','Pleine page desktop (mockup)'],['preview_mobile','Pleine page mobile (téléphone)']].map(([n, lbl]) => (

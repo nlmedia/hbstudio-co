@@ -8,7 +8,7 @@ import EnglishTemplateDetail from '../../templates/[id].astro';
 import { getTemplates } from '../../../lib/catalog';
 
 export async function getStaticPaths() {
-  const all = await getTemplates();
+  const all = await getTemplates('fr');
   return all.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
 }
 
