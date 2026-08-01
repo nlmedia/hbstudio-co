@@ -30,7 +30,7 @@ const all = (await getTemplates(locale)).filter((entry) => entry.data.cms === cm
           <CmsLogo cms={c.key} class="h-8 w-8" />
         </span>
         <div>
-          <h1 class="font-display text-4xl font-semibold sm:text-5xl">{c.label}</h1>
+          <h1 class="font-display text-4xl font-medium sm:text-5xl">{c.label}</h1>
           <p class="mt-1.5 text-fg-muted">{c.blurb}</p>
         </div>
       </div>
@@ -43,8 +43,8 @@ const all = (await getTemplates(locale)).filter((entry) => entry.data.cms === cm
         {all.map((entry) => <TemplateCard entry={entry} />)}
       </div>
     ) : (
-      <div data-reveal-scale class="rounded-[2px] border border-dashed border-hair-strong bg-panel p-14 text-center">
-        <h2 class="font-display text-2xl font-semibold">{t.category.comingHeading(c.label)}</h2>
+      <div data-reveal-scale class="rounded-[var(--radius)] border border-dashed border-hair-strong bg-panel p-14 text-center">
+        <h2 class="font-display text-2xl font-medium">{t.category.comingHeading(c.label)}</h2>
         <p class="mx-auto mt-3 max-w-md leading-relaxed text-fg-muted">{t.category.comingBody(c.label)}</p>
         <a href="/contact" class="mt-8 inline-block rounded-full bg-fg px-6 py-3 font-medium text-bg transition active:scale-[0.98]">{t.common.notifyMe}</a>
       </div>

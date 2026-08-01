@@ -34,6 +34,7 @@ export const fr: Dictionary = {
     getTemplate: 'Voir les thèmes',
     menuAriaLabel: 'Menu',
     getInTouch: 'Nous écrire',
+    statusAvailable: 'Projets sur mesure ouverts',
     switchTo: 'Passer en ',
   },
 

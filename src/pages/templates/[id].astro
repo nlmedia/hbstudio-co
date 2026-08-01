@@ -30,7 +30,7 @@ const t = useTranslations(locale);
         <a href={`/category/${d.cms}`} class="inline-flex items-center gap-2 border border-hair px-3 py-1 font-mono text-xs transition hover:border-hair-strong">
           <span class="h-1.5 w-1.5" style={`background:${c.accent}`}></span>{c.label}
         </a>
-        <h1 class="mt-6 font-display text-5xl font-semibold leading-tight">{d.title}</h1>
+        <h1 class="mt-6 font-display text-5xl font-medium leading-tight">{d.title}</h1>
         <p class="mt-4 text-lg leading-relaxed text-fg/80">{d.tagline}</p>
         <p class="mt-5 max-w-md leading-relaxed text-fg-muted">{d.description}</p>
         {soon ? (
@@ -65,10 +65,10 @@ const t = useTranslations(locale);
         {d.preview ? (
           <DeviceMockup desktop={d.preview} mobile={d.previewMobile} url={`${d.title.toLowerCase()}.myshopify.com`} />
         ) : d.cover ? (
-          <img src={d.cover} alt={d.title} class="w-full rounded-[2px] border border-hair" />
+          <img src={d.cover} alt={d.title} class="w-full rounded-[var(--radius)] border border-hair" />
         ) : (
-          <div class="flex aspect-[16/11] items-center justify-center rounded-[2px] border border-hair bg-panel">
-            <span class="font-display text-4xl font-semibold text-fg/15">{d.title}</span>
+          <div class="flex aspect-[16/11] items-center justify-center rounded-[var(--radius)] border border-hair bg-panel">
+            <span class="font-display text-4xl font-medium text-fg/15">{d.title}</span>
           </div>
         )}
       </div>
@@ -83,7 +83,7 @@ const t = useTranslations(locale);
       </div>
       {d.features.length > 0 && (
         <>
-          <h2 class="mt-10 font-display text-2xl font-semibold">{t.templateDetail.whatsInside}</h2>
+          <h2 class="mt-10 font-display text-2xl font-medium">{t.templateDetail.whatsInside}</h2>
           <ul class="mt-5 grid gap-3 sm:grid-cols-2">
             {d.features.map((f: string) => (
               <li class="flex gap-3 text-sm text-fg/80">
@@ -95,7 +95,7 @@ const t = useTranslations(locale);
       )}
     </div>
     <aside class="lg:col-span-1">
-      <div class="sticky top-24 rounded-[2px] border border-hair bg-panel p-6" data-promo-scope>
+      <div class="sticky top-24 rounded-[var(--radius)] border border-hair bg-panel p-6" data-promo-scope>
         <div class="flex items-baseline justify-between gap-2">
           <span class="text-sm text-fg-muted">{t.templateDetail.priceLabel}</span>
           {d.price != null ? (
@@ -103,18 +103,18 @@ const t = useTranslations(locale);
               <span class="text-right">
                 <span data-when-promo class="flex items-baseline justify-end gap-2">
                   <span class="text-sm font-medium text-fg-muted line-through">{d.currency}{d.price}</span>
-                  <span class="font-display text-2xl font-semibold text-signal">{d.currency}{d.salePrice}</span>
-                  <span class="rounded-[2px] bg-signal px-1.5 py-0.5 text-xs font-bold text-on-signal">−{d.discountPct}%</span>
+                  <span class="font-display text-2xl font-medium text-signal">{d.currency}{d.salePrice}</span>
+                  <span class="rounded-[var(--radius)] bg-signal px-1.5 py-0.5 text-xs font-bold text-on-signal">−{d.discountPct}%</span>
                 </span>
-                <span data-when-ended class="hidden font-display text-2xl font-semibold">{d.currency}{d.price}</span>
+                <span data-when-ended class="hidden font-display text-2xl font-medium">{d.currency}{d.price}</span>
               </span>
             ) : (
-              <span class="font-display text-2xl font-semibold">{d.currency}{d.price}</span>
+              <span class="font-display text-2xl font-medium">{d.currency}{d.price}</span>
             )
-          ) : <span class="font-display text-2xl font-semibold">—</span>}
+          ) : <span class="font-display text-2xl font-medium">—</span>}
         </div>
         {!soon && d.onSale && d.saleEndsAt && (
-          <div data-when-promo class="mt-4 rounded-[2px] border border-hair bg-signal-wash p-3">
+          <div data-when-promo class="mt-4 rounded-[var(--radius)] border border-hair bg-signal-wash p-3">
             <Countdown deadline={d.saleEndsAt} compact />
           </div>
         )}
@@ -150,19 +150,19 @@ const t = useTranslations(locale);
         <div class="flex items-end justify-between gap-4">
           <div>
             <p data-reveal class="font-mono text-xs uppercase tracking-[0.18em] text-fg-muted">{t.templateDetail.interactiveDemo}</p>
-            <h2 data-reveal style="transition-delay:80ms" class="mt-2 font-display text-2xl font-semibold sm:text-3xl">{t.templateDetail.exploreLivePrefix}{d.title}{t.templateDetail.exploreLiveSuffix}</h2>
+            <h2 data-reveal style="transition-delay:80ms" class="mt-2 font-display text-2xl font-medium sm:text-3xl">{t.templateDetail.exploreLivePrefix}{d.title}{t.templateDetail.exploreLiveSuffix}</h2>
           </div>
           <a href={d.demoUrl} target="_blank" rel="noopener" class="hidden items-center gap-2 rounded-full border border-hair-strong px-5 py-2.5 text-sm font-medium transition hover:bg-panel-2 sm:inline-flex">
             {t.templateDetail.openNewTab}
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M9 7h8v8"/></svg>
           </a>
         </div>
-        <div data-reveal-scale class="mt-6 overflow-hidden rounded-[2px] border border-hair bg-panel ">
+        <div data-reveal-scale class="mt-6 overflow-hidden rounded-[var(--radius)] border border-hair bg-panel ">
           <div class="flex items-center gap-1.5 border-b border-hair px-4 py-3">
             <span class="h-2.5 w-2.5 rounded-full bg-[#ff5f57]"></span>
             <span class="h-2.5 w-2.5 rounded-full bg-[#febc2e]"></span>
             <span class="h-2.5 w-2.5 rounded-full bg-[#28c840]"></span>
-            <span class="ml-3 truncate rounded-[2px] bg-panel-2 px-3 py-1 text-xs text-fg-muted">{d.title.toLowerCase()}.myshopify.com</span>
+            <span class="ml-3 truncate rounded-[var(--radius)] bg-panel-2 px-3 py-1 text-xs text-fg-muted">{d.title.toLowerCase()}.myshopify.com</span>
             <a href={d.demoUrl} target="_blank" rel="noopener" class="ml-auto text-xs font-medium text-fg-muted sm:hidden">{t.templateDetail.openArrow}</a>
           </div>
           <iframe src={d.demoUrl} title={`${d.title} live demo`} loading="lazy" class="h-[78vh] w-full bg-white"></iframe>
@@ -173,16 +173,16 @@ const t = useTranslations(locale);
   ) : d.gallery.length > 0 ? (
     <section class="overflow-hidden border-y border-hair bg-panel">
       <div class="mx-auto max-w-6xl px-5 py-16">
-        <h2 data-reveal class="font-display text-2xl font-semibold">{t.templateDetail.closerLook}</h2>
+        <h2 data-reveal class="font-display text-2xl font-medium">{t.templateDetail.closerLook}</h2>
         <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:items-start">
           <div class="flex flex-col gap-5">
             {d.gallery.filter((_: string, i: number) => i % 2 === 0).map((src: string, i: number) => (
-              <img src={src} alt={t.templateDetail.screenshotAlt(d.title, i * 2 + 1)} loading="lazy" data-reveal class="w-full rounded-[2px] border border-hair bg-panel" />
+              <img src={src} alt={t.templateDetail.screenshotAlt(d.title, i * 2 + 1)} loading="lazy" data-reveal class="w-full rounded-[var(--radius)] border border-hair bg-panel" />
             ))}
           </div>
           <div data-gallery-parallax class="flex flex-col gap-5 sm:will-change-transform">
             {d.gallery.filter((_: string, i: number) => i % 2 === 1).map((src: string, i: number) => (
-              <img src={src} alt={t.templateDetail.screenshotAlt(d.title, i * 2 + 2)} loading="lazy" data-reveal class="w-full rounded-[2px] border border-hair bg-panel" />
+              <img src={src} alt={t.templateDetail.screenshotAlt(d.title, i * 2 + 2)} loading="lazy" data-reveal class="w-full rounded-[var(--radius)] border border-hair bg-panel" />
             ))}
           </div>
         </div>

@@ -45,6 +45,9 @@ export const en = {
     getTemplate: 'Browse the themes',
     menuAriaLabel: 'Menu',
     getInTouch: 'Get in touch',
+    // Status pill in the utility strip. Says what the studio is doing right
+    // now, not what it sells — the selling is everywhere else on the page.
+    statusAvailable: 'Taking custom projects',
     // Prefix for the language switcher's aria-label: "Switch to " + "English"/"Français".
     switchTo: 'Switch to ',
   },

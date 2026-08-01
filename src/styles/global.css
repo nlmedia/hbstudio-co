@@ -1,44 +1,45 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   HB STUDIO CO - "INK & SIGNAL"
+   HB STUDIO CO - "SIGNAL / STUDIO"
    ============================================================================
-   One grotesque, carried by scale and weight. Never two families mixed for
-   emphasis: use weight or italic of the same face.
+   Animated studio language, in the family of Avista: a light concrete-grey
+   base cut by full-bleed black slabs, one warm accent, generous radii, and
+   motion that is part of the layout rather than decoration on top of it.
 
-   One accent, vermilion, used as a signal and nothing else. It marks the one
-   thing that matters in a view. If two things on a screen are vermilion, one
-   of them is wrong.
+   SLABS, NOT A THEME TOGGLE.
+   The identity is fixed — this is a brand, not a preference. Alternation is
+   done per section with `.on-dark`, which re-declares the colour variables
+   for its subtree. Because every Tailwind colour utility compiles to
+   `var(--color-…)`, one class flips an entire section and everything inside
+   it, with no `dark:` variants anywhere. Never hardcode a hex in a component.
 
-   Two radii, and only two:
-     2px    every surface: card, panel, badge, image frame, text input,
-            textarea and select
-     999px  buttons and button-shaped links, and nothing else
-   Pills inside a square layout are deliberate, not an accident: the only
-   round things on the page are the things you press. Inputs stay square
-   because a pill textarea is not a shape, it is a mistake. Nothing in
-   between these two values — no 8px, no 12px, no 16px.
+   RADII: 999px for anything you press, 24px for cards and media, 14px for
+   small chips and inputs. Rounded is the point here.
 
-   Colour is semantic, never literal. `--color-bg` flips between themes; the
-   Tailwind utilities read the variable, so a single override switches the
-   whole site. Never hardcode a hex in a component.
+   MOTION is the product claim. Speed is what we sell, so nothing may block
+   the first paint or run on the main thread during scroll: transforms and
+   opacity only, one shared easing, and everything collapses under
+   `prefers-reduced-motion`.
    ============================================================================ */
 
 @theme {
-  /* Ink is the default. Light mode is the variation, defined further down.
-     These names are deliberately NOT `surface` / `line`: those two belong to
-     the admin's legacy palette further down, and reusing them would turn every
-     admin card dark while its text stayed dark. Public work uses `panel` and
-     `hair`. */
-  --color-bg: #0a0a0b;          /* page */
-  --color-panel: #121214;       /* raised block, card, input */
-  --color-panel-2: #191a1d;     /* hover, pressed, subtle fill */
-  --color-fg: #ecece9;          /* primary text */
-  --color-fg-muted: #8e8e93;    /* secondary text, WCAG AA on both grounds */
-  --color-hair: rgba(255, 255, 255, 0.11);
-  --color-hair-strong: rgba(255, 255, 255, 0.22);
+  /* Light concrete is the ground. Cool, not cream — a warm beige base would
+     drop this straight into the generic "artisan premium" palette. */
+  --color-bg: #ededec;          /* page */
+  --color-panel: #f7f7f6;       /* raised card on the light ground */
+  --color-panel-2: #e2e2e0;     /* hover, pressed, subtle fill */
+  --color-fg: #0d0d10;          /* primary text */
+  --color-fg-muted: #5c5c64;    /* secondary text, 6.1:1 on the light ground */
+  --color-hair: rgba(13, 13, 16, 0.12);
+  --color-hair-strong: rgba(13, 13, 16, 0.26);
 
-  /* The signal. Identical in both themes: a brand colour that shifts is not a
+  /* The dark slab, referenced by `.on-dark` and by anything that needs the
+     slab colour while sitting on the light ground. */
+  --color-slab: #0a0a0c;
+  --color-slab-2: #141418;
+
+  /* The signal. Identical on both grounds: a brand colour that shifts is not a
      brand colour. Text on it is ink, not white: vermilion + white is 3.5:1 and
      fails AA for body copy, vermilion + ink is 4.3:1 and passes. */
   --color-signal: #f03a17;
@@ -50,8 +51,10 @@
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, monospace;
 
-  --radius: 2px;
-  --radius-pill: 999px;
+  --radius-chip: 14px;   /* chips, inputs, small badges */
+  --radius: 24px;        /* cards, media, panels */
+  --radius-lg: 36px;     /* full-width feature blocks */
+  --radius-pill: 999px;  /* anything you press */
 
   /* ---- Legacy palette: /admin only ----
      The admin is a working tool, not the storefront. It stays exactly as it
@@ -76,19 +79,23 @@
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Light mode. Same signal, inverted ground. Neutral off-white on purpose:
-   a cream or beige page would drop this straight into the warm-artisan
-   palette every generated "premium" site already uses. */
-@media (prefers-color-scheme: light) {
-  :root {
-    --color-bg: #ecece9;
-    --color-panel: #f6f6f4;
-    --color-panel-2: #e2e2de;
-    --color-fg: #0a0a0b;
-    --color-fg-muted: #61616a;
-    --color-hair: rgba(10, 10, 11, 0.12);
-    --color-hair-strong: rgba(10, 10, 11, 0.24);
-  }
+/* ---------- the dark slab ----------
+   Put `.on-dark` on a section and everything inside it inverts: every colour
+   utility in the subtree already reads these variables, so no `dark:` variant
+   is ever needed and nested components need no knowledge of their ground.
+   `color-scheme` is set so native controls (select arrows, scrollbars inside
+   the slab) follow it too. */
+.on-dark {
+  --color-bg: #0a0a0c;
+  --color-panel: #141418;
+  --color-panel-2: #1e1e23;
+  --color-fg: #f2f2f0;
+  --color-fg-muted: #9d9da6;     /* 5.4:1 on the slab */
+  --color-hair: rgba(255, 255, 255, 0.13);
+  --color-hair-strong: rgba(255, 255, 255, 0.26);
+  color-scheme: dark;
+  background-color: var(--color-bg);
+  color: var(--color-fg);
 }
 
 @layer base {
@@ -101,15 +108,15 @@
   }
   body { margin: 0; overflow-x: hidden; }
 
-  /* Display type is tight and heavy. The hierarchy comes from scale and
-     weight, never from colour or a second typeface. */
+  /* Display type is large and open rather than tight and heavy: this language
+     wants headlines that breathe across two or three lines, not compressed
+     slabs of weight. Tracking is barely negative and leading has room for
+     descenders on every line. */
   h1, h2, h3, h4 {
     font-family: var(--font-display);
-    font-weight: 600;
-    letter-spacing: -0.035em;
-    /* Descender clearance: italic words containing y/g/j/p/q clip at
-       leading-none. This floor prevents it site-wide. */
-    line-height: 1.04;
+    font-weight: 500;
+    letter-spacing: -0.022em;
+    line-height: 1.1;
   }
 
   a { color: inherit; text-decoration: none; }
@@ -122,20 +129,92 @@
 }
 
 /* ---------- scroll reveal ----------
-   Kept from the previous build: 53 elements depend on these attributes. */
+   Attribute names are unchanged: 50+ elements across the site depend on them
+   and on the `.in` class added by the observer in Base.astro. */
 [data-reveal] {
   opacity: 0;
-  transform: translateY(22px);
-  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+  transform: translateY(34px);
+  transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
   will-change: opacity, transform;
 }
 [data-reveal].in { opacity: 1; transform: none; }
 [data-reveal-scale] {
   opacity: 0;
-  transform: scale(0.985);
-  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+  transform: scale(0.94);
+  transition: opacity 1s var(--ease), transform 1s var(--ease);
 }
 [data-reveal-scale].in { opacity: 1; transform: none; }
+
+/* Masked line reveal: the line slides up from behind its own clip box, which
+   reads as type being set rather than type fading in. Wrap each line in
+   `.rv-line > span`; the clip lives on the parent. Overflow is hidden with
+   padding room so descenders and accented capitals are never shaved. */
+.rv-line { display: block; overflow: hidden; padding-bottom: 0.12em; margin-bottom: -0.12em; }
+.rv-line > span {
+  display: block;
+  transform: translateY(105%);
+  transition: transform 1.1s var(--ease);
+  will-change: transform;
+}
+[data-reveal].in .rv-line > span { transform: none; }
+
+/* A container whose whole job is to trigger its lines must not also fade and
+   slide itself: two transforms on the same text cancel the masking effect and
+   the line looks like it is merely fading in. The parent stays inert and the
+   observer's `.in` is used purely as the signal. */
+[data-reveal]:has(.rv-line) {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+
+/* ---------- decor ----------
+   Soft radial glows and concentric rings. Purely presentational, so they are
+   `pointer-events: none` and hidden from assistive tech at the call site. */
+.glow {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  pointer-events: none;
+  z-index: 0;
+}
+.rings {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle, transparent 0 29%, var(--color-hair) 29% calc(29% + 1px), transparent calc(29% + 1px)),
+    radial-gradient(circle, transparent 0 42%, var(--color-hair) 42% calc(42% + 1px), transparent calc(42% + 1px)),
+    radial-gradient(circle, transparent 0 55%, var(--color-hair) 55% calc(55% + 1px), transparent calc(55% + 1px));
+}
+
+/* The oversized ghost wordmark that sits behind the hero. Clamped so it always
+   spans the viewport without ever forcing a horizontal scrollbar. */
+.ghost-word {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(4.5rem, 19vw, 20rem);
+  line-height: 0.8;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Hero zoom driven by scroll position, with no JavaScript and no work on the
+   main thread. Browsers without scroll-driven animations simply get the
+   static image, which is a perfectly good hero. */
+@supports (animation-timeline: view()) {
+  .zoom-on-scroll {
+    animation: hero-zoom linear both;
+    animation-timeline: view();
+    animation-range: entry 0% cover 100%;
+  }
+  @keyframes hero-zoom {
+    from { transform: scale(1.14); }
+    to { transform: scale(1); }
+  }
+}
 
 /* ---------- rule: a hairline that means something ----------
    Used to separate real content groups. Never as decoration. */
@@ -223,4 +302,7 @@
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   [data-reveal], [data-reveal-scale] { opacity: 1 !important; transform: none !important; }
+  /* The masked lines must be released too, otherwise they stay parked below
+     their clip box and the headline is simply missing. */
+  .rv-line > span { transform: none !important; }
 }

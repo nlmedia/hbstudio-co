@@ -16,40 +16,40 @@ const t = useTranslations(locale);
 <!-- One card, one accent. Vermilion is spent on the discount and the sale
      price when there is a promotion, and on nothing at all otherwise — the
      "view this theme" line is deliberately not accented. -->
-<a href={href} data-reveal data-promo-scope={soon ? undefined : ''} class="group block overflow-hidden rounded-[2px] border border-hair bg-panel transition duration-300 hover:-translate-y-1 hover:border-hair-strong">
+<a href={href} data-reveal data-promo-scope={soon ? undefined : ''} class="group block overflow-hidden rounded-[var(--radius)] border border-hair bg-panel transition duration-300 hover:-translate-y-1 hover:border-hair-strong">
   <div class="relative aspect-[16/11] overflow-hidden bg-panel-2">
     {d.cover ? (
       <img src={d.cover} alt={d.title} loading="lazy" class="h-full w-full object-cover object-top transition duration-[650ms] ease-out group-hover:scale-[1.04]" />
     ) : (
       <div class="flex h-full w-full items-center justify-center">
-        <span class="font-display text-3xl font-semibold text-fg/10">{d.title}</span>
+        <span class="font-display text-3xl font-medium text-fg/10">{d.title}</span>
       </div>
     )}
     <!-- Scrim darkens toward the page ground, so it reads as a shadow in both
          themes. `from-fg` would wash the image pale in the dark theme. -->
     <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-bg/60 to-transparent opacity-0 transition group-hover:opacity-100"></div>
-    <span class="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-[2px] bg-bg/95 px-2.5 py-1 text-xs font-medium text-fg backdrop-blur" style={d.cms === 'other' ? `color:${cms.accent}` : undefined}>
+    <span class="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-bg/95 px-2.5 py-1 text-xs font-medium text-fg backdrop-blur" style={d.cms === 'other' ? `color:${cms.accent}` : undefined}>
       <CmsLogo cms={d.cms} class="h-3.5 w-3.5" />{cms.label}
     </span>
-    {soon && <span class="absolute right-3 top-3 rounded-[2px] bg-bg px-2.5 py-1 font-mono text-xs text-fg-muted">{t.common.comingSoon}</span>}
+    {soon && <span class="absolute right-3 top-3 rounded-full bg-bg px-2.5 py-1 font-mono text-xs text-fg-muted">{t.common.comingSoon}</span>}
     {!soon && d.onSale && (
-      <span data-when-promo class="absolute right-3 top-3 inline-flex items-center gap-1 rounded-[2px] bg-signal px-2.5 py-1 text-xs font-bold text-on-signal">−{d.discountPct}%</span>
+      <span data-when-promo class="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-signal px-2.5 py-1 text-xs font-bold text-on-signal">−{d.discountPct}%</span>
     )}
   </div>
   <div class="p-5">
     <div class="flex items-baseline justify-between gap-3">
-      <h3 class="font-display text-lg font-semibold">{d.title}</h3>
+      <h3 class="font-display text-lg font-medium">{d.title}</h3>
       {d.price != null ? (
         d.onSale ? (
           <span class="shrink-0 text-right leading-none">
             <span data-when-promo class="flex items-baseline justify-end gap-1.5">
               <span class="text-xs font-medium text-fg-muted line-through">{d.currency}{d.price}</span>
-              <span class="font-display text-lg font-semibold text-signal">{d.currency}{d.salePrice}</span>
+              <span class="font-display text-lg font-medium text-signal">{d.currency}{d.salePrice}</span>
             </span>
-            <span data-when-ended class="hidden font-display text-lg font-semibold">{d.currency}{d.price}</span>
+            <span data-when-ended class="hidden font-display text-lg font-medium">{d.currency}{d.price}</span>
           </span>
         ) : (
-          <span class="shrink-0 font-display text-lg font-semibold">{d.currency}{d.price}</span>
+          <span class="shrink-0 font-display text-lg font-medium">{d.currency}{d.price}</span>
         )
       ) : (
         <span class="shrink-0 text-sm text-fg-muted">—</span>
