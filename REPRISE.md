@@ -1,7 +1,39 @@
 # Reprise du travail — système de licences
 
-**Dernière session : 2026-07-31.** Branche `feat/licenses-phase-1`, poussée sur
-`github.com/nlmedia/hbstudio-co`. `main` est resté à `8c19cff`, rien n'a été fusionné.
+**Mis à jour le 2026-08-01. Tout est fusionné dans `main` et EN LIGNE** sur
+https://hbstudio-co.netlify.app — bilingue FR/EN, système de licences actif.
+
+## ⚠️ Déploiement : ce n'est PAS automatique
+
+Le projet Netlify **n'est pas relié au dépôt Git** (`Current repository: Not linked`).
+Pousser sur `main` ne déploie donc **rien**. Le site a été publié à la main, et il faudra
+recommencer à chaque fois tant que la liaison n'est pas faite.
+
+Deux pièges rencontrés en déployant, qui casseraient aussi un build relié à Git :
+
+1. **Aucun fichier de test dans `netlify/functions/`.** Netlify enregistre chaque fichier
+   de ce dossier comme une fonction, et un nom contenant un point est refusé — le déploiement
+   échoue sur un `422 Incorrect function names` qui ne parle jamais de tests. Les tests
+   vivent dans `tests/`.
+2. **`node_modules` doit être un vrai dossier, jamais un lien symbolique**, sinon
+   l'empaqueteur ne résout pas les dépendances et copie les fonctions brutes : chaque appel
+   meurt sur `Cannot find package 'stripe'`. Un empaquetage correct prend ~2 s ; s'il prend
+   400 ms, il n'a rien empaqueté.
+
+Procédure de déploiement manuel (le chemin du projet a des espaces, voir §1a bis) :
+
+```bash
+export PATH="/opt/homebrew/bin:$PATH"
+git worktree add --detach /tmp/hb-deploy main
+cd /tmp/hb-deploy && cp <projet>/.env .env
+npm install                      # un VRAI node_modules, pas un lien
+npm run build                    # doit produire 26 pages dans dist/
+npx netlify-cli link --id cb16d4a2-8ceb-4bbd-a5fa-ee0d7bbaa6e0
+npx netlify-cli deploy --prod --skip-functions-cache
+```
+
+Le `--skip-functions-cache` est indispensable : sans lui, Netlify réutilise des fonctions
+mises en cache par un déploiement antérieur.
 
 Ce fichier existe pour reprendre sur une autre machine sans rien redécouvrir.
 Lire d'abord les deux premières sections : elles contiennent ce qui bloque.
