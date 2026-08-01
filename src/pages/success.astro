@@ -1,19 +1,23 @@
 ---
 import Base from '../layouts/Base.astro';
+import { useTranslations, getLocaleFromPath } from '../i18n';
+
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = useTranslations(locale);
 ---
-<Base title="Thank you for your purchase — HB Studio Co" description="Your payment was successful.">
+<Base title={t.success.meta.title} description={t.success.meta.description}>
   <section class="mx-auto max-w-2xl px-5 py-32 text-center">
     <div class="mx-auto grid h-16 w-16 place-items-center rounded-2xl grad-accent text-3xl text-white">✓</div>
-    <h1 class="mt-6 font-display text-4xl font-bold">Payment received 🎉</h1>
-    <p class="mt-3 text-muted">Thank you for your purchase. A receipt and your download link are on their way to your email. If it doesn’t arrive within a few minutes, check your spam folder or contact us.</p>
+    <h1 class="mt-6 font-display text-4xl font-bold">{t.success.heading}</h1>
+    <p class="mt-3 text-muted">{t.success.body}</p>
     <div class="mt-8 flex flex-wrap justify-center gap-4">
-      <a href="/templates" class="rounded-full bg-ink px-6 py-3 font-medium text-paper transition hover:bg-accent">Browse more templates</a>
-      <a href="/contact" class="rounded-full border border-line-strong px-6 py-3 font-medium transition hover:bg-surface-2">Need help?</a>
+      <a href="/templates" class="rounded-full bg-ink px-6 py-3 font-medium text-paper transition hover:bg-accent">{t.success.browseMore}</a>
+      <a href="/contact" class="rounded-full border border-line-strong px-6 py-3 font-medium transition hover:bg-surface-2">{t.success.needHelp}</a>
     </div>
     <p class="mt-6 text-xs text-muted" id="ref"></p>
   </section>
-  <script>
+  <script define:vars={{ i18nOrderReference: t.success.orderReference }}>
     const id = new URLSearchParams(location.search).get('session_id');
-    if (id) document.getElementById('ref').textContent = 'Order reference: ' + id.slice(-12);
+    if (id) document.getElementById('ref').textContent = i18nOrderReference + id.slice(-12);
   </script>
 </Base>

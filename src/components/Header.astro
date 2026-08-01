@@ -41,7 +41,7 @@ const altLabel = altLocale === 'fr' ? 'Français' : 'English';
       <a
         href={altHref}
         hreflang={altLocale}
-        aria-label={`Switch to ${altLabel}`}
+        aria-label={`${t.nav.switchTo}${altLabel}`}
         class="hidden items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs font-medium text-ink/60 transition hover:border-line-strong hover:text-ink sm:inline-flex"
       >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>

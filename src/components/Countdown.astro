@@ -5,8 +5,13 @@
  * When the deadline passes it hides itself and, if wrapped in a
  * `[data-promo-scope]` element, swaps `[data-when-promo]` → `[data-when-ended]`.
  */
+import { useTranslations, getLocaleFromPath } from '../i18n';
+
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = useTranslations(locale);
+
 interface Props { deadline: string; dark?: boolean; label?: string; compact?: boolean; class?: string; }
-const { deadline, dark = false, label = 'Limited offer — ends in', compact = false, class: extra = '' } = Astro.props;
+const { deadline, dark = false, label = t.countdown.defaultLabel, compact = false, class: extra = '' } = Astro.props;
 
 const cell = dark
   ? 'bg-white/10 text-paper ring-1 ring-white/15'
@@ -15,7 +20,7 @@ const unit = dark ? 'text-paper/55' : 'text-paper/60';
 const labelCls = dark ? 'text-paper/70' : 'text-accent';
 const numSize = compact ? 'text-lg' : 'text-2xl';
 const cellSize = compact ? 'min-w-[2.6rem] px-1.5 py-1' : 'min-w-[3.25rem] px-2 py-1.5';
-const cells = [['cd-d', 'Days'], ['cd-h', 'Hrs'], ['cd-m', 'Min'], ['cd-s', 'Sec']] as const;
+const cells = [['cd-d', t.countdown.days], ['cd-h', t.countdown.hrs], ['cd-m', t.countdown.min], ['cd-s', t.countdown.sec]] as const;
 ---
 <div data-countdown data-deadline={deadline} class:list={['inline-block', extra]}>
   <p class:list={['mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide', labelCls]}>

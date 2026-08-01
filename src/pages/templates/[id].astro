@@ -4,6 +4,7 @@ import DeviceMockup from '../../components/DeviceMockup.astro';
 import Countdown from '../../components/Countdown.astro';
 import { CMS } from '../../data/cms';
 import { getTemplates } from '../../lib/catalog';
+import { useTranslations, getLocaleFromPath } from '../../i18n';
 
 export async function getStaticPaths() {
   const all = await getTemplates();
@@ -15,8 +16,10 @@ const d = entry.data;
 const c = CMS[d.cms as keyof typeof CMS];
 const soon = d.status === 'coming-soon';
 const bodyParagraphs = (d.body || '').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = useTranslations(locale);
 ---
-<Base title={`${d.title} — ${c.label} template | HB Studio Co`} description={d.tagline} image={d.cover ?? '/brand/og.jpg'}>
+<Base title={t.templateDetail.meta.title(d.title, c.label)} description={d.tagline} image={d.cover ?? '/brand/og.jpg'}>
   <!-- HERO -->
   <section class="bg-ink text-paper">
     <div class="mx-auto grid max-w-6xl gap-10 px-5 py-16 lg:grid-cols-2 lg:items-center">
@@ -29,7 +32,7 @@ const bodyParagraphs = (d.body || '').split(/\n\s*\n/).map((p) => p.trim()).filt
         <p class="mt-5 max-w-md text-paper/60">{d.description}</p>
         {soon ? (
           <div class="mt-8">
-            <a href="/contact" class="inline-block rounded-full bg-paper px-6 py-3 font-medium text-ink transition hover:bg-accent hover:text-white">Notify me at launch</a>
+            <a href="/contact" class="inline-block rounded-full bg-paper px-6 py-3 font-medium text-ink transition hover:bg-accent hover:text-white">{t.templateDetail.notifyLaunch}</a>
           </div>
         ) : (
           <div class="mt-8" data-promo-scope>
@@ -42,16 +45,16 @@ const bodyParagraphs = (d.body || '').split(/\n\s*\n/).map((p) => p.trim()).filt
               <a href="#" data-checkout={entry.id} data-tier="single" class="rounded-full bg-paper px-6 py-3 font-medium text-ink transition hover:bg-accent hover:text-white">
                 {d.onSale ? (
                   <>
-                    <span data-when-promo>Buy — <span class="text-ink/45 line-through">{d.currency}{d.price}</span> {d.currency}{d.salePrice}</span>
-                    <span data-when-ended class="hidden">Buy — {d.currency}{d.price}</span>
+                    <span data-when-promo>{t.templateDetail.buyPrefix}<span class="text-ink/45 line-through">{d.currency}{d.price}</span> {d.currency}{d.salePrice}</span>
+                    <span data-when-ended class="hidden">{t.templateDetail.buyPrefix}{d.currency}{d.price}</span>
                   </>
                 ) : (
-                  <>Buy — {d.currency}{d.price}</>
+                  <>{t.templateDetail.buyPrefix}{d.currency}{d.price}</>
                 )}
               </a>
-              {d.demoUrl && <a href={d.demoUrl} target="_blank" rel="noopener" class="rounded-full border border-white/25 px-6 py-3 font-medium transition hover:bg-white/10">Live demo</a>}
+              {d.demoUrl && <a href={d.demoUrl} target="_blank" rel="noopener" class="rounded-full border border-white/25 px-6 py-3 font-medium transition hover:bg-white/10">{t.common.liveDemo}</a>}
             </div>
-            <p class="mt-3 text-sm text-paper/50">One-time payment · 1 site · 12 months of updates</p>
+            <p class="mt-3 text-sm text-paper/50">{t.templateDetail.oneTimeSingleSite}</p>
           </div>
         )}
       </div>
@@ -77,7 +80,7 @@ const bodyParagraphs = (d.body || '').split(/\n\s*\n/).map((p) => p.trim()).filt
       </div>
       {d.features.length > 0 && (
         <>
-          <h2 class="mt-10 font-display text-2xl font-bold">What's inside</h2>
+          <h2 class="mt-10 font-display text-2xl font-bold">{t.templateDetail.whatsInside}</h2>
           <ul class="mt-5 grid gap-3 sm:grid-cols-2">
             {d.features.map((f: string) => (
               <li class="flex gap-3 text-sm text-ink/80">
@@ -91,7 +94,7 @@ const bodyParagraphs = (d.body || '').split(/\n\s*\n/).map((p) => p.trim()).filt
     <aside class="lg:col-span-1">
       <div class="sticky top-24 rounded-2xl border border-line bg-surface p-6" data-promo-scope>
         <div class="flex items-baseline justify-between gap-2">
-          <span class="text-sm text-muted">Price</span>
+          <span class="text-sm text-muted">{t.templateDetail.priceLabel}</span>
           {d.price != null ? (
             d.onSale ? (
               <span class="text-right">
@@ -116,23 +119,23 @@ const bodyParagraphs = (d.body || '').split(/\n\s*\n/).map((p) => p.trim()).filt
           {d.tags.map((t: string) => <span class="mr-1.5 inline-block rounded-full bg-surface-2 px-2.5 py-1 text-xs">{t}</span>)}
         </div>
         {soon ? (
-          <a href="/contact" class="mt-5 block rounded-full bg-ink px-6 py-3 text-center font-medium text-paper transition hover:bg-accent">Notify me</a>
+          <a href="/contact" class="mt-5 block rounded-full bg-ink px-6 py-3 text-center font-medium text-paper transition hover:bg-accent">{t.common.notifyMe}</a>
         ) : (
           <>
             <div class="mt-5 space-y-2">
               <a href="#" data-checkout={entry.id} data-tier="single" class="block rounded-full bg-ink px-6 py-3 text-center font-medium text-paper transition hover:bg-accent">
-                Single license — 1 site · {d.currency}{d.effectivePrice}
+                {t.templateDetail.singleLicensePrefix}{d.currency}{d.effectivePrice}
               </a>
               {d.extendedPrice != null && (
                 <a href="#" data-checkout={entry.id} data-tier="extended" class="block rounded-full border border-line-strong px-6 py-3 text-center font-medium transition hover:bg-surface-2">
-                  Extended — 5 sites · {d.currency}{d.extendedPrice}
+                  {t.templateDetail.extendedLicensePrefix}{d.currency}{d.extendedPrice}
                 </a>
               )}
             </div>
-            <p class="mt-3 text-center text-xs text-muted">One-time payment · 12 months of updates included</p>
+            <p class="mt-3 text-center text-xs text-muted">{t.templateDetail.oneTimeIncluded}</p>
           </>
         )}
-        {d.docsUrl && <a href={d.docsUrl} target="_blank" rel="noopener" class="mt-2 block text-center text-sm font-medium text-accent-2 hover:underline">Read the documentation →</a>}
+        {d.docsUrl && <a href={d.docsUrl} target="_blank" rel="noopener" class="mt-2 block text-center text-sm font-medium text-accent-2 hover:underline">{t.templateDetail.readDocs}</a>}
       </div>
     </aside>
   </section>
@@ -143,11 +146,11 @@ const bodyParagraphs = (d.body || '').split(/\n\s*\n/).map((p) => p.trim()).filt
       <div class="mx-auto max-w-6xl px-5 py-16">
         <div class="flex items-end justify-between gap-4">
           <div>
-            <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">Interactive demo</p>
-            <h2 data-reveal style="transition-delay:80ms" class="mt-2 font-display text-2xl font-bold sm:text-3xl">Explore {d.title} live</h2>
+            <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">{t.templateDetail.interactiveDemo}</p>
+            <h2 data-reveal style="transition-delay:80ms" class="mt-2 font-display text-2xl font-bold sm:text-3xl">{t.templateDetail.exploreLivePrefix}{d.title}{t.templateDetail.exploreLiveSuffix}</h2>
           </div>
           <a href={d.demoUrl} target="_blank" rel="noopener" class="hidden items-center gap-2 rounded-full border border-line-strong px-5 py-2.5 text-sm font-medium transition hover:bg-surface-2 sm:inline-flex">
-            Open in new tab
+            {t.templateDetail.openNewTab}
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M9 7h8v8"/></svg>
           </a>
         </div>
@@ -157,26 +160,26 @@ const bodyParagraphs = (d.body || '').split(/\n\s*\n/).map((p) => p.trim()).filt
             <span class="h-2.5 w-2.5 rounded-full bg-[#febc2e]"></span>
             <span class="h-2.5 w-2.5 rounded-full bg-[#28c840]"></span>
             <span class="ml-3 truncate rounded-md bg-surface-2 px-3 py-1 text-xs text-muted">{d.title.toLowerCase()}.myshopify.com</span>
-            <a href={d.demoUrl} target="_blank" rel="noopener" class="ml-auto text-xs font-medium text-accent sm:hidden">Open ↗</a>
+            <a href={d.demoUrl} target="_blank" rel="noopener" class="ml-auto text-xs font-medium text-accent sm:hidden">{t.templateDetail.openArrow}</a>
           </div>
           <iframe src={d.demoUrl} title={`${d.title} live demo`} loading="lazy" class="h-[78vh] w-full bg-white"></iframe>
         </div>
-        <p class="mt-3 text-center text-xs text-muted">Fully interactive — click through the storefront. (Cart &amp; checkout are disabled in the demo.)</p>
+        <p class="mt-3 text-center text-xs text-muted">{t.templateDetail.demoNote}</p>
       </div>
     </section>
   ) : d.gallery.length > 0 ? (
     <section class="overflow-hidden border-y border-line bg-surface/30">
       <div class="mx-auto max-w-6xl px-5 py-16">
-        <h2 data-reveal class="font-display text-2xl font-bold">A closer look</h2>
+        <h2 data-reveal class="font-display text-2xl font-bold">{t.templateDetail.closerLook}</h2>
         <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:items-start">
           <div class="flex flex-col gap-5">
             {d.gallery.filter((_: string, i: number) => i % 2 === 0).map((src: string, i: number) => (
-              <img src={src} alt={`${d.title} screenshot ${i * 2 + 1}`} loading="lazy" data-reveal class="w-full rounded-2xl border border-line bg-surface shadow-sm" />
+              <img src={src} alt={t.templateDetail.screenshotAlt(d.title, i * 2 + 1)} loading="lazy" data-reveal class="w-full rounded-2xl border border-line bg-surface shadow-sm" />
             ))}
           </div>
           <div data-gallery-parallax class="flex flex-col gap-5 sm:will-change-transform">
             {d.gallery.filter((_: string, i: number) => i % 2 === 1).map((src: string, i: number) => (
-              <img src={src} alt={`${d.title} screenshot ${i * 2 + 2}`} loading="lazy" data-reveal class="w-full rounded-2xl border border-line bg-surface shadow-sm" />
+              <img src={src} alt={t.templateDetail.screenshotAlt(d.title, i * 2 + 2)} loading="lazy" data-reveal class="w-full rounded-2xl border border-line bg-surface shadow-sm" />
             ))}
           </div>
         </div>
@@ -216,6 +219,6 @@ const bodyParagraphs = (d.body || '').split(/\n\s*\n/).map((p) => p.trim()).filt
   </script>
 
   <section class="mx-auto max-w-6xl px-5 py-12 text-center">
-    <a href="/templates" class="text-sm font-medium text-accent hover:underline">← Back to all templates</a>
+    <a href="/templates" class="text-sm font-medium text-accent hover:underline">{t.templateDetail.backToAll}</a>
   </section>
 </Base>

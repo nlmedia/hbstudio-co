@@ -1,14 +1,18 @@
 ---
 import Base from '../layouts/Base.astro';
+import { useTranslations, getLocaleFromPath } from '../i18n';
+
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = useTranslations(locale);
 ---
-<Base title="Checkout cancelled — HB Studio Co" description="Your checkout was cancelled.">
+<Base title={t.cancel.meta.title} description={t.cancel.meta.description}>
   <section class="mx-auto max-w-2xl px-5 py-32 text-center">
     <div class="mx-auto grid h-16 w-16 place-items-center rounded-2xl bg-surface-2 text-3xl">↩</div>
-    <h1 class="mt-6 font-display text-4xl font-bold">Checkout cancelled</h1>
-    <p class="mt-3 text-muted">No charge was made. Whenever you’re ready, your template is one click away.</p>
+    <h1 class="mt-6 font-display text-4xl font-bold">{t.cancel.heading}</h1>
+    <p class="mt-3 text-muted">{t.cancel.body}</p>
     <div class="mt-8 flex flex-wrap justify-center gap-4">
-      <a href="/#pricing" class="rounded-full bg-ink px-6 py-3 font-medium text-paper transition hover:bg-accent">Back to pricing</a>
-      <a href="/templates" class="rounded-full border border-line-strong px-6 py-3 font-medium transition hover:bg-surface-2">Browse templates</a>
+      <a href="/#pricing" class="rounded-full bg-ink px-6 py-3 font-medium text-paper transition hover:bg-accent">{t.cancel.backToPricing}</a>
+      <a href="/templates" class="rounded-full border border-line-strong px-6 py-3 font-medium transition hover:bg-surface-2">{t.common.browseTemplates}</a>
     </div>
   </section>
 </Base>

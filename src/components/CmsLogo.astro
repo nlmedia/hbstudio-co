@@ -4,8 +4,12 @@
  * woocommerce; a generic "more platforms" glyph for the `other` bucket.
  */
 import type { CmsKey } from '../data/cms';
+import { useTranslations, getLocaleFromPath } from '../i18n';
 interface Props { cms: CmsKey; class?: string; }
 const { cms, class: extra = 'h-7 w-7' } = Astro.props;
+
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = useTranslations(locale);
 
 const FILE: Partial<Record<CmsKey, string>> = {
   shopify: '/cms/shopify.svg',
@@ -15,7 +19,7 @@ const FILE: Partial<Record<CmsKey, string>> = {
 const src = FILE[cms];
 ---
 {src ? (
-  <img src={src} alt={`${cms} logo`} loading="lazy" class:list={['object-contain', extra]} />
+  <img src={src} alt={`${cms} ${t.cmsLogo.logoAltSuffix}`} loading="lazy" class:list={['object-contain', extra]} />
 ) : (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class:list={[extra]}>
     <rect x="3" y="3" width="7" height="7" rx="1.5" />

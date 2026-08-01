@@ -4,6 +4,7 @@ import TemplateCard from '../../components/TemplateCard.astro';
 import CmsLogo from '../../components/CmsLogo.astro';
 import { CMS, CMS_ORDER } from '../../data/cms';
 import { getTemplates } from '../../lib/catalog';
+import { useTranslations, getLocaleFromPath } from '../../i18n';
 
 export async function getStaticPaths() {
   return CMS_ORDER.map((cms) => ({ params: { cms } }));
@@ -12,13 +13,15 @@ export async function getStaticPaths() {
 const { cms } = Astro.params;
 const c = CMS[cms as keyof typeof CMS];
 const all = (await getTemplates()).filter((t) => t.data.cms === cms);
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = useTranslations(locale);
 ---
-<Base title={`${c.label} templates — HB Studio Co`} description={c.blurb}>
+<Base title={t.category.meta.title(c.label)} description={c.blurb}>
   <section class="relative overflow-hidden border-b border-line">
     <div class="orb -right-32 -top-40 h-[34rem] w-[34rem]" style={`background:${c.accent}22`}></div>
     <div class="relative mx-auto max-w-6xl px-5 pb-14 pt-16">
       <nav class="flex flex-wrap gap-2">
-        <a href="/templates" class="rounded-full border border-line px-4 py-2 text-sm font-medium text-ink/65 transition hover:border-line-strong hover:text-ink">All</a>
+        <a href="/templates" class="rounded-full border border-line px-4 py-2 text-sm font-medium text-ink/65 transition hover:border-line-strong hover:text-ink">{t.common.all}</a>
         {CMS_ORDER.map((k) => (
           <a href={`/category/${k}`} class:list={['rounded-full px-4 py-2 text-sm font-medium transition', k === cms ? 'bg-ink text-paper' : 'border border-line text-ink/65 hover:border-line-strong hover:text-ink']}>{CMS[k].label}</a>
         ))}
@@ -42,9 +45,9 @@ const all = (await getTemplates()).filter((t) => t.data.cms === cms);
       </div>
     ) : (
       <div data-reveal-scale class="rounded-3xl border border-dashed border-line-strong bg-surface p-14 text-center">
-        <h2 class="font-display text-2xl font-semibold">{c.label} templates are coming</h2>
-        <p class="mx-auto mt-2 max-w-md text-muted">We're crafting {c.label} templates with the same care as our Shopify work. Want to be first to know?</p>
-        <a href="/contact" class="mt-7 inline-block rounded-full bg-ink px-6 py-3 font-medium text-paper transition hover:bg-accent">Notify me</a>
+        <h2 class="font-display text-2xl font-semibold">{t.category.comingHeading(c.label)}</h2>
+        <p class="mx-auto mt-2 max-w-md text-muted">{t.category.comingBody(c.label)}</p>
+        <a href="/contact" class="mt-7 inline-block rounded-full bg-ink px-6 py-3 font-medium text-paper transition hover:bg-accent">{t.common.notifyMe}</a>
       </div>
     )}
   </section>

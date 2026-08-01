@@ -5,6 +5,7 @@ import DeviceMockup from '../components/DeviceMockup.astro';
 import CmsLogo from '../components/CmsLogo.astro';
 import { CMS, CMS_ORDER } from '../data/cms';
 import { getTemplates } from '../lib/catalog';
+import { useTranslations, getLocaleFromPath } from '../i18n';
 
 const all = await getTemplates();
 const featured = all.filter((t) => t.data.featured || t.data.status === 'published').slice(0, 3);
@@ -12,12 +13,10 @@ const counts = Object.fromEntries(CMS_ORDER.map((k) => [k, all.filter((t) => t.d
 const availableCount = all.filter((t) => t.data.status === 'published').length;
 const marquee = ['Shopify', 'WordPress', 'WooCommerce', 'Webflow', 'Framer', 'Squarespace', 'Wix'];
 
-const steps = [
-  ['01', 'Choose', 'Browse the catalogue and pick the template that fits your brand and platform.'],
-  ['02', 'Buy & download', 'Secure one-time checkout. Your theme ZIP and docs are delivered instantly.'],
-  ['03', 'Install', 'Upload to your platform and follow the illustrated, bilingual documentation.'],
-  ['04', 'Launch', 'Add your products and content, then go live with a fast, polished store.'],
-];
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = useTranslations(locale);
+
+const steps = t.home.howItWorks.steps.map((s, i) => [String(i + 1).padStart(2, '0'), s.title, s.body]);
 
 const testimonials = [
   { name: 'Camille Renaud', role: 'Founder, Maison Lou', quote: 'Atelier made our store look like a brand three times our size. We launched in a weekend and conversions jumped within the first month.', rating: 5, c: '#6d4aff' },
@@ -28,15 +27,7 @@ const testimonials = [
   { name: 'Marco Conti', role: 'Founder, Conti Leather', quote: 'Premium feel, fair price, and real support that answers fast. Exactly what an independent shop needs.', rating: 5, c: '#7a5cff' },
 ];
 
-const faqs = [
-  ['Which platforms do you support?', 'Today: Shopify (live), with WordPress and WooCommerce coming soon. More platforms (Webflow, Framer) are on the roadmap.'],
-  ['Do I need any paid apps?', 'No. Our themes build in the features most stores pay apps for — slide-out cart, free-shipping bar, filters, urgency and more.'],
-  ['How do I install a template?', 'After purchase you download a ZIP and upload it in your platform’s theme area. Each template ships with step-by-step bilingual documentation.'],
-  ['Do I get updates?', 'Yes — every template includes 12 months of free updates. New versions install alongside your live theme, so nothing is overwritten, and once the window ends your site keeps running with every version released while it was active.'],
-  ['What does the license cover?', 'The Single license covers one store. Extended covers up to 5 stores and client work. All-Access unlocks every template for a year.'],
-  ['Can you build something custom?', 'Absolutely. We take on custom template and design work — tell us about your project on the contact page.'],
-  ['What’s your refund policy?', 'Because templates are instant digital downloads, sales are final — but we’ll happily help by email if anything isn’t working.'],
-];
+const faqs = t.home.faq.items.map((item) => [item.q, item.a]);
 ---
 <Base>
   <!-- HERO -->
@@ -47,27 +38,26 @@ const faqs = [
       <div class="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
         <div>
           <p data-reveal class="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-xs tracking-wide text-ink/70 shadow-sm">
-            <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-3"></span> Creative studio · Premium templates
+            <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-3"></span> {t.home.hero.badge}
           </p>
           <h1 class="mt-6 font-display text-[clamp(2.6rem,6vw,5rem)] font-bold leading-[0.96]">
-            <span data-reveal class="block" style="transition-delay:60ms">Templates that make</span>
-            <span data-reveal class="block" style="transition-delay:140ms">your store look <span class="text-grad">expensive</span>.</span>
+            <span data-reveal class="block" style="transition-delay:60ms">{t.home.hero.titleLine1}</span>
+            <span data-reveal class="block" style="transition-delay:140ms">{t.home.hero.titleLine2Prefix}<span class="text-grad">{t.home.hero.titleLine2Emphasis}</span>{t.home.hero.titleLine2Suffix}</span>
           </h1>
           <p data-reveal style="transition-delay:240ms" class="mt-6 max-w-xl text-lg text-ink/65">
-            HB Studio Co designs fast, conversion-ready website templates for Shopify, WordPress,
-            WooCommerce — and more platforms on the way. One studio, every stack.
+            {t.home.hero.subtitle}
           </p>
           <div data-reveal style="transition-delay:320ms" class="mt-8 flex flex-wrap items-center gap-4">
             <a href="/templates" class="group inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 font-medium text-paper transition hover:bg-accent">
-              Browse templates
+              {t.common.browseTemplates}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="transition group-hover:translate-x-1"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </a>
-            <a href="/demo/atelier/index.html" target="_blank" rel="noopener" class="rounded-full border border-line-strong px-6 py-3 font-medium transition hover:bg-surface-2">Live demo</a>
+            <a href="/demo/atelier/index.html" target="_blank" rel="noopener" class="rounded-full border border-line-strong px-6 py-3 font-medium transition hover:bg-surface-2">{t.common.liveDemo}</a>
           </div>
           <dl data-reveal style="transition-delay:420ms" class="mt-14 grid max-w-md grid-cols-3 gap-6 border-t border-line pt-8">
-            <div><dt class="font-display text-4xl font-bold"><span data-count={availableCount} data-suffix="+">0</span></dt><dd class="mt-1 text-sm text-muted">Templates</dd></div>
-            <div><dt class="font-display text-4xl font-bold"><span data-count="4">0</span></dt><dd class="mt-1 text-sm text-muted">Platforms</dd></div>
-            <div><dt class="font-display text-4xl font-bold"><span data-count="100" data-suffix="%">0</span></dt><dd class="mt-1 text-sm text-muted">App-free</dd></div>
+            <div><dt class="font-display text-4xl font-bold"><span data-count={availableCount} data-suffix="+">0</span></dt><dd class="mt-1 text-sm text-muted">{t.home.hero.statTemplates}</dd></div>
+            <div><dt class="font-display text-4xl font-bold"><span data-count="4">0</span></dt><dd class="mt-1 text-sm text-muted">{t.home.hero.statPlatforms}</dd></div>
+            <div><dt class="font-display text-4xl font-bold"><span data-count="100" data-suffix="%">0</span></dt><dd class="mt-1 text-sm text-muted">{t.home.hero.statAppFree}</dd></div>
           </dl>
         </div>
 
@@ -98,10 +88,10 @@ const faqs = [
   <section class="mx-auto max-w-6xl px-5 py-24">
     <div class="flex items-end justify-between gap-4">
       <div>
-        <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">By platform</p>
-        <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">Pick your stack</h2>
+        <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">{t.home.categories.eyebrow}</p>
+        <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">{t.home.categories.heading}</h2>
       </div>
-      <a href="/templates" class="link-underline hidden text-sm font-medium text-accent sm:block">All templates →</a>
+      <a href="/templates" class="link-underline hidden text-sm font-medium text-accent sm:block">{t.home.categories.viewAll}</a>
     </div>
     <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
       {CMS_ORDER.map((k, i) => {
@@ -115,7 +105,7 @@ const faqs = [
             <h3 class="relative mt-5 font-display text-xl font-semibold">{c.label}</h3>
             <p class="relative mt-1 text-sm text-muted">{c.blurb}</p>
             <p class="relative mt-5 text-sm font-medium" style={`color:${c.accent}`}>
-              {c.available ? `${counts[k]} available →` : 'Coming soon'}
+              {c.available ? t.home.categories.available(counts[k]) : t.common.comingSoon}
             </p>
           </a>
         );
@@ -128,10 +118,10 @@ const faqs = [
     <div class="mx-auto max-w-6xl px-5 py-24">
       <div class="flex items-end justify-between gap-4">
         <div>
-          <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">Featured</p>
-          <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">Fresh from the studio</h2>
+          <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">{t.home.featured.eyebrow}</p>
+          <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">{t.home.featured.heading}</h2>
         </div>
-        <a href="/templates" class="link-underline hidden text-sm font-medium text-accent sm:block">View all →</a>
+        <a href="/templates" class="link-underline hidden text-sm font-medium text-accent sm:block">{t.home.featured.viewAll}</a>
       </div>
       <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {featured.map((entry) => <TemplateCard entry={entry} />)}
@@ -141,14 +131,14 @@ const faqs = [
 
   <!-- HOW IT WORKS -->
   <section class="mx-auto max-w-6xl px-5 py-24">
-    <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">How it works</p>
-    <h2 data-reveal style="transition-delay:80ms" class="mt-3 max-w-2xl font-display text-4xl font-bold sm:text-5xl">From cart to live store in four steps.</h2>
+    <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">{t.home.howItWorks.eyebrow}</p>
+    <h2 data-reveal style="transition-delay:80ms" class="mt-3 max-w-2xl font-display text-4xl font-bold sm:text-5xl">{t.home.howItWorks.heading}</h2>
     <div class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {steps.map(([n, t, b], i) => (
+      {steps.map(([n, title, body], i) => (
         <div data-reveal style={`transition-delay:${i * 80}ms`} class="relative rounded-2xl border border-line bg-surface p-6">
           <span class="font-display text-5xl font-bold text-accent-soft">{n}</span>
-          <h3 class="mt-3 font-display text-lg font-semibold">{t}</h3>
-          <p class="mt-1.5 text-sm text-muted">{b}</p>
+          <h3 class="mt-3 font-display text-lg font-semibold">{title}</h3>
+          <p class="mt-1.5 text-sm text-muted">{body}</p>
         </div>
       ))}
     </div>
@@ -157,21 +147,14 @@ const faqs = [
   <!-- WHY -->
   <section class="border-y border-line bg-surface-2/50">
     <div class="mx-auto max-w-6xl px-5 py-24">
-      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">Why HB Studio Co</p>
-      <h2 data-reveal style="transition-delay:80ms" class="mt-3 max-w-2xl font-display text-4xl font-bold sm:text-5xl">Built like products, not just pretty themes.</h2>
+      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">{t.home.why.eyebrow}</p>
+      <h2 data-reveal style="transition-delay:80ms" class="mt-3 max-w-2xl font-display text-4xl font-bold sm:text-5xl">{t.home.why.heading}</h2>
       <div class="mt-14 grid gap-px overflow-hidden rounded-3xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
-        {[
-          ['⚡', 'Fast by design', 'Inlined critical CSS, lazy responsive images and Core-Web-Vitals-minded builds.'],
-          ['🧩', 'No paid apps', 'The features you need are built in — no monthly app subscriptions.'],
-          ['🌍', 'Multilingual', 'Storefront copy translated and ready for international stores.'],
-          ['♿', 'Accessible', 'Keyboard navigation, visible focus and reduced-motion support throughout.'],
-          ['🎨', 'Truly editable', 'Sections, blocks and presets — restyle everything without code.'],
-          ['📖', 'Real documentation', 'Illustrated, bilingual guides and a demo-rebuild appendix.'],
-        ].map(([icon, title, body], i) => (
+        {t.home.why.items.map((item, i) => (
           <div data-reveal style={`transition-delay:${(i % 3) * 80}ms`} class="group bg-surface p-7 transition hover:bg-surface-2">
-            <div class="grid h-12 w-12 place-items-center rounded-xl bg-accent-soft text-xl transition group-hover:scale-110">{icon}</div>
-            <h3 class="mt-5 font-display text-lg font-semibold">{title}</h3>
-            <p class="mt-1.5 text-sm text-muted">{body}</p>
+            <div class="grid h-12 w-12 place-items-center rounded-xl bg-accent-soft text-xl transition group-hover:scale-110">{item.icon}</div>
+            <h3 class="mt-5 font-display text-lg font-semibold">{item.title}</h3>
+            <p class="mt-1.5 text-sm text-muted">{item.body}</p>
           </div>
         ))}
       </div>
@@ -181,9 +164,9 @@ const faqs = [
   <!-- RESPONSIVE SHOWCASE -->
   <section class="overflow-hidden border-y border-line bg-surface-2/50">
     <div class="mx-auto max-w-6xl px-5 py-24 pb-32 text-center">
-      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">Responsive by default</p>
-      <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">Looks great on every screen</h2>
-      <p data-reveal style="transition-delay:160ms" class="mx-auto mt-4 max-w-xl text-muted">Every template is crafted mobile-first — fluid layouts, fast images and touch-friendly navigation, from desktop to phone.</p>
+      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">{t.home.responsive.eyebrow}</p>
+      <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">{t.home.responsive.heading}</h2>
+      <p data-reveal style="transition-delay:160ms" class="mx-auto mt-4 max-w-xl text-muted">{t.home.responsive.body}</p>
       <div data-reveal-scale style="transition-delay:240ms" class="mx-auto mt-20 max-w-3xl">
         <DeviceMockup desktop="/templates/atelier/home-full.jpg" mobile="/templates/atelier/home-mobile.jpg" />
       </div>
@@ -219,8 +202,8 @@ const faqs = [
   <section class="border-y border-line bg-surface-2/50">
     <div class="mx-auto max-w-3xl px-5 py-24">
     <div class="text-center">
-      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">FAQ</p>
-      <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">Good questions</h2>
+      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">{t.home.faq.eyebrow}</p>
+      <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">{t.home.faq.heading}</h2>
     </div>
     <div class="mt-10 space-y-3">
       {faqs.map(([q, a], i) => (
@@ -243,14 +226,14 @@ const faqs = [
     <div data-reveal-scale class="mt-20 overflow-hidden rounded-3xl border border-line bg-surface p-10 sm:p-14">
       <div class="grid items-center gap-8 lg:grid-cols-2">
         <div>
-          <h2 class="font-display text-3xl font-bold sm:text-4xl">New templates, first.</h2>
-          <p class="mt-3 max-w-md text-muted">Join the list for launch announcements, new platforms and the occasional discount. No spam.</p>
+          <h2 class="font-display text-3xl font-bold sm:text-4xl">{t.home.newsletter.heading}</h2>
+          <p class="mt-3 max-w-md text-muted">{t.home.newsletter.body}</p>
         </div>
         <form name="newsletter" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="/thanks" class="flex flex-col gap-3 sm:flex-row">
           <input type="hidden" name="form-name" value="newsletter" />
-          <p class="hidden"><label>Don't fill: <input name="bot-field" /></label></p>
-          <input type="email" name="email" required placeholder="you@brand.com" class="w-full rounded-full border border-line bg-paper px-5 py-3.5 outline-none transition focus:border-accent" />
-          <button type="submit" class="shrink-0 rounded-full bg-ink px-6 py-3.5 font-medium text-paper transition hover:bg-accent">Notify me</button>
+          <p class="hidden"><label>{t.home.newsletter.honeypotLabel}<input name="bot-field" /></label></p>
+          <input type="email" name="email" required placeholder={t.home.newsletter.placeholder} class="w-full rounded-full border border-line bg-paper px-5 py-3.5 outline-none transition focus:border-accent" />
+          <button type="submit" class="shrink-0 rounded-full bg-ink px-6 py-3.5 font-medium text-paper transition hover:bg-accent">{t.home.newsletter.submit}</button>
         </form>
       </div>
     </div>
@@ -260,12 +243,12 @@ const faqs = [
   <section class="mx-auto max-w-6xl px-5 pb-28">
     <div data-reveal-scale class="relative overflow-hidden rounded-[2rem] bg-ink px-8 py-20 text-center text-paper sm:px-16">
       <div class="orb left-1/2 top-0 h-72 w-72 -translate-x-1/2" style="background:rgba(109,74,255,0.45)"></div>
-      <p class="relative text-sm font-medium uppercase tracking-[0.2em] text-accent-2">Custom work</p>
-      <h2 class="relative mt-3 font-display text-4xl font-bold sm:text-5xl">Need something <span class="text-grad">made to measure</span>?</h2>
-      <p class="relative mx-auto mt-4 max-w-md text-paper/65">We design and build custom templates and full storefronts. Tell us about your project.</p>
+      <p class="relative text-sm font-medium uppercase tracking-[0.2em] text-accent-2">{t.home.customCta.eyebrow}</p>
+      <h2 class="relative mt-3 font-display text-4xl font-bold sm:text-5xl">{t.home.customCta.headingPrefix}<span class="text-grad">{t.home.customCta.headingEmphasis}</span>{t.home.customCta.headingSuffix}</h2>
+      <p class="relative mx-auto mt-4 max-w-md text-paper/65">{t.home.customCta.body}</p>
       <div class="relative mt-9 flex flex-wrap justify-center gap-4">
-        <a href="/contact" class="rounded-full bg-paper px-7 py-3.5 font-medium text-ink transition hover:bg-accent hover:text-white">Start a project</a>
-        <a href="/templates" class="rounded-full border border-white/25 px-7 py-3.5 font-medium transition hover:bg-white/10">Browse templates</a>
+        <a href="/contact" class="rounded-full bg-paper px-7 py-3.5 font-medium text-ink transition hover:bg-accent hover:text-white">{t.common.startProject}</a>
+        <a href="/templates" class="rounded-full border border-white/25 px-7 py-3.5 font-medium transition hover:bg-white/10">{t.common.browseTemplates}</a>
       </div>
     </div>
   </section>
