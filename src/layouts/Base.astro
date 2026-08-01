@@ -68,6 +68,13 @@ const xDefaultUrl = new URL(localizePath(Astro.url.pathname, 'en'), Astro.site);
     <Footer />
     <div id="toast" role="status" aria-live="polite"></div>
 
+    {/*
+      ⚠️ `define:vars` ships this block to the browser VERBATIM — Astro does not
+      compile it. Plain JavaScript only: a single TypeScript annotation here
+      (`as HTMLElement`, `msg: string`) is a syntax error that kills the whole
+      script at parse time, silently. That once left every `[data-reveal]`
+      element stuck at opacity 0 with nothing in the console pointing at it.
+    */}
     <script
       define:vars={{
         i18nRedirecting: t.base.redirecting,
@@ -93,12 +100,12 @@ const xDefaultUrl = new URL(localizePath(Astro.url.pathname, 'en'), Astro.site);
         const cio = new IntersectionObserver((entries) => {
           entries.forEach((e) => {
             if (!e.isIntersecting) return;
-            const el = e.target as HTMLElement;
+            const el = e.target;
             cio.unobserve(el);
             const target = parseFloat(el.dataset.count || '0');
             const suffix = el.dataset.suffix || '';
             const dur = 1400; const t0 = performance.now();
-            const tick = (now: number) => {
+            const tick = (now) => {
               const p = Math.min((now - t0) / dur, 1);
               const eased = 1 - Math.pow(1 - p, 3);
               el.textContent = Math.round(target * eased).toString() + suffix;
@@ -120,8 +127,8 @@ const xDefaultUrl = new URL(localizePath(Astro.url.pathname, 'en'), Astro.site);
 
       // Toast helper
       const toast = document.getElementById('toast');
-      let toastTimer: any;
-      function showToast(msg: string) {
+      let toastTimer;
+      function showToast(msg) {
         if (!toast) return;
         toast.textContent = msg;
         toast.classList.add('show');
@@ -135,7 +142,7 @@ const xDefaultUrl = new URL(localizePath(Astro.url.pathname, 'en'), Astro.site);
       document.querySelectorAll('[data-checkout]').forEach((b) => {
         b.addEventListener('click', async (e) => {
           e.preventDefault();
-          const el = b as HTMLElement;
+          const el = b;
           if (el.getAttribute('aria-busy') === 'true') return;
           const slug = el.getAttribute('data-checkout');
           const tier = el.getAttribute('data-tier') || 'single';

@@ -15,26 +15,34 @@
 // emails and database-sourced catalogue content (template titles, taglines,
 // descriptions, features, tags, CMS labels/blurbs) are out of scope — those
 // are handled elsewhere.
+//
+// COPY RULES — read before editing:
+//   1. Titles and headings lead with what people actually search for
+//      ("Shopify theme"), not with the brand. The brand goes last.
+//   2. Never claim what we cannot back: no customer counts, no store counts,
+//      no "trusted by" figures. Every claim here is checkable against what a
+//      buyer receives.
+//   3. Say the concrete thing. "No monthly app fees" beats "app-free".
 export const en = {
   // Reused verbatim, word-for-word, in 2+ places — kept here once so every
   // call site stays in sync instead of drifting.
   common: {
     comingSoon: 'Coming soon',
-    notifyMe: 'Notify me',
-    browseTemplates: 'Browse templates',
+    notifyMe: 'Email me at launch',
+    browseTemplates: 'Browse the themes',
     startProject: 'Start a project',
-    liveDemo: 'Live demo',
+    liveDemo: 'See it live',
     all: 'All',
   },
 
   nav: {
     homeAriaLabel: 'HB Studio Co — home',
-    templates: 'Templates',
+    templates: 'Themes',
     shopify: 'Shopify',
     wordpress: 'WordPress',
     woocommerce: 'WooCommerce',
-    agency: 'Agency',
-    getTemplate: 'Get a template',
+    agency: 'Studio',
+    getTemplate: 'Browse the themes',
     menuAriaLabel: 'Menu',
     getInTouch: 'Get in touch',
     // Prefix for the language switcher's aria-label: "Switch to " + "English"/"Français".
@@ -43,9 +51,9 @@ export const en = {
 
   footer: {
     tagline:
-      'Premium, conversion-ready website templates for Shopify, WordPress, WooCommerce — and more platforms on the way.',
-    catalogueHeading: 'Catalogue',
-    allTemplates: 'All templates',
+      'Premium Shopify themes built to convert — fast, accessible, and free of monthly app fees. WordPress and WooCommerce next.',
+    catalogueHeading: 'Themes',
+    allTemplates: 'All themes',
     shopify: 'Shopify',
     wordpress: 'WordPress',
     woocommerce: 'WooCommerce',
@@ -60,149 +68,152 @@ export const en = {
   // default <title>/description used only by pages that don't override
   // them, and the checkout button's toast/label copy).
   base: {
-    defaultTitle: 'HB Studio Co — Premium website templates',
+    defaultTitle: 'Premium Shopify Themes, Built to Convert | HB Studio Co',
     defaultDescription:
-      'HB Studio Co designs premium, conversion-ready templates for Shopify, WordPress, WooCommerce and more.',
+      'Fast, accessible Shopify themes with the conversion tools built in — slide-out cart, filters, mega menu. No monthly app fees. 12 months of updates and bilingual docs included.',
     skipToContent: 'Skip to content',
-    redirecting: 'Redirecting…',
-    checkoutSoon: '🛒 Checkout opens soon — contact us to pre-order.',
-    checkoutUnavailable: 'Checkout is unavailable right now — please try again shortly.',
-    networkError: 'Network error — please try again.',
+    redirecting: 'Taking you to checkout…',
+    checkoutSoon: '🛒 Checkout opens shortly — email us to pre-order.',
+    checkoutUnavailable: "Checkout isn't responding right now. Please try again in a moment.",
+    networkError: 'Connection lost — please try again.',
   },
 
   // src/pages/index.astro
   home: {
     hero: {
-      badge: 'Creative studio · Premium templates',
-      titleLine1: 'Templates that make',
-      titleLine2Prefix: 'your store look ',
-      titleLine2Emphasis: 'expensive',
+      badge: 'Independent studio · Premium themes',
+      titleLine1: 'Premium Shopify themes',
+      titleLine2Prefix: 'built to ',
+      titleLine2Emphasis: 'convert',
       titleLine2Suffix: '.',
       subtitle:
-        'HB Studio Co designs fast, conversion-ready website templates for Shopify, WordPress, WooCommerce — and more platforms on the way. One studio, every stack.',
-      statTemplates: 'Templates',
+        'Every selling tool your store needs is already in the theme — slide-out cart, free-shipping bar, filters, quick view. No monthly app fees, no bloat. Shopify today; WordPress and WooCommerce next.',
+      statTemplates: 'Themes',
       statPlatforms: 'Platforms',
-      statAppFree: 'App-free',
+      statAppFree: 'App fees',
     },
     categories: {
       eyebrow: 'By platform',
-      heading: 'Pick your stack',
-      viewAll: 'All templates →',
+      heading: 'Choose your platform',
+      viewAll: 'All themes →',
       available: (count: number) => `${count} available →`,
     },
     featured: {
       eyebrow: 'Featured',
       heading: 'Fresh from the studio',
-      viewAll: 'View all →',
+      viewAll: 'See all →',
     },
     howItWorks: {
       eyebrow: 'How it works',
-      heading: 'From cart to live store in four steps.',
+      heading: 'Online in an afternoon, not a fortnight.',
       steps: [
-        { title: 'Choose', body: 'Browse the catalogue and pick the template that fits your brand and platform.' },
-        { title: 'Buy & download', body: 'Secure one-time checkout. Your theme ZIP and docs are delivered instantly.' },
-        { title: 'Install', body: 'Upload to your platform and follow the illustrated, bilingual documentation.' },
-        { title: 'Launch', body: 'Add your products and content, then go live with a fast, polished store.' },
+        { title: 'Pick your theme', body: 'Click through the full live demo before you spend a penny. What you see is what you install.' },
+        { title: 'Buy and download', body: 'One payment, no subscription. Your ZIP and documentation land in your inbox straight away.' },
+        { title: 'Install it', body: 'Upload the theme in your admin and follow the illustrated guide, step by step, in English or French.' },
+        { title: 'Make it yours', body: 'Swap the demo content for your own, pick a preset, and go live — no developer needed.' },
       ],
     },
     why: {
-      eyebrow: 'Why HB Studio Co',
-      heading: 'Built like products, not just pretty themes.',
+      eyebrow: 'Why buy here',
+      heading: 'Themes built like products, not like showreels.',
       items: [
-        { icon: '⚡', title: 'Fast by design', body: 'Inlined critical CSS, lazy responsive images and Core-Web-Vitals-minded builds.' },
-        { icon: '🧩', title: 'No paid apps', body: 'The features you need are built in — no monthly app subscriptions.' },
-        { icon: '🌍', title: 'Multilingual', body: 'Storefront copy translated and ready for international stores.' },
-        { icon: '♿', title: 'Accessible', body: 'Keyboard navigation, visible focus and reduced-motion support throughout.' },
-        { icon: '🎨', title: 'Truly editable', body: 'Sections, blocks and presets — restyle everything without code.' },
-        { icon: '📖', title: 'Real documentation', body: 'Illustrated, bilingual guides and a demo-rebuild appendix.' },
+        { icon: '⚡', title: 'Fast where it counts', body: 'Critical CSS inlined, images lazy and responsive, Core Web Vitals watched on every build.' },
+        { icon: '🧩', title: 'No monthly app fees', body: 'Cart drawer, free-shipping bar, filters, quick view and urgency ship inside the theme. Nothing to rent.' },
+        { icon: '🌍', title: 'Ready to sell abroad', body: 'Storefront copy translated into around 50 locales, with currency and country selectors built in.' },
+        { icon: '♿', title: 'Accessible by default', body: 'Keyboard navigation, visible focus states and reduced-motion support — WCAG 2.0 AA throughout.' },
+        { icon: '🎨', title: 'Editable without code', body: 'Sections, blocks and one-click presets. Restyle the whole store without opening a file.' },
+        { icon: '📖', title: 'Documentation that answers', body: 'Illustrated guides in English and French, including how to rebuild the demo exactly as you saw it.' },
       ],
     },
     responsive: {
-      eyebrow: 'Responsive by default',
-      heading: 'Looks great on every screen',
-      body: 'Every template is crafted mobile-first — fluid layouts, fast images and touch-friendly navigation, from desktop to phone.',
+      eyebrow: 'Mobile first',
+      heading: 'Most of your customers are on a phone',
+      body: 'So that is where we start. Fluid layouts, images sized for the screen that requests them, and navigation built for thumbs — not a desktop design squeezed down.',
     },
     // NOTE: the testimonials section's eyebrow/heading and its `const
     // testimonials` data + rendering intentionally stay OUT of this
     // dictionary — that whole section is left untouched (see task notes).
     faq: {
       eyebrow: 'FAQ',
-      heading: 'Good questions',
+      heading: 'Before you buy',
       items: [
-        { q: 'Which platforms do you support?', a: 'Today: Shopify (live), with WordPress and WooCommerce coming soon. More platforms (Webflow, Framer) are on the roadmap.' },
-        { q: 'Do I need any paid apps?', a: 'No. Our themes build in the features most stores pay apps for — slide-out cart, free-shipping bar, filters, urgency and more.' },
-        { q: 'How do I install a template?', a: 'After purchase you download a ZIP and upload it in your platform’s theme area. Each template ships with step-by-step bilingual documentation.' },
-        { q: 'Do I get updates?', a: 'Yes — every template includes 12 months of free updates. New versions install alongside your live theme, so nothing is overwritten, and once the window ends your site keeps running with every version released while it was active.' },
-        { q: 'What does the license cover?', a: 'The Single license covers one store. Extended covers up to 5 stores and client work. All-Access unlocks every template for a year.' },
-        { q: 'Can you build something custom?', a: 'Absolutely. We take on custom template and design work — tell us about your project on the contact page.' },
-        { q: 'What’s your refund policy?', a: 'Because templates are instant digital downloads, sales are final — but we’ll happily help by email if anything isn’t working.' },
+        { q: 'Which platforms can I use these on?', a: 'Shopify today, with Online Store 2.0 themes. WordPress and WooCommerce are in the works, and Webflow and Framer are on the roadmap. Join the list and we will tell you the day each one lands.' },
+        { q: 'Will I need to pay for apps on top?', a: 'No. The features most stores rent by the month — slide-out cart, free-shipping bar, filters, quick view, low-stock urgency — are built into the theme. You own them with the licence.' },
+        { q: 'How do I install it?', a: 'You download a ZIP and upload it in your platform’s theme area. It takes a few minutes, and every theme ships with an illustrated guide in English and French that walks through it.' },
+        { q: 'Do I have to be a developer?', a: 'No. Everything is edited through sections, blocks and presets in your platform’s own editor. If you can write a product description, you can set up the theme.' },
+        { q: 'What do updates cover?', a: 'Twelve months of free updates from your purchase. New versions install alongside your live theme, so nothing you have customised is overwritten. When the twelve months end your store keeps working, and you keep every version released while your window was open.' },
+        { q: 'What does the licence allow?', a: 'A Single licence covers one store. An Extended licence covers up to five, which is what you want if you build for clients. Both are one-time payments.' },
+        { q: 'Can you build something custom?', a: 'Yes. We take on custom themes and full storefronts. Tell us what you have in mind on the contact page and we will tell you honestly whether we are the right studio for it.' },
+        { q: 'Can I get a refund?', a: 'Themes are instant digital downloads, so sales are final — which is exactly why the entire demo is open before you buy. If something is not working, email us and we will fix it.' },
       ],
     },
     newsletter: {
-      heading: 'New templates, first.',
-      body: 'Join the list for launch announcements, new platforms and the occasional discount. No spam.',
+      heading: 'Know before everyone else.',
+      body: 'New themes, new platforms and the occasional launch discount. A handful of emails a year, nothing else, and one click to leave.',
       honeypotLabel: "Don't fill: ",
-      placeholder: 'you@brand.com',
-      submit: 'Notify me',
+      placeholder: 'you@yourbrand.com',
+      submit: 'Keep me posted',
     },
     customCta: {
       eyebrow: 'Custom work',
       headingPrefix: 'Need something ',
       headingEmphasis: 'made to measure',
       headingSuffix: '?',
-      body: 'We design and build custom templates and full storefronts. Tell us about your project.',
+      body: 'We design and build custom themes and complete storefronts. Tell us about the project — we will tell you if we are the right fit.',
     },
   },
 
   // src/pages/about.astro
   about: {
     meta: {
-      title: 'About — HB Studio Co',
-      description: 'HB Studio Co is a creative studio designing premium website templates for modern brands.',
+      title: 'About the Studio — Shopify Theme Designers | HB Studio Co',
+      description:
+        'HB Studio Co is an independent studio building premium Shopify themes — fast, accessible, documented, and free of monthly app fees.',
     },
     hero: {
       eyebrow: 'The studio',
-      titlePrefix: 'We design templates ',
+      titlePrefix: 'We build themes ',
       titleEmphasis: 'like products',
       titleSuffix: '.',
       body:
-        'HB Studio Co is a creative studio building premium, conversion-ready website templates. We obsess over speed, accessibility and the small details that make a store feel expensive — then we document everything so you can make it yours.',
+        'HB Studio Co is a small independent studio. We build premium, conversion-focused themes for the platforms merchants actually sell on — then we document them properly, because a theme nobody can configure is not finished.',
     },
     whatWeDo: {
       heading: 'What we do',
       body:
-        'One studio, every stack. We ship templates for the platforms brands actually use — starting with Shopify, expanding to WordPress, WooCommerce and beyond. Every template is built in-house, sold with bilingual documentation and 12 months of free updates.',
+        'One studio, every stack. We build in-house, sell direct, and support what we ship. Shopify first, WordPress and WooCommerce next. Every theme comes with bilingual documentation and twelve months of free updates — and we would rather release one theme we are proud of than four we are not.',
       availableNow: 'Available now',
     },
     weBelieve: {
       heading: 'What we believe',
       items: [
-        { title: 'Speed is a feature', body: 'A beautiful store that loads slowly still loses sales. We build for Core Web Vitals from the first line.' },
-        { title: 'No app tax', body: 'The essentials are built in. You should not pay monthly for a countdown timer or a slide-out cart.' },
-        { title: 'Made to edit', body: 'Sections, blocks and presets mean you can restyle everything without touching code.' },
-        { title: 'Documented properly', body: 'Illustrated, bilingual guides — including how to rebuild the demo exactly.' },
+        { title: 'Speed is a feature', body: 'A beautiful store that loads slowly still loses the sale. We build for Core Web Vitals from the first line, not as a cleanup pass.' },
+        { title: 'You should not rent basics', body: 'A cart drawer and a countdown are not premium features. They belong in the theme you bought, not in a monthly subscription.' },
+        { title: 'Built to be edited', body: 'Sections, blocks and presets, so you can change your mind about the whole look without touching a line of code.' },
+        { title: 'Documented, not just shipped', body: 'Illustrated guides in English and French — including exactly how to rebuild the demo you clicked through before buying.' },
       ],
     },
     workWithUs: {
       heading: 'Work with us',
-      body: 'Need a custom template or a tweak to an existing one? Tell us about your project.',
+      body: 'Need a custom theme, or a change to one of ours? Tell us about the project and we will come back to you honestly.',
     },
   },
 
   // src/pages/contact.astro
   contact: {
     meta: {
-      title: 'Contact — HB Studio Co',
-      description: 'Get in touch with HB Studio Co about templates, custom work or support.',
+      title: 'Contact HB Studio Co — Themes, Custom Work & Support',
+      description:
+        'A question about a theme, a custom project or support? Message HB Studio Co — we reply within one to two business days.',
     },
     eyebrow: 'Contact',
     heading: "Let's talk",
-    intro: 'A question about a template, a custom project, or support? Send a message — we usually reply within 1–2 business days.',
+    intro: 'A question before buying, a custom project, or something not working? Write to us — a human replies, within one to two business days.',
     honeypotLabel: "Don't fill this out: ",
     nameLabel: 'Name',
     emailLabel: 'Email',
     subjectLabel: 'Subject',
-    subjectOptions: ['Template question', 'Custom project', 'Support', 'Other'],
+    subjectOptions: ['Question about a theme', 'Custom project', 'Support', 'Something else'],
     messageLabel: 'Message',
     submit: 'Send message',
   },
@@ -210,100 +221,101 @@ export const en = {
   // src/pages/templates/index.astro
   templatesIndex: {
     meta: {
-      title: 'All templates — HB Studio Co',
-      description: 'Browse premium templates for Shopify, WordPress, WooCommerce and more.',
+      title: 'All Shopify Themes — Premium & App-Free | HB Studio Co',
+      description:
+        'Browse every HB Studio Co theme for Shopify, WordPress and WooCommerce. Full live demos, one-time payment, 12 months of updates.',
     },
-    eyebrow: 'Catalogue',
-    heading: 'All templates',
-    subtitle: 'Conversion-ready templates, designed and built in-house. Filter by platform.',
+    eyebrow: 'The catalogue',
+    heading: 'All themes',
+    subtitle: 'Every theme is designed and built in-house, with the full demo open before you buy. Filter by platform.',
   },
 
   // src/pages/templates/[id].astro
   templateDetail: {
     meta: {
-      title: (templateTitle: string, cmsLabel: string) => `${templateTitle} — ${cmsLabel} template | HB Studio Co`,
+      title: (templateTitle: string, cmsLabel: string) => `${templateTitle} — Premium ${cmsLabel} Theme | HB Studio Co`,
     },
-    notifyLaunch: 'Notify me at launch',
+    notifyLaunch: 'Email me at launch',
     buyPrefix: 'Buy — ',
-    oneTimeSingleSite: 'One-time payment · 1 site · 12 months of updates',
+    oneTimeSingleSite: 'One-time payment · 1 store · 12 months of updates',
     whatsInside: "What's inside",
     priceLabel: 'Price',
-    singleLicensePrefix: 'Single license — 1 site · ',
-    extendedLicensePrefix: 'Extended — 5 sites · ',
+    singleLicensePrefix: 'Single licence — 1 store · ',
+    extendedLicensePrefix: 'Extended — 5 stores · ',
     oneTimeIncluded: 'One-time payment · 12 months of updates included',
     readDocs: 'Read the documentation →',
     interactiveDemo: 'Interactive demo',
-    exploreLivePrefix: 'Explore ',
-    exploreLiveSuffix: ' live',
-    openNewTab: 'Open in new tab',
+    exploreLivePrefix: 'Click through ',
+    exploreLiveSuffix: ' yourself',
+    openNewTab: 'Open in a new tab',
     openArrow: 'Open ↗',
-    demoNote: 'Fully interactive — click through the storefront. (Cart & checkout are disabled in the demo.)',
+    demoNote: 'The real thing, not screenshots — browse the whole storefront. (Cart and checkout are switched off in the demo.)',
     closerLook: 'A closer look',
-    backToAll: '← Back to all templates',
-    screenshotAlt: (templateTitle: string, n: number) => `${templateTitle} screenshot ${n}`,
+    backToAll: '← All themes',
+    screenshotAlt: (templateTitle: string, n: number) => `${templateTitle} Shopify theme — screenshot ${n}`,
   },
 
   // src/pages/category/[cms].astro
   category: {
     meta: {
-      title: (cmsLabel: string) => `${cmsLabel} templates — HB Studio Co`,
+      title: (cmsLabel: string) => `${cmsLabel} Themes — Premium & App-Free | HB Studio Co`,
     },
-    comingHeading: (cmsLabel: string) => `${cmsLabel} templates are coming`,
-    comingBody: (cmsLabel: string) => `We're crafting ${cmsLabel} templates with the same care as our Shopify work. Want to be first to know?`,
+    comingHeading: (cmsLabel: string) => `${cmsLabel} themes are on the way`,
+    comingBody: (cmsLabel: string) => `We are building our ${cmsLabel} themes with the same care as our Shopify work — and we would rather take the time. Want to hear the day the first one lands?`,
   },
 
   // src/pages/404.astro
   notFound: {
     meta: { title: 'Page not found — HB Studio Co' },
-    heading: 'This page took a day off',
-    body: "The page you're looking for doesn't exist or has moved.",
-    home: 'Home',
+    heading: 'This page took the day off',
+    body: 'The page you were after does not exist, or it has moved somewhere better.',
+    home: 'Back to home',
   },
 
   // src/pages/success.astro
   success: {
     meta: {
       title: 'Thank you for your purchase — HB Studio Co',
-      description: 'Your payment was successful.',
+      description: 'Your payment went through and your theme is on its way.',
     },
     heading: 'Payment received 🎉',
-    body: "Thank you for your purchase. A receipt and your download link are on their way to your email. If it doesn’t arrive within a few minutes, check your spam folder or contact us.",
-    browseMore: 'Browse more templates',
-    needHelp: 'Need help?',
+    body: 'Your licence key and download link are on their way to your inbox. If nothing arrives within a few minutes, check your spam folder — and if it is not there either, email us and we will sort it out straight away.',
+    browseMore: 'See the other themes',
+    needHelp: 'Something wrong?',
     orderReference: 'Order reference: ',
   },
 
   // src/pages/cancel.astro
   cancel: {
+    heading: 'Checkout cancelled',
     meta: {
       title: 'Checkout cancelled — HB Studio Co',
-      description: 'Your checkout was cancelled.',
+      description: 'Your checkout was cancelled and nothing was charged.',
     },
-    heading: 'Checkout cancelled',
-    body: 'No charge was made. Whenever you’re ready, your template is one click away.',
-    backToPricing: 'Back to pricing',
+    body: 'Nothing was charged. Take your time — the demo stays open, and your theme is one click away whenever you are ready.',
+    backToPricing: 'Back to the themes',
   },
 
   // src/pages/thanks.astro
   thanks: {
     meta: {
-      title: 'Thank you — HB Studio Co',
-      description: 'Your message has been sent.',
+      title: 'Message sent — HB Studio Co',
+      description: 'Your message has reached us.',
     },
     heading: 'Message sent',
-    body: "Thanks for reaching out — we'll get back to you within 1–2 business days.",
+    body: 'Thanks for writing — a human will get back to you within one to two business days.',
     backHome: 'Back to home',
   },
 
   // src/components/TemplateCard.astro
   templateCard: {
-    viewTemplate: 'View template',
+    viewTemplate: 'View this theme',
     endsIn: 'Ends in',
   },
 
   // src/components/Countdown.astro
   countdown: {
-    defaultLabel: 'Limited offer — ends in',
+    defaultLabel: 'Launch offer — ends in',
     days: 'Days',
     hrs: 'Hrs',
     min: 'Min',
