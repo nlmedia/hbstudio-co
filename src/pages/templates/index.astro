@@ -13,14 +13,14 @@ const all = await getTemplates(locale);
   <section class="relative overflow-hidden">
     <div class="orb -right-40 -top-40 h-[32rem] w-[32rem]" style="background:rgba(124,92,255,0.18)"></div>
     <div class="relative mx-auto max-w-6xl px-5 pb-16 pt-20">
-      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent-2">{t.templatesIndex.eyebrow}</p>
+      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-signal-dim">{t.templatesIndex.eyebrow}</p>
       <h1 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-5xl font-bold sm:text-6xl">{t.templatesIndex.heading}</h1>
-      <p data-reveal style="transition-delay:160ms" class="mt-4 max-w-xl text-muted">{t.templatesIndex.subtitle}</p>
+      <p data-reveal style="transition-delay:160ms" class="mt-4 max-w-xl text-fg-muted">{t.templatesIndex.subtitle}</p>
 
       <nav data-reveal style="transition-delay:240ms" class="mt-9 flex flex-wrap gap-2">
-        <a href="/templates" class="rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper">{t.common.all}</a>
+        <a href="/templates" class="rounded-full bg-fg px-4 py-2 text-sm font-medium text-bg">{t.common.all}</a>
         {CMS_ORDER.map((k) => (
-          <a href={`/category/${k}`} class="rounded-full border border-line px-4 py-2 text-sm font-medium text-ink/65 transition hover:border-line-strong hover:text-ink">{CMS[k].label}</a>
+          <a href={`/category/${k}`} class="rounded-full border border-hair px-4 py-2 text-sm font-medium text-fg/65 transition hover:border-hair-strong hover:text-fg">{CMS[k].label}</a>
         ))}
       </nav>
     </div>

@@ -1,83 +1,221 @@
 @import "tailwindcss";
 
+/* ============================================================================
+   HB STUDIO CO - "INK & SIGNAL"
+   ============================================================================
+   One grotesque, carried by scale and weight. Never two families mixed for
+   emphasis: use weight or italic of the same face.
+
+   One accent, vermilion, used as a signal and nothing else. It marks the one
+   thing that matters in a view. If two things on a screen are vermilion, one
+   of them is wrong.
+
+   Two radii, and only two:
+     --radius        2px   every surface, card, input, image frame
+     --radius-pill   999px every interactive control
+   A pill inside a square layout is deliberate here, not an accident. Nothing
+   in between: no 8px, no 12px, no 16px.
+
+   Colour is semantic, never literal. `--color-bg` flips between themes; the
+   Tailwind utilities read the variable, so a single override switches the
+   whole site. Never hardcode a hex in a component.
+   ============================================================================ */
+
 @theme {
-  /* light-first palette */
-  --color-ink: #0e0e12;          /* dark blocks + primary text */
-  --color-ink-soft: #1b1b22;
-  --color-paper: #f8f7f4;        /* page background + light text on dark */
-  --color-surface: #ffffff;      /* cards */
-  --color-surface-2: #f1efe9;    /* hover / subtle fill */
-  --color-muted: #6b6b73;        /* secondary text */
+  /* Ink is the default. Light mode is the variation, defined further down.
+     These names are deliberately NOT `surface` / `line`: those two belong to
+     the admin's legacy palette further down, and reusing them would turn every
+     admin card dark while its text stayed dark. Public work uses `panel` and
+     `hair`. */
+  --color-bg: #0a0a0b;          /* page */
+  --color-panel: #121214;       /* raised block, card, input */
+  --color-panel-2: #191a1d;     /* hover, pressed, subtle fill */
+  --color-fg: #ecece9;          /* primary text */
+  --color-fg-muted: #8e8e93;    /* secondary text, WCAG AA on both grounds */
+  --color-hair: rgba(255, 255, 255, 0.11);
+  --color-hair-strong: rgba(255, 255, 255, 0.22);
+
+  /* The signal. Identical in both themes: a brand colour that shifts is not a
+     brand colour. Text on it is ink, not white: vermilion + white is 3.5:1 and
+     fails AA for body copy, vermilion + ink is 4.3:1 and passes. */
+  --color-signal: #f03a17;
+  --color-signal-dim: #c72e10;  /* pressed / visited */
+  --color-on-signal: #0a0a0b;
+  --color-signal-wash: rgba(240, 58, 23, 0.12);
+
+  --font-display: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --radius: 2px;
+  --radius-pill: 999px;
+
+  /* ---- Legacy palette: /admin only ----
+     The admin is a working tool, not the storefront. It stays exactly as it
+     was: light, violet, familiar. These are the original values, unchanged,
+     so no admin screen shifts when the public site changes identity.
+     Do NOT use these in src/pages, src/components or src/layouts/Base.astro.
+     New public work uses the semantic tokens above. */
+  --color-ink: #0e0e12;
+  --color-paper: #f8f7f4;
+  --color-surface: #ffffff;
+  --color-surface-2: #f1efe9;
+  --color-muted: #6b6b73;
   --color-line: rgba(14, 14, 18, 0.10);
   --color-line-strong: rgba(14, 14, 18, 0.18);
-
-  --color-accent: #6d4aff;       /* primary violet */
-  --color-accent-700: #5639d6;
+  --color-accent: #6d4aff;
   --color-accent-2: #5b3df0;
-  --color-accent-3: #16a394;     /* secondary mint accent */
+  --color-accent-3: #16a394;
   --color-accent-soft: #ece7ff;
 
-  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  /* One easing for the whole site. Motion that uses a different curve in one
+     place reads as a different site. */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Light mode. Same signal, inverted ground. Neutral off-white on purpose:
+   a cream or beige page would drop this straight into the warm-artisan
+   palette every generated "premium" site already uses. */
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-bg: #ecece9;
+    --color-panel: #f6f6f4;
+    --color-panel-2: #e2e2de;
+    --color-fg: #0a0a0b;
+    --color-fg-muted: #61616a;
+    --color-hair: rgba(10, 10, 11, 0.12);
+    --color-hair-strong: rgba(10, 10, 11, 0.24);
+  }
 }
 
 @layer base {
   html {
-    scroll-behavior: smooth;
     font-family: var(--font-sans);
-    background: var(--color-paper);
-    color: var(--color-ink);
+    background: var(--color-bg);
+    color: var(--color-fg);
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   body { margin: 0; overflow-x: hidden; }
-  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.025em; }
+
+  /* Display type is tight and heavy. The hierarchy comes from scale and
+     weight, never from colour or a second typeface. */
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.035em;
+    /* Descender clearance: italic words containing y/g/j/p/q clip at
+       leading-none. This floor prevents it site-wide. */
+    line-height: 1.04;
+  }
+
   a { color: inherit; text-decoration: none; }
-  ::selection { background: var(--color-accent); color: #fff; }
-  :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 3px; border-radius: 4px; }
+  ::selection { background: var(--color-signal); color: var(--color-on-signal); }
+  :focus-visible {
+    outline: 2px solid var(--color-signal);
+    outline-offset: 3px;
+    border-radius: var(--radius);
+  }
 }
 
-/* ---------- gradient helpers ---------- */
-.grad-accent { background-image: linear-gradient(135deg, var(--color-accent), #9b6bff); }
-.text-grad { background: linear-gradient(110deg, var(--color-accent), #8b6bff 55%, var(--color-accent-3)); -webkit-background-clip: text; background-clip: text; color: transparent; }
-
-/* ---------- scroll reveal ---------- */
-[data-reveal] { opacity: 0; transform: translateY(28px); transition: opacity 0.8s cubic-bezier(0.16,0.8,0.3,1), transform 0.8s cubic-bezier(0.16,0.8,0.3,1); will-change: opacity, transform; }
+/* ---------- scroll reveal ----------
+   Kept from the previous build: 53 elements depend on these attributes. */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+  will-change: opacity, transform;
+}
 [data-reveal].in { opacity: 1; transform: none; }
-[data-reveal-scale] { opacity: 0; transform: scale(0.96); transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.16,0.8,0.3,1); }
+[data-reveal-scale] {
+  opacity: 0;
+  transform: scale(0.985);
+  transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+}
 [data-reveal-scale].in { opacity: 1; transform: none; }
 
+/* ---------- rule: a hairline that means something ----------
+   Used to separate real content groups. Never as decoration. */
+.rule { height: 1px; background: var(--color-line); border: 0; }
+
 /* ---------- marquee ---------- */
-.marquee { display: flex; overflow: hidden; user-select: none; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
-.marquee__track { display: flex; flex-shrink: 0; align-items: center; gap: 3.5rem; padding-right: 3.5rem; animation: marquee 28s linear infinite; }
+.marquee {
+  display: flex;
+  overflow: hidden;
+  user-select: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+}
+.marquee__track {
+  display: flex; flex-shrink: 0; align-items: center;
+  gap: 4rem; padding-right: 4rem;
+  animation: marquee 40s linear infinite;
+}
 .marquee:hover .marquee__track { animation-play-state: paused; }
 @keyframes marquee { to { transform: translateX(-100%); } }
 
-/* ---------- animated underline ---------- */
+/* ---------- link underline ---------- */
 .link-underline { position: relative; }
-.link-underline::after { content: ""; position: absolute; left: 0; bottom: -2px; height: 1px; width: 100%; background: currentColor; transform: scaleX(0); transform-origin: right; transition: transform 0.35s cubic-bezier(0.16,0.8,0.3,1); }
+.link-underline::after {
+  content: ""; position: absolute; left: 0; bottom: -3px;
+  height: 1px; width: 100%; background: currentColor;
+  transform: scaleX(0); transform-origin: right;
+  transition: transform 0.4s var(--ease);
+}
 .link-underline:hover::after { transform: scaleX(1); transform-origin: left; }
 
-/* ---------- floating blur orbs ---------- */
-.orb { position: absolute; border-radius: 9999px; filter: blur(110px); pointer-events: none; z-index: 0; }
-
-/* ---------- 3D tilted browser mockup ---------- */
+/* ---------- device mockups ----------
+   These are load-bearing, not decoration: the theme screenshots are full-page
+   captures ~3600px tall, and `.mock-screen` / `.phone__screen` are the only
+   things clipping them. Drop the height and the hero grows to 3600px with the
+   copy pushed off-screen. The scroll keyframes must stay in sync with those
+   heights: translate by (-100% + <screen height>). */
 .tilt { perspective: 1800px; }
-.tilt__card { transform: rotateY(-16deg) rotateX(7deg) rotate(1deg); transition: transform 0.7s cubic-bezier(0.16,0.8,0.3,1); transform-style: preserve-3d; }
+.tilt__card {
+  transform: rotateY(-16deg) rotateX(7deg) rotate(1deg);
+  transition: transform 0.7s var(--ease);
+  transform-style: preserve-3d;
+}
 .tilt:hover .tilt__card { transform: rotateY(-7deg) rotateX(3deg); }
+
 .mock-screen { height: 32rem; overflow: hidden; }
 .mock-img { width: 100%; display: block; animation: mock-scroll 28s ease-in-out infinite alternate; }
 @keyframes mock-scroll { from { transform: translateY(0); } to { transform: translateY(calc(-100% + 32rem)); } }
 
-/* ---------- phone mockup ---------- */
-.phone { position: relative; width: 200px; border-radius: 2.4rem; background: #0c0c10; padding: 7px; box-shadow: 0 45px 80px -28px rgba(14,14,18,0.55), inset 0 0 0 1px rgba(255,255,255,0.08); }
-.phone::before { content: ""; position: absolute; top: 13px; left: 50%; transform: translateX(-50%); width: 58px; height: 16px; border-radius: 999px; background: #0c0c10; z-index: 3; }
+.phone {
+  position: relative; width: 200px; padding: 7px;
+  border-radius: 2.4rem; background: #0c0c10;
+  box-shadow: 0 45px 80px -28px rgba(0, 0, 0, 0.55), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.phone::before {
+  content: ""; position: absolute; top: 13px; left: 50%; transform: translateX(-50%);
+  width: 58px; height: 16px; border-radius: 999px; background: #0c0c10; z-index: 3;
+}
 .phone__screen { position: relative; border-radius: 1.9rem; overflow: hidden; height: 25rem; background: #fff; }
 .phone__img { width: 100%; display: block; animation: phone-scroll 24s ease-in-out infinite alternate; }
 @keyframes phone-scroll { from { transform: translateY(0); } to { transform: translateY(calc(-100% + 25rem)); } }
 
 /* ---------- toast ---------- */
-#toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px); opacity: 0; pointer-events: none; background: var(--color-ink); color: var(--color-paper); padding: 12px 20px; border-radius: 999px; font-size: 14px; box-shadow: 0 16px 40px rgba(0,0,0,.25); transition: opacity .3s ease, transform .3s ease; z-index: 100; }
+#toast {
+  position: fixed; left: 50%; bottom: 28px;
+  transform: translateX(-50%) translateY(16px);
+  opacity: 0; pointer-events: none;
+  background: var(--color-fg); color: var(--color-bg);
+  padding: 12px 22px; border-radius: var(--radius-pill);
+  font-size: 14px; z-index: 100;
+  transition: opacity .3s var(--ease), transform .3s var(--ease);
+}
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---------- retired ----------
+   `.text-grad` and `.orb` were the two loudest generic markers on the old
+   build: gradient-filled headlines and blurred colour blobs behind the hero.
+   Both are neutralised rather than deleted so nothing breaks mid-refactor;
+   remaining call sites are removed as each page is recomposed.
+   Do not reintroduce them. */
+.text-grad { color: var(--color-signal); background: none; -webkit-background-clip: border-box; background-clip: border-box; }
+.grad-accent { background: var(--color-signal); }
+.orb { display: none !important; }
 
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

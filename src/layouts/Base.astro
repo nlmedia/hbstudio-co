@@ -55,12 +55,14 @@ const xDefaultUrl = new URL(localizePath(Astro.url.pathname, 'en'), Astro.site);
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
   </head>
-  <body class="bg-paper text-ink antialiased">
-    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-3 focus:rounded-lg focus:bg-ink focus:px-4 focus:py-2 focus:text-paper">{t.base.skipToContent}</a>
+  <!-- Ground and text colour come from `html` in global.css so the theme flips
+       in one place. Do not put bg-*/text-* utilities back on the body. -->
+  <body class="antialiased">
+    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-3 focus:bg-signal focus:px-4 focus:py-2 focus:text-on-signal">{t.base.skipToContent}</a>
     <Header />
     <main id="main">
       <slot />

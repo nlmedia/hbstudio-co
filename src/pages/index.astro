@@ -37,27 +37,27 @@ const faqs = t.home.faq.items.map((item) => [item.q, item.a]);
     <div class="relative mx-auto max-w-6xl px-5 pb-20 pt-16 sm:pt-24">
       <div class="grid items-center gap-12 lg:grid-cols-[1.05fr_0.95fr]">
         <div>
-          <p data-reveal class="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-3 py-1 text-xs tracking-wide text-ink/70 shadow-sm">
-            <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-accent-3"></span> {t.home.hero.badge}
+          <p data-reveal class="inline-flex items-center gap-2 rounded-full border border-hair bg-panel px-3 py-1 text-xs tracking-wide text-fg/70 shadow-sm">
+            <span class="h-1.5 w-1.5 animate-pulse rounded-full bg-signal-dim"></span> {t.home.hero.badge}
           </p>
           <h1 class="mt-6 font-display text-[clamp(2.6rem,6vw,5rem)] font-bold leading-[0.96]">
             <span data-reveal class="block" style="transition-delay:60ms">{t.home.hero.titleLine1}</span>
             <span data-reveal class="block" style="transition-delay:140ms">{t.home.hero.titleLine2Prefix}<span class="text-grad">{t.home.hero.titleLine2Emphasis}</span>{t.home.hero.titleLine2Suffix}</span>
           </h1>
-          <p data-reveal style="transition-delay:240ms" class="mt-6 max-w-xl text-lg text-ink/65">
+          <p data-reveal style="transition-delay:240ms" class="mt-6 max-w-xl text-lg text-fg/65">
             {t.home.hero.subtitle}
           </p>
           <div data-reveal style="transition-delay:320ms" class="mt-8 flex flex-wrap items-center gap-4">
-            <a href="/templates" class="group inline-flex items-center gap-2 rounded-full bg-ink px-6 py-3 font-medium text-paper transition hover:bg-accent">
+            <a href="/templates" class="group inline-flex items-center gap-2 rounded-full bg-fg px-6 py-3 font-medium text-bg transition hover:bg-signal">
               {t.common.browseTemplates}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="transition group-hover:translate-x-1"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
             </a>
-            <a href="/demo/atelier/index.html" target="_blank" rel="noopener" class="rounded-full border border-line-strong px-6 py-3 font-medium transition hover:bg-surface-2">{t.common.liveDemo}</a>
+            <a href="/demo/atelier/index.html" target="_blank" rel="noopener" class="rounded-full border border-hair-strong px-6 py-3 font-medium transition hover:bg-panel-2">{t.common.liveDemo}</a>
           </div>
-          <dl data-reveal style="transition-delay:420ms" class="mt-14 grid max-w-md grid-cols-3 gap-6 border-t border-line pt-8">
-            <div><dt class="font-display text-4xl font-bold"><span data-count={availableCount} data-suffix="+">0</span></dt><dd class="mt-1 text-sm text-muted">{t.home.hero.statTemplates}</dd></div>
-            <div><dt class="font-display text-4xl font-bold"><span data-count="4">0</span></dt><dd class="mt-1 text-sm text-muted">{t.home.hero.statPlatforms}</dd></div>
-            <div><dt class="font-display text-4xl font-bold"><span data-count="100" data-suffix="%">0</span></dt><dd class="mt-1 text-sm text-muted">{t.home.hero.statAppFree}</dd></div>
+          <dl data-reveal style="transition-delay:420ms" class="mt-14 grid max-w-md grid-cols-3 gap-6 border-t border-hair pt-8">
+            <div><dt class="font-display text-4xl font-bold"><span data-count={availableCount} data-suffix="+">0</span></dt><dd class="mt-1 text-sm text-fg-muted">{t.home.hero.statTemplates}</dd></div>
+            <div><dt class="font-display text-4xl font-bold"><span data-count="4">0</span></dt><dd class="mt-1 text-sm text-fg-muted">{t.home.hero.statPlatforms}</dd></div>
+            <div><dt class="font-display text-4xl font-bold"><span data-count="100" data-suffix="%">0</span></dt><dd class="mt-1 text-sm text-fg-muted">{t.home.hero.statAppFree}</dd></div>
           </dl>
         </div>
 
@@ -70,13 +70,13 @@ const faqs = t.home.faq.items.map((item) => [item.q, item.a]);
   </section>
 
   <!-- MARQUEE -->
-  <section class="border-y border-line bg-surface py-6">
+  <section class="border-y border-hair bg-panel py-6">
     <div class="marquee" aria-hidden="true">
       {[0, 1].map(() => (
         <div class="marquee__track">
           {marquee.map((m) => (
-            <span class="flex items-center gap-3.5 font-display text-2xl font-medium text-ink/25 sm:text-3xl">
-              {m}<span class="text-accent">✦</span>
+            <span class="flex items-center gap-3.5 font-display text-2xl font-medium text-fg/25 sm:text-3xl">
+              {m}<span class="text-signal">✦</span>
             </span>
           ))}
         </div>
@@ -88,22 +88,22 @@ const faqs = t.home.faq.items.map((item) => [item.q, item.a]);
   <section class="mx-auto max-w-6xl px-5 py-24">
     <div class="flex items-end justify-between gap-4">
       <div>
-        <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">{t.home.categories.eyebrow}</p>
+        <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-signal">{t.home.categories.eyebrow}</p>
         <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">{t.home.categories.heading}</h2>
       </div>
-      <a href="/templates" class="link-underline hidden text-sm font-medium text-accent sm:block">{t.home.categories.viewAll}</a>
+      <a href="/templates" class="link-underline hidden text-sm font-medium text-signal sm:block">{t.home.categories.viewAll}</a>
     </div>
     <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
       {CMS_ORDER.map((k, i) => {
         const c = CMS[k];
         return (
-          <a href={`/category/${k}`} data-reveal style={`transition-delay:${i * 90}ms`} class="group relative overflow-hidden rounded-2xl border border-line bg-surface p-6 transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_30px_60px_-25px_rgba(14,14,18,0.25)]">
+          <a href={`/category/${k}`} data-reveal style={`transition-delay:${i * 90}ms`} class="group relative overflow-hidden rounded-2xl border border-hair bg-panel p-6 transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_30px_60px_-25px_rgba(14,14,18,0.25)]">
             <div class="absolute -right-10 -top-10 h-28 w-28 rounded-full opacity-0 blur-2xl transition duration-500 group-hover:opacity-40" style={`background:${c.accent}`}></div>
-            <span class="relative grid h-12 w-12 place-items-center rounded-xl border border-line bg-paper shadow-sm" style={c.key === 'other' ? `color:${c.accent}` : undefined}>
+            <span class="relative grid h-12 w-12 place-items-center rounded-xl border border-hair bg-bg shadow-sm" style={c.key === 'other' ? `color:${c.accent}` : undefined}>
               <CmsLogo cms={c.key} class="h-7 w-7" />
             </span>
             <h3 class="relative mt-5 font-display text-xl font-semibold">{c.label}</h3>
-            <p class="relative mt-1 text-sm text-muted">{c.blurb}</p>
+            <p class="relative mt-1 text-sm text-fg-muted">{c.blurb}</p>
             <p class="relative mt-5 text-sm font-medium" style={`color:${c.accent}`}>
               {c.available ? t.home.categories.available(counts[k]) : t.common.comingSoon}
             </p>
@@ -114,14 +114,14 @@ const faqs = t.home.faq.items.map((item) => [item.q, item.a]);
   </section>
 
   <!-- FEATURED -->
-  <section class="border-y border-line bg-surface-2/50">
+  <section class="border-y border-hair bg-panel-2/50">
     <div class="mx-auto max-w-6xl px-5 py-24">
       <div class="flex items-end justify-between gap-4">
         <div>
-          <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">{t.home.featured.eyebrow}</p>
+          <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-signal">{t.home.featured.eyebrow}</p>
           <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">{t.home.featured.heading}</h2>
         </div>
-        <a href="/templates" class="link-underline hidden text-sm font-medium text-accent sm:block">{t.home.featured.viewAll}</a>
+        <a href="/templates" class="link-underline hidden text-sm font-medium text-signal sm:block">{t.home.featured.viewAll}</a>
       </div>
       <div class="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {featured.map((entry) => <TemplateCard entry={entry} />)}
@@ -131,30 +131,30 @@ const faqs = t.home.faq.items.map((item) => [item.q, item.a]);
 
   <!-- HOW IT WORKS -->
   <section class="mx-auto max-w-6xl px-5 py-24">
-    <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">{t.home.howItWorks.eyebrow}</p>
+    <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-signal">{t.home.howItWorks.eyebrow}</p>
     <h2 data-reveal style="transition-delay:80ms" class="mt-3 max-w-2xl font-display text-4xl font-bold sm:text-5xl">{t.home.howItWorks.heading}</h2>
     <div class="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {steps.map(([n, title, body], i) => (
-        <div data-reveal style={`transition-delay:${i * 80}ms`} class="relative rounded-2xl border border-line bg-surface p-6">
-          <span class="font-display text-5xl font-bold text-accent-soft">{n}</span>
+        <div data-reveal style={`transition-delay:${i * 80}ms`} class="relative rounded-2xl border border-hair bg-panel p-6">
+          <span class="font-display text-5xl font-bold text-signal-wash">{n}</span>
           <h3 class="mt-3 font-display text-lg font-semibold">{title}</h3>
-          <p class="mt-1.5 text-sm text-muted">{body}</p>
+          <p class="mt-1.5 text-sm text-fg-muted">{body}</p>
         </div>
       ))}
     </div>
   </section>
 
   <!-- WHY -->
-  <section class="border-y border-line bg-surface-2/50">
+  <section class="border-y border-hair bg-panel-2/50">
     <div class="mx-auto max-w-6xl px-5 py-24">
-      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">{t.home.why.eyebrow}</p>
+      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-signal">{t.home.why.eyebrow}</p>
       <h2 data-reveal style="transition-delay:80ms" class="mt-3 max-w-2xl font-display text-4xl font-bold sm:text-5xl">{t.home.why.heading}</h2>
-      <div class="mt-14 grid gap-px overflow-hidden rounded-3xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
+      <div class="mt-14 grid gap-px overflow-hidden rounded-3xl border border-hair bg-hair sm:grid-cols-2 lg:grid-cols-3">
         {t.home.why.items.map((item, i) => (
-          <div data-reveal style={`transition-delay:${(i % 3) * 80}ms`} class="group bg-surface p-7 transition hover:bg-surface-2">
-            <div class="grid h-12 w-12 place-items-center rounded-xl bg-accent-soft text-xl transition group-hover:scale-110">{item.icon}</div>
+          <div data-reveal style={`transition-delay:${(i % 3) * 80}ms`} class="group bg-panel p-7 transition hover:bg-panel-2">
+            <div class="grid h-12 w-12 place-items-center rounded-xl bg-signal-wash text-xl transition group-hover:scale-110">{item.icon}</div>
             <h3 class="mt-5 font-display text-lg font-semibold">{item.title}</h3>
-            <p class="mt-1.5 text-sm text-muted">{item.body}</p>
+            <p class="mt-1.5 text-sm text-fg-muted">{item.body}</p>
           </div>
         ))}
       </div>
@@ -162,11 +162,11 @@ const faqs = t.home.faq.items.map((item) => [item.q, item.a]);
   </section>
 
   <!-- RESPONSIVE SHOWCASE -->
-  <section class="overflow-hidden border-y border-line bg-surface-2/50">
+  <section class="overflow-hidden border-y border-hair bg-panel-2/50">
     <div class="mx-auto max-w-6xl px-5 py-24 pb-32 text-center">
-      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">{t.home.responsive.eyebrow}</p>
+      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-signal">{t.home.responsive.eyebrow}</p>
       <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">{t.home.responsive.heading}</h2>
-      <p data-reveal style="transition-delay:160ms" class="mx-auto mt-4 max-w-xl text-muted">{t.home.responsive.body}</p>
+      <p data-reveal style="transition-delay:160ms" class="mx-auto mt-4 max-w-xl text-fg-muted">{t.home.responsive.body}</p>
       <div data-reveal-scale style="transition-delay:240ms" class="mx-auto mt-20 max-w-3xl">
         <DeviceMockup desktop="/templates/atelier/home-full.jpg" mobile="/templates/atelier/home-mobile.jpg" />
       </div>
@@ -176,21 +176,21 @@ const faqs = t.home.faq.items.map((item) => [item.q, item.a]);
   <!-- TESTIMONIALS -->
   <section class="mx-auto max-w-6xl px-5 py-24">
     <div class="text-center">
-      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">{t.home.testimonials.eyebrow}</p>
+      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-signal">{t.home.testimonials.eyebrow}</p>
       <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">{t.home.testimonials.heading}</h2>
     </div>
     <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {testimonials.map((item, i) => (
-        <figure data-reveal style={`transition-delay:${(i % 3) * 80}ms`} class="flex flex-col rounded-2xl border border-line bg-surface p-6">
-          <div class="flex gap-0.5 text-accent" aria-label={t.home.testimonials.ratingAriaLabel(item.rating)}>
+        <figure data-reveal style={`transition-delay:${(i % 3) * 80}ms`} class="flex flex-col rounded-2xl border border-hair bg-panel p-6">
+          <div class="flex gap-0.5 text-signal" aria-label={t.home.testimonials.ratingAriaLabel(item.rating)}>
             {Array.from({ length: item.rating }).map(() => (<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.9 21l1.2-6.8-5-4.9 6.9-1z"/></svg>))}
           </div>
-          <blockquote class="mt-4 flex-1 text-[15px] leading-relaxed text-ink/80">“{item.quote}”</blockquote>
+          <blockquote class="mt-4 flex-1 text-[15px] leading-relaxed text-fg/80">“{item.quote}”</blockquote>
           <figcaption class="mt-5 flex items-center gap-3">
             <span class="grid h-10 w-10 place-items-center rounded-full font-display text-sm font-bold text-white" style={`background:${item.c}`}>{item.name.split(' ').map((n) => n[0]).join('')}</span>
             <span>
               <span class="block text-sm font-semibold">{item.name}</span>
-              <span class="block text-xs text-muted">{item.role}</span>
+              <span class="block text-xs text-fg-muted">{item.role}</span>
             </span>
           </figcaption>
         </figure>
@@ -199,22 +199,22 @@ const faqs = t.home.faq.items.map((item) => [item.q, item.a]);
   </section>
 
   <!-- FAQ -->
-  <section class="border-y border-line bg-surface-2/50">
+  <section class="border-y border-hair bg-panel-2/50">
     <div class="mx-auto max-w-3xl px-5 py-24">
     <div class="text-center">
-      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">{t.home.faq.eyebrow}</p>
+      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-signal">{t.home.faq.eyebrow}</p>
       <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">{t.home.faq.heading}</h2>
     </div>
     <div class="mt-10 space-y-3">
       {faqs.map(([q, a], i) => (
-        <details data-reveal style={`transition-delay:${Math.min(i, 4) * 50}ms`} class="group rounded-2xl border border-line bg-surface px-6 [&[open]]:shadow-[0_18px_40px_-25px_rgba(14,14,18,0.3)]">
+        <details data-reveal style={`transition-delay:${Math.min(i, 4) * 50}ms`} class="group rounded-2xl border border-hair bg-panel px-6 [&[open]]:shadow-[0_18px_40px_-25px_rgba(14,14,18,0.3)]">
           <summary class="flex cursor-pointer list-none items-center justify-between gap-4 py-5 font-medium">
             {q}
-            <span class="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-surface-2 text-accent transition group-open:rotate-45">
+            <span class="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-panel-2 text-signal transition group-open:rotate-45">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
             </span>
           </summary>
-          <p class="pb-5 text-sm leading-relaxed text-muted">{a}</p>
+          <p class="pb-5 text-sm leading-relaxed text-fg-muted">{a}</p>
         </details>
       ))}
     </div>
@@ -223,17 +223,17 @@ const faqs = t.home.faq.items.map((item) => [item.q, item.a]);
 
   <!-- NEWSLETTER -->
   <section class="mx-auto max-w-6xl px-5 pb-24">
-    <div data-reveal-scale class="mt-20 overflow-hidden rounded-3xl border border-line bg-surface p-10 sm:p-14">
+    <div data-reveal-scale class="mt-20 overflow-hidden rounded-3xl border border-hair bg-panel p-10 sm:p-14">
       <div class="grid items-center gap-8 lg:grid-cols-2">
         <div>
           <h2 class="font-display text-3xl font-bold sm:text-4xl">{t.home.newsletter.heading}</h2>
-          <p class="mt-3 max-w-md text-muted">{t.home.newsletter.body}</p>
+          <p class="mt-3 max-w-md text-fg-muted">{t.home.newsletter.body}</p>
         </div>
         <form name="newsletter" method="POST" data-netlify="true" netlify-honeypot="bot-field" action="/thanks" class="flex flex-col gap-3 sm:flex-row">
           <input type="hidden" name="form-name" value="newsletter" />
           <p class="hidden"><label>{t.home.newsletter.honeypotLabel}<input name="bot-field" /></label></p>
-          <input type="email" name="email" required placeholder={t.home.newsletter.placeholder} class="w-full rounded-full border border-line bg-paper px-5 py-3.5 outline-none transition focus:border-accent" />
-          <button type="submit" class="shrink-0 rounded-full bg-ink px-6 py-3.5 font-medium text-paper transition hover:bg-accent">{t.home.newsletter.submit}</button>
+          <input type="email" name="email" required placeholder={t.home.newsletter.placeholder} class="w-full rounded-full border border-hair bg-bg px-5 py-3.5 outline-none transition focus:border-signal" />
+          <button type="submit" class="shrink-0 rounded-full bg-fg px-6 py-3.5 font-medium text-bg transition hover:bg-signal">{t.home.newsletter.submit}</button>
         </form>
       </div>
     </div>
@@ -241,13 +241,13 @@ const faqs = t.home.faq.items.map((item) => [item.q, item.a]);
 
   <!-- CUSTOM / FINAL CTA -->
   <section class="mx-auto max-w-6xl px-5 pb-28">
-    <div data-reveal-scale class="relative overflow-hidden rounded-[2rem] bg-ink px-8 py-20 text-center text-paper sm:px-16">
+    <div data-reveal-scale class="relative overflow-hidden rounded-[2rem] bg-fg px-8 py-20 text-center text-bg sm:px-16">
       <div class="orb left-1/2 top-0 h-72 w-72 -translate-x-1/2" style="background:rgba(109,74,255,0.45)"></div>
-      <p class="relative text-sm font-medium uppercase tracking-[0.2em] text-accent-2">{t.home.customCta.eyebrow}</p>
+      <p class="relative text-sm font-medium uppercase tracking-[0.2em] text-signal-dim">{t.home.customCta.eyebrow}</p>
       <h2 class="relative mt-3 font-display text-4xl font-bold sm:text-5xl">{t.home.customCta.headingPrefix}<span class="text-grad">{t.home.customCta.headingEmphasis}</span>{t.home.customCta.headingSuffix}</h2>
-      <p class="relative mx-auto mt-4 max-w-md text-paper/65">{t.home.customCta.body}</p>
+      <p class="relative mx-auto mt-4 max-w-md text-bg/65">{t.home.customCta.body}</p>
       <div class="relative mt-9 flex flex-wrap justify-center gap-4">
-        <a href="/contact" class="rounded-full bg-paper px-7 py-3.5 font-medium text-ink transition hover:bg-accent hover:text-white">{t.common.startProject}</a>
+        <a href="/contact" class="rounded-full bg-bg px-7 py-3.5 font-medium text-fg transition hover:bg-signal hover:text-white">{t.common.startProject}</a>
         <a href="/templates" class="rounded-full border border-white/25 px-7 py-3.5 font-medium transition hover:bg-white/10">{t.common.browseTemplates}</a>
       </div>
     </div>

@@ -14,10 +14,10 @@ interface Props { deadline: string; dark?: boolean; label?: string; compact?: bo
 const { deadline, dark = false, label = t.countdown.defaultLabel, compact = false, class: extra = '' } = Astro.props;
 
 const cell = dark
-  ? 'bg-white/10 text-paper ring-1 ring-white/15'
-  : 'bg-ink text-paper';
-const unit = dark ? 'text-paper/55' : 'text-paper/60';
-const labelCls = dark ? 'text-paper/70' : 'text-accent';
+  ? 'bg-white/10 text-bg ring-1 ring-white/15'
+  : 'bg-fg text-bg';
+const unit = dark ? 'text-bg/55' : 'text-bg/60';
+const labelCls = dark ? 'text-bg/70' : 'text-signal';
 const numSize = compact ? 'text-lg' : 'text-2xl';
 const cellSize = compact ? 'min-w-[2.6rem] px-1.5 py-1' : 'min-w-[3.25rem] px-2 py-1.5';
 const cells = [['cd-d', t.countdown.days], ['cd-h', t.countdown.hrs], ['cd-m', t.countdown.min], ['cd-s', t.countdown.sec]] as const;
@@ -30,7 +30,7 @@ const cells = [['cd-d', t.countdown.days], ['cd-h', t.countdown.hrs], ['cd-m', t
   <div class="flex items-stretch gap-1.5">
     {cells.map(([k, u], i) => (
       <>
-        {i > 0 && <span class:list={['self-center font-display text-lg font-bold', dark ? 'text-paper/30' : 'text-ink/25']}>:</span>}
+        {i > 0 && <span class:list={['self-center font-display text-lg font-bold', dark ? 'text-bg/30' : 'text-fg/25']}>:</span>}
         <div class:list={['flex flex-col items-center justify-center rounded-lg tabular-nums', cell, cellSize]}>
           <span class:list={['font-display font-bold leading-none', numSize]} data-cd={k}>00</span>
           <span class:list={['mt-0.5 text-[9px] font-medium uppercase tracking-wide', unit]}>{u}</span>
