@@ -117,6 +117,21 @@ const xDefaultUrl = new URL(localizePath(Astro.url.pathname, 'en'), Astro.site);
         counters.forEach((c) => cio.observe(c));
       }
 
+      // Language switcher: remember the visitor's explicit choice so the
+      // Netlify edge redirect in netlify.toml (root "/", browser-language
+      // based) never overrides it again. `nf_lang` is Netlify's own cookie
+      // for this — it takes priority over the Accept-Language header on
+      // every later request, no server code or library needed on our end.
+      // We only set it here, on click; we never read or clear it since
+      // Netlify's edge is the sole consumer.
+      document.querySelectorAll('[data-lang-switch]').forEach((a) => {
+        a.addEventListener('click', () => {
+          const lang = a.getAttribute('data-lang-switch');
+          if (!lang) return;
+          document.cookie = `nf_lang=${lang}; path=/; max-age=31536000; SameSite=Lax`;
+        });
+      });
+
       // Header shadow on scroll
       const header = document.querySelector('[data-header]');
       if (header) {

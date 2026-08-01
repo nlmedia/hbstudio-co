@@ -10,3 +10,41 @@
   node_bundler = "esbuild"
 
 # Astro outputs 404.html, which Netlify serves automatically for unknown routes.
+
+# Send first-time French-speaking visitors who land on the (unprefixed,
+# English) homepage straight to /fr/, based on the browser's Accept-Language
+# header — Netlify's edge-level "Language" redirect condition, no JS and no
+# server needed. See netlify.toml comments below for the reasoning behind
+# each setting.
+[[redirects]]
+  from = "/"
+  to = "/fr/"
+  status = 302
+  # 302 (temporary), never 301: a 301 gets cached by the browser, so a visitor
+  # redirected once would stay stuck on /fr/ forever, even after explicitly
+  # switching back to English — that failure mode doesn't reproduce on a
+  # fresh machine/cache, which makes it brutal to diagnose after the fact.
+  force = true
+  # `/` already resolves to a real prerendered dist/index.html, and Netlify
+  # lets existing files shadow redirects by default. `force = true` is what
+  # makes the rule actually fire instead of silently losing to that file.
+  conditions = { Language = ["fr"] }
+  # Matches only when the browser's Accept-Language reports French (any
+  # fr-* variant). Crawlers (Googlebot, Bingbot, etc.) do not send an
+  # Accept-Language header when indexing, so this condition never matches
+  # for them — they always get the plain English "/" response and discover
+  # "/fr/" on their own via the hreflang tags and the sitemap's alternate
+  # links, so both versions stay separately indexable.
+  #
+  # This only ever targets the exact root path ("/", not "/*"), so a
+  # shared/deep link such as /templates/atelier always opens that page
+  # as-is and is never rewritten to the French homepage.
+  #
+  # An explicit language choice beats this detection: Netlify treats a
+  # cookie named `nf_lang` as an override for Accept-Language on every
+  # subsequent request (documented native behavior, no library involved).
+  # The header language switcher (src/components/Header.astro) sets that
+  # cookie when clicked, so once a visitor has picked a language this rule
+  # stops matching for them either way — picking English clears/overrides
+  # the "fr" signal, and picking French while on an English-detected
+  # browser makes it match on the next visit to "/".
