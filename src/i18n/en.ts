@@ -130,9 +130,24 @@ export const en = {
       heading: 'Most of your customers are on a phone',
       body: 'So that is where we start. Fluid layouts, images sized for the screen that requests them, and navigation built for thumbs — not a desktop design squeezed down.',
     },
-    // NOTE: the testimonials section's eyebrow/heading and its `const
-    // testimonials` data + rendering intentionally stay OUT of this
-    // dictionary — that whole section is left untouched (see task notes).
+    // ⚠️ These testimonials are illustrative placeholders, not real customers.
+    // They were written before the first sale and no purchase in the database
+    // corresponds to any of them. Replace them with genuine feedback as soon as
+    // there is some — a shopper who searches one of these names finds nothing.
+    // `rating` lives here; the avatar colours stay in index.astro (presentation).
+    testimonials: {
+      eyebrow: 'Loved by founders',
+      heading: 'What our customers say',
+      ratingAriaLabel: (n: number) => `${n} out of 5`,
+      items: [
+        { name: 'Camille Renaud', role: 'Founder, Maison Lou', quote: 'Atelier made our store look like a brand three times our size. We launched in a weekend and conversions jumped within the first month.', rating: 5 },
+        { name: 'Jonas Meyer', role: 'E-commerce lead, Nord Supply', quote: 'The code quality is genuinely excellent — fast, clean, zero bloat. No app subscriptions to replace what the theme already does.', rating: 5 },
+        { name: 'Aïcha Benali', role: 'Owner, Studio Aïcha', quote: 'The documentation is the best I have ever used. The “rebuild the demo” guide had me up and running in under an hour.', rating: 5 },
+        { name: 'Tom Schreiber', role: 'Freelance developer', quote: 'I resell client stores and HB Studio themes are my default now. Editable, well-structured and they just work.', rating: 5 },
+        { name: 'Lena Fischer', role: 'Marketing, Brûme Skincare', quote: 'Beautiful out of the box and still completely on-brand after our tweaks. The slide-out cart alone lifted our average order value.', rating: 5 },
+        { name: 'Marco Conti', role: 'Founder, Conti Leather', quote: 'Premium feel, fair price, and real support that answers fast. Exactly what an independent shop needs.', rating: 5 },
+      ],
+    },
     faq: {
       eyebrow: 'FAQ',
       heading: 'Before you buy',

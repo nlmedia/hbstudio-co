@@ -18,14 +18,14 @@ const t = useTranslations(locale);
 
 const steps = t.home.howItWorks.steps.map((s, i) => [String(i + 1).padStart(2, '0'), s.title, s.body]);
 
-const testimonials = [
-  { name: 'Camille Renaud', role: 'Founder, Maison Lou', quote: 'Atelier made our store look like a brand three times our size. We launched in a weekend and conversions jumped within the first month.', rating: 5, c: '#6d4aff' },
-  { name: 'Jonas Meyer', role: 'E-commerce lead, Nord Supply', quote: 'The code quality is genuinely excellent — fast, clean, zero bloat. No app subscriptions to replace what the theme already does.', rating: 5, c: '#16a394' },
-  { name: 'Aïcha Benali', role: 'Owner, Studio Aïcha', quote: 'The documentation is the best I have ever used. The “rebuild the demo” guide had me up and running in under an hour.', rating: 5, c: '#e0851b' },
-  { name: 'Tom Schreiber', role: 'Freelance developer', quote: 'I resell client stores and HB Studio templates are my default now. Editable, well-structured and they just work.', rating: 5, c: '#d94f7a' },
-  { name: 'Lena Fischer', role: 'Marketing, Brûme Skincare', quote: 'Beautiful out of the box and still completely on-brand after our tweaks. The slide-out cart alone lifted our AOV.', rating: 5, c: '#3b7dd8' },
-  { name: 'Marco Conti', role: 'Founder, Conti Leather', quote: 'Premium feel, fair price, and real support that answers fast. Exactly what an independent shop needs.', rating: 5, c: '#7a5cff' },
-];
+// Avatar colours are presentation, so they stay here; the names, roles and
+// quotes are localised and live in the dictionaries. Zipped by index — keep
+// this array the same length as `t.home.testimonials.items`.
+const AVATAR_COLOURS = ['#6d4aff', '#16a394', '#e0851b', '#d94f7a', '#3b7dd8', '#7a5cff'];
+const testimonials = t.home.testimonials.items.map((item, i) => ({
+  ...item,
+  c: AVATAR_COLOURS[i % AVATAR_COLOURS.length],
+}));
 
 const faqs = t.home.faq.items.map((item) => [item.q, item.a]);
 ---
@@ -176,21 +176,21 @@ const faqs = t.home.faq.items.map((item) => [item.q, item.a]);
   <!-- TESTIMONIALS -->
   <section class="mx-auto max-w-6xl px-5 py-24">
     <div class="text-center">
-      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">Loved by founders</p>
-      <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">What our customers say</h2>
+      <p data-reveal class="text-sm font-medium uppercase tracking-[0.2em] text-accent">{t.home.testimonials.eyebrow}</p>
+      <h2 data-reveal style="transition-delay:80ms" class="mt-3 font-display text-4xl font-bold sm:text-5xl">{t.home.testimonials.heading}</h2>
     </div>
     <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {testimonials.map((t, i) => (
+      {testimonials.map((item, i) => (
         <figure data-reveal style={`transition-delay:${(i % 3) * 80}ms`} class="flex flex-col rounded-2xl border border-line bg-surface p-6">
-          <div class="flex gap-0.5 text-accent" aria-label={`${t.rating} out of 5`}>
-            {Array.from({ length: t.rating }).map(() => (<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.9 21l1.2-6.8-5-4.9 6.9-1z"/></svg>))}
+          <div class="flex gap-0.5 text-accent" aria-label={t.home.testimonials.ratingAriaLabel(item.rating)}>
+            {Array.from({ length: item.rating }).map(() => (<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.9 21l1.2-6.8-5-4.9 6.9-1z"/></svg>))}
           </div>
-          <blockquote class="mt-4 flex-1 text-[15px] leading-relaxed text-ink/80">“{t.quote}”</blockquote>
+          <blockquote class="mt-4 flex-1 text-[15px] leading-relaxed text-ink/80">“{item.quote}”</blockquote>
           <figcaption class="mt-5 flex items-center gap-3">
-            <span class="grid h-10 w-10 place-items-center rounded-full font-display text-sm font-bold text-white" style={`background:${t.c}`}>{t.name.split(' ').map((n) => n[0]).join('')}</span>
+            <span class="grid h-10 w-10 place-items-center rounded-full font-display text-sm font-bold text-white" style={`background:${item.c}`}>{item.name.split(' ').map((n) => n[0]).join('')}</span>
             <span>
-              <span class="block text-sm font-semibold">{t.name}</span>
-              <span class="block text-xs text-muted">{t.role}</span>
+              <span class="block text-sm font-semibold">{item.name}</span>
+              <span class="block text-xs text-muted">{item.role}</span>
             </span>
           </figcaption>
         </figure>

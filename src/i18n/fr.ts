@@ -114,6 +114,21 @@ export const fr: Dictionary = {
       heading: 'La plupart de vos clients sont sur un téléphone',
       body: 'C’est donc par là que nous commençons. Mises en page fluides, images calibrées pour l’écran qui les demande, navigation pensée pour le pouce — et non une version bureau rétrécie.',
     },
+    // See the warning on the English side: these are illustrative placeholders,
+    // not real customers. Translated on request while they remain in place.
+    testimonials: {
+      eyebrow: 'Ils nous font confiance',
+      heading: 'Ce qu’en disent nos clients',
+      ratingAriaLabel: (n: number) => `${n} sur 5`,
+      items: [
+        { name: 'Camille Renaud', role: 'Fondatrice, Maison Lou', quote: 'Atelier donne à notre boutique l’allure d’une marque trois fois plus grande. Nous avons lancé en un week-end, et les conversions ont grimpé dès le premier mois.', rating: 5 },
+        { name: 'Jonas Meyer', role: 'Responsable e-commerce, Nord Supply', quote: 'La qualité du code est vraiment au rendez-vous : rapide, propre, sans surcharge. Et aucun abonnement à souscrire pour retrouver ce que le thème fait déjà.', rating: 5 },
+        { name: 'Aïcha Benali', role: 'Gérante, Studio Aïcha', quote: 'La meilleure documentation que j’aie utilisée. Le guide pour reproduire la démo m’a rendue opérationnelle en moins d’une heure.', rating: 5 },
+        { name: 'Tom Schreiber', role: 'Développeur indépendant', quote: 'Je livre des boutiques pour mes clients, et les thèmes HB Studio sont devenus mon choix par défaut. Modifiables, bien structurés, ils fonctionnent, tout simplement.', rating: 5 },
+        { name: 'Lena Fischer', role: 'Marketing, Brûme Skincare', quote: 'Superbe dès l’installation, et toujours fidèle à notre identité après nos réglages. Le panier latéral à lui seul a fait monter notre panier moyen.', rating: 5 },
+        { name: 'Marco Conti', role: 'Fondateur, Conti Leather', quote: 'Une finition premium, un prix juste, et un vrai support qui répond vite. Exactement ce qu’il faut à une boutique indépendante.', rating: 5 },
+      ],
+    },
     faq: {
       eyebrow: 'Questions fréquentes',
       heading: 'Avant d’acheter',
