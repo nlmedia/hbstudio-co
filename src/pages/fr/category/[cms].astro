@@ -1,0 +1,17 @@
+---
+// See src/pages/fr/index.astro for the rationale behind this shim pattern.
+// The English category page reads `cms` off Astro.params (not props) and
+// declares no Props interface, so Astro's typegen infers a `never` props
+// type for it. It genuinely accepts zero props at render time — this cast
+// only relaxes that inference for our own shim, it doesn't touch the
+// English page itself.
+import EnglishCategoryPage from '../../category/[cms].astro';
+import { CMS_ORDER } from '../../../data/cms';
+
+const EnglishCategory = EnglishCategoryPage as unknown as (props: Record<string, never>) => any;
+
+export async function getStaticPaths() {
+  return CMS_ORDER.map((cms) => ({ params: { cms } }));
+}
+---
+<EnglishCategory />

@@ -1,5 +1,9 @@
 ---
+import { useTranslations, getLocaleFromPath, localizePath } from '../i18n';
+
 const year = new Date().getFullYear();
+const locale = getLocaleFromPath(Astro.url.pathname);
+const t = useTranslations(locale);
 ---
 <footer class="border-t border-line bg-ink text-paper">
   <div class="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:grid-cols-2 lg:grid-cols-4">
@@ -8,29 +12,29 @@ const year = new Date().getFullYear();
         <span class="grid h-8 w-8 place-items-center rounded-lg grad-accent font-display text-sm font-bold text-white">HB</span>
         <span class="font-display text-[15px] font-bold">HB Studio<span class="text-accent">.</span>Co</span>
       </div>
-      <p class="mt-4 max-w-sm text-sm text-paper/60">Premium, conversion-ready website templates for Shopify, WordPress, WooCommerce — and more platforms on the way.</p>
+      <p class="mt-4 max-w-sm text-sm text-paper/60">{t.footer.tagline}</p>
     </div>
     <div>
-      <h4 class="font-display text-sm font-semibold text-paper/90">Catalogue</h4>
+      <h4 class="font-display text-sm font-semibold text-paper/90">{t.footer.catalogueHeading}</h4>
       <ul class="mt-3 space-y-2 text-sm text-paper/60">
-        <li><a class="hover:text-paper" href="/templates">All templates</a></li>
-        <li><a class="hover:text-paper" href="/category/shopify">Shopify</a></li>
-        <li><a class="hover:text-paper" href="/category/wordpress">WordPress</a></li>
-        <li><a class="hover:text-paper" href="/category/woocommerce">WooCommerce</a></li>
+        <li><a class="hover:text-paper" href={localizePath('/templates', locale)}>{t.footer.allTemplates}</a></li>
+        <li><a class="hover:text-paper" href={localizePath('/category/shopify', locale)}>{t.footer.shopify}</a></li>
+        <li><a class="hover:text-paper" href={localizePath('/category/wordpress', locale)}>{t.footer.wordpress}</a></li>
+        <li><a class="hover:text-paper" href={localizePath('/category/woocommerce', locale)}>{t.footer.woocommerce}</a></li>
       </ul>
     </div>
     <div>
-      <h4 class="font-display text-sm font-semibold text-paper/90">Studio</h4>
+      <h4 class="font-display text-sm font-semibold text-paper/90">{t.footer.studioHeading}</h4>
       <ul class="mt-3 space-y-2 text-sm text-paper/60">
-        <li><a class="hover:text-paper" href="/about">About</a></li>
-        <li><a class="hover:text-paper" href="/contact">Contact</a></li>
+        <li><a class="hover:text-paper" href={localizePath('/about', locale)}>{t.footer.about}</a></li>
+        <li><a class="hover:text-paper" href={localizePath('/contact', locale)}>{t.footer.contact}</a></li>
       </ul>
     </div>
   </div>
   <div class="border-t border-white/10">
     <div class="mx-auto flex max-w-6xl flex-col gap-2 px-5 py-5 text-xs text-paper/50 sm:flex-row sm:items-center sm:justify-between">
-      <p>© {year} HB Studio Co. All rights reserved.</p>
-      <p>Designed &amp; built by HB Studio Co.</p>
+      <p>© {year} HB Studio Co. {t.footer.rights}</p>
+      <p>{t.footer.builtBy}</p>
     </div>
   </div>
 </footer>

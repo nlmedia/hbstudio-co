@@ -5,7 +5,9 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "npm run typecheck:i18n && astro build",
+    "typecheck:i18n": "tsc -p tsconfig.i18n.json",
+    "check": "astro check",
     "preview": "astro preview",
     "astro": "astro",
     "test": "vitest run",
@@ -22,6 +24,8 @@
     "tailwindcss": "^4.0.17"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "typescript": "^5.9.3",
     "vitest": "^3.2.7"
   }
 }

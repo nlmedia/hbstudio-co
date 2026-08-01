@@ -1,0 +1,10 @@
+---
+// French route shim. The page body is not duplicated: it renders the exact
+// same component tree as the English page. `Astro.url` (used by Base.astro
+// for <html lang>, canonical and hreflang) reflects this route's own URL
+// regardless of which file the markup comes from, so SEO tags stay correct.
+// A follow-up task will extract the page body into a shared component and
+// swap this import for a translated one.
+import EnglishHome from '../index.astro';
+---
+<EnglishHome />
