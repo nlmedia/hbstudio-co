@@ -49,6 +49,33 @@ et ramener le problème. C'est arrivé en fin de session. Revérifier avec
 ⚠️ Le lien pointe vers un chemin **local à chaque machine**. Sur l'autre Mac, il faudra
 le recréer, pas le récupérer d'iCloud.
 
+### a bis) Les ESPACES du chemin cassent le pré-rendu — silencieusement
+
+Mesuré le 2026-08-01, sur le **même commit**, avec le **même `node_modules`**, et **aucune
+différence de fichier** entre les copies :
+
+| Chemin | Pages pré-rendues |
+|---|---|
+| `/tmp/hb-baseline` — sans espaces | **26** |
+| `/tmp/hb avec espaces/projet` | **0** |
+| Le projet — `…/Mobile Documents/…/Claude projet/hbstudio-co` | **0** |
+
+Ce sont les **espaces**, pas iCloud. `npm run build` sort pourtant `EXIT=0`, affiche
+« prerendering static routes ✓ Completed in 80ms », et n'écrit **aucune page** dans
+`dist/` — seuls les assets et le dossier `demo/` copiés depuis `public/`. Le sitemap
+n'en contient alors qu'une seule URL au lieu de 14.
+
+⚠️ **Rien ne signale l'erreur.** Un build qui réussit sans rien produire ressemble
+exactement à un build qui réussit.
+
+Ça ne casse pas la production : les chemins de build de Netlify n'ont pas d'espaces, et
+le site déployé prérend bien ses pages. Mais **toute vérification locale du rendu est
+faussée** tant que le projet vit à cette adresse.
+
+**Le correctif est le même que pour le point (a) : déplacer le projet vers un chemin
+local simple, par exemple `~/Projets/hbstudio-co`.** Cela règle les espaces *et* iCloud
+d'un coup, et supprime au passage le risque qu'iCloud corrompe `.git`.
+
 ### b) Le `node` du PATH est en v16 et casse Vite/vitest
 
 ```bash
