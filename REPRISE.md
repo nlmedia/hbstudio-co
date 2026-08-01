@@ -20,23 +20,38 @@ Deux pièges rencontrés en déployant, qui casseraient aussi un build relié à
    meurt sur `Cannot find package 'stripe'`. Un empaquetage correct prend ~2 s ; s'il prend
    400 ms, il n'a rien empaqueté.
 
-Procédure de déploiement manuel (le chemin du projet a des espaces, voir §1a bis) :
+Procédure de déploiement, depuis le dépôt lui-même :
 
 ```bash
 export PATH="/opt/homebrew/bin:$PATH"
-git worktree add --detach /tmp/hb-deploy main
-cd /tmp/hb-deploy && cp <projet>/.env .env
-npm install                      # un VRAI node_modules, pas un lien
-npm run build                    # doit produire 26 pages dans dist/
-npx netlify-cli link --id cb16d4a2-8ceb-4bbd-a5fa-ee0d7bbaa6e0
+cd ~/Dev/hbstudio/hbstudio-co
+npm run build                    # doit produire 26 pages hors démo dans dist/
 npx netlify-cli deploy --prod --skip-functions-cache
 ```
 
 Le `--skip-functions-cache` est indispensable : sans lui, Netlify réutilise des fonctions
 mises en cache par un déploiement antérieur.
 
+> **2026-08-01 — le détour par un worktree n'est plus nécessaire.** Il servait à
+> contourner les espaces du chemin iCloud, qui faisaient produire **zéro page** au
+> prérendu tout en sortant en succès. Le projet vit maintenant dans `~/Dev/hbstudio/`,
+> sans espace et hors iCloud : le build depuis le dépôt donne bien ses 26 pages.
+> Vérifiez-le à chaque fois, c'est une panne silencieuse :
+> `find dist -name '*.html' ! -path '*/demo/*' | wc -l`
+
 Ce fichier existe pour reprendre sur une autre machine sans rien redécouvrir.
 Lire d'abord les deux premières sections : elles contiennent ce qui bloque.
+
+## Où vit le projet
+
+| | Chemin | Synchronisé par |
+|---|---|---|
+| Boutique | `~/Dev/hbstudio/hbstudio-co` | GitHub — `nlmedia/hbstudio-co` |
+| Thèmes | `~/Dev/hbstudio/hb-themes` | GitHub — `nlmedia/hb-themes` (privé) |
+| Lourd | `~/Library/…/Claude projet/hb-assets/` | iCloud |
+
+⚠️ **Ne remettez aucun dépôt dans iCloud.** Voir le README de `hb-themes` : iCloud
+avait évincé 94 % des objets git hors du disque et commité deux copies de conflit.
 
 ---
 
